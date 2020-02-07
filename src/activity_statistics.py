@@ -3,14 +3,21 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 import configuration
 
 ## load source extracted calcium traces
-file_directory = os.environ['PROJECT_DIR'] + 'data/calcium_traces_concatenation/'
-file_name = 'mouse_56165_session1.npy'
+file_directory = os.environ['PROJECT_DIR'] + 'data/calcium_activity/'
+file_name = 'mouse_56165_session_1_trial_1_v1.4.100.1.0.1.1.1.npy'
+timeline_file_dir = os.environ['PROJECT_DIR'] + 'data/timeline/'
+timeline_file_path = timeline_file_dir +  'mouse_56165_session_1_trial_1_v1.1.1.0.pkl'
 figure_directory = os.environ['PROJECT_DIR'] + 'data/process/figures/'
 plot_name = 'mouse_56165_session_1.png'
+
+
 activity = np.load(file_directory + file_name)
+timeline_file= open(timeline_file_path,'rb')
+timeline = pickle.load(timeline_file)
 
 ## timeline copied from excel file
 timeline = np.array([0, 3281, 6870, 10352, 13281, 16432, 19748, 22887,25897,29087,32261,35421,38449,41459,44467,
@@ -28,22 +35,23 @@ figure.show()
 ## normalize activity within trial and for each neuron
 activity_normalized = np.zeros((activity.shape))
 for j in range(activity.shape[0]):
-    for i in range(1,len(timeline)-1):
+    for i in range(0,len(timeline)-1):
         activity_segment = activity[j,timeline[i]:timeline[i+1]]
         activity_segment = activity_segment - min(activity_segment)
-        activity_segment_normalized = activity_segment/max(activity_segment)
-        activity_normalized[j,timeline[i]:timeline[i+1]] =activity_segment_normalized
+        if max(activity_segment):
+            activity_segment_normalized = activity_segment/max(activity_segment)
+            activity_normalized[j,timeline[i]:timeline[i+1]] =activity_segment_normalized
 
 
 figure, axes = plt.subplots(1)
 C = activity_normalized.copy()
 C[1,:] += C[1,:].min()
 for j in range(2, len(C)):
-    axes.plot(C[0,:], C[j,:]+j-2)
+    axes.plot(np.arange(0,activity.shape[1])/10, C[j,:]+j-2)
 axes.set_xlabel('t [s]')
 axes.set_yticks([])
 axes.set_ylabel('activity')
-#figure.show()
+figure.show()
 figure.set_size_inches([50., .5 * len(C)])
 figure.savefig(figure_directory + plot_name)
 
