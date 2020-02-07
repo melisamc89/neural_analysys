@@ -17,7 +17,8 @@ def corr_matrix(neural_activity = None):
 
     mean_activity = np.mean(neural_activity,axis = 1)
     corr_matrix = np.dot((neural_activity - mean_activity[:,np.newaxis]), (neural_activity - mean_activity[:,np.newaxis]).T)
-    corr_matrix = corr_matrix / math.sqrt(n_time * (n_time-1))
+    #corr_matrix = corr_matrix / math.sqrt(n_time * (n_time-1))
+    corr_matrix = corr_matrix / (n_time-1)
 
     return corr_matrix
 
@@ -53,13 +54,13 @@ def PCA_projection(neural_activity = None, eigenvalues = None, eigenvectors = No
     Eig_Mat = Eig_Mat[0:n_components,0:n_components]
     EigV_PC = eigenvectors[:,0:n_components]
 
-    Proj_Act = np.dot(Eig_Mat ,np.dot(EigV_PC.T,neural_activity))
-
+    #Proj_Act = np.dot(Eig_Mat ,np.dot(EigV_PC.T,neural_activity))
+    Proj_Act = np.dot(EigV_PC.T,neural_activity)
 
     return Proj_Act
 
 ##
-
+'''
 figure, axes = plt.subplots(1)
 axes.imshow(np.log(corr_matrix))
 figure.show()
@@ -79,4 +80,4 @@ for i in range(n_components):
     axes[i].set_ylabel('PC:' + f'{i}')
 axes[5].set_xlabel('Time (s)')
 figure.show()
-
+'''
