@@ -17,31 +17,30 @@ plot_name = 'mouse_56165_session_1.png'
 
 activity = np.load(file_directory + file_name)
 timeline_file= open(timeline_file_path,'rb')
-timeline = pickle.load(timeline_file)
+timeline_info = pickle.load(timeline_file)
 
-## timeline copied from excel file
-timeline = np.array([0, 3281, 6870, 10352, 13281, 16432, 19748, 22887,25897,29087,32261,35421,38449,41459,44467,
-                     47586,50590, 53524, 56517, 59679, 62711,65887, 68894, 72062, 75906,79046,82053, 85206, 88440,
-                     91656,94660, 97834,100840, 104012, 107016, 110174, 113180,116320, 119326,122561, 125675,130675,activity.shape[1]])
-
+timeline = np.zeros(42+1)
+for i in range(42):
+    timeline[i] = timeline_info[i][1]
+timeline[42] = activity.shape[1]
 
 ##this is just an example
-figure, axes = plt.subplots(1)
-axes.plot(np.arange(0,activity.shape[1])/10,activity[1,:])
-axes.vlines(timeline/10, ymin = 0, ymax = 450, color = 'k', linestyle = '--')
-figure.show()
+#figure, axes = plt.subplots(1)
+#axes.plot(np.arange(0,activity.shape[1])/10,activity[1,:])
+#axes.vlines(timeline/10, ymin = 0, ymax = 450, color = 'k', linestyle = '--')
+#figure.show()
 
 
 ## normalize activity within trial and for each neuron
 activity_normalized = np.zeros((activity.shape))
 for j in range(activity.shape[0]):
     for i in range(0,len(timeline)-1):
-        activity_segment = activity[j,timeline[i]:timeline[i+1]]
+        activity_segment = activity[j,int(timeline[i]):int(timeline[i+1])]
         activity_segment = activity_segment - min(activity_segment)
         if max(activity_segment):
             activity_segment_normalized = activity_segment/max(activity_segment)
-            activity_normalized[j,timeline[i]:timeline[i+1]] =activity_segment_normalized
-
+            activity_normalized[j,int(timeline[i]):int(timeline[i+1])] =activity_segment_normalized
+neural_activity = activity_normalized[1:,:]
 
 figure, axes = plt.subplots(1)
 C = activity_normalized.copy()
@@ -51,20 +50,21 @@ for j in range(2, len(C)):
 axes.set_xlabel('t [s]')
 axes.set_yticks([])
 axes.set_ylabel('activity')
-figure.show()
 figure.set_size_inches([50., .5 * len(C)])
+figure.show()
 figure.savefig(figure_directory + plot_name)
 
-min_time_step = min(np.diff(timeline))
+
+
+min_time_step = int(min(np.diff(timeline)))
 for j in range(0,activity.shape[0]):
     c_activity_trial = np.zeros((42,min_time_step))
     for i in range(1,len(timeline)-1):
-        c_activity_trial[i,:] = activity_normalized[j,timeline[i]:timeline[i]+min_time_step]
+        c_activity_trial[i,:] = activity_normalized[j,int(timeline[i]):int(timeline[i])+min_time_step]
 
     figure, axes = plt.subplots(1)
-    c_activity_trial[0] += c_activity_trial[0].min()
     for i in range(1, len(c_activity_trial)):
-        c_activity_trial[i] += c_activity_trial[i].min() + c_activity_trial[:i].max()
+        c_activity_trial[i] += i
         color = 'r'
         if i%2 == 0:
             color = 'b'
@@ -72,5 +72,5 @@ for j in range(0,activity.shape[0]):
     axes.set_xlabel('t [s]')
     axes.set_yticks([])
     axes.set_ylabel('trial')
-    figure_name = figure_directory + 'mouse_56165_cell' + f'{j}'+ '.png'
+    figure_name = figure_directory + 'trials/mouse_56165_session_1_cell' + f'{j}'+ '.png'
     figure.savefig(figure_name)

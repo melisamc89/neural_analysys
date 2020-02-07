@@ -61,11 +61,14 @@ def PCA_projection(neural_activity = None, eigenvalues = None, eigenvectors = No
 ##
 
 figure, axes = plt.subplots(1)
-axes.imshow(corr_matrix)
+axes.imshow(np.log(corr_matrix))
 figure.show()
 
 figure, axes = plt.subplots(1)
 axes.scatter(np.arange(1,eigenvalues.shape[0]+1),eigenvalues)
+axes.set_xlabel('Order')
+axes.set_ylabel('Eigenvalue')
+figure.suptitle('Eigenvalue Spectrum')
 figure.show()
 
 
@@ -74,11 +77,6 @@ figure,axes = plt.subplots(n_components,1)
 for i in range(n_components):
     axes[i].plot(np.arange(0,Proj_Act.shape[1])/10,Proj_Act[i,:])
     axes[i].set_ylabel('PC:' + f'{i}')
+axes[5].set_xlabel('Time (s)')
 figure.show()
 
-## construct eigenvalues diagonal matrix
-Eig_Mat = LA.matrix_power(np.sqrt(np.diag(eigenvalues)), -1)
-Eig_Mat = Eig_Mat[0:n_components, 0:n_components]
-EigV_PC = eigenvectors[:, 0:n_components]
-
-Proj_Act = np.dot(Eig_Mat, np.dot(EigV_PC.T, neural_activity))
