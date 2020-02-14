@@ -44,8 +44,8 @@ for j in range(activity.shape[0]):
         if max(activity_segment):
             activity_segment_normalized = activity_segment/max(activity_segment)
             activity_normalized[j,int(timeline_1[i]):int(timeline_1[i+1])] =activity_segment_normalized
-#neural_activity1 = activity_normalized[1:,:]
-neural_activity1 = activity[1:,:]
+neural_activity1 = activity_normalized[1:,:]
+#neural_activity1 = activity[1:,:]
 corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
 eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
 proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
@@ -74,8 +74,8 @@ for j in range(activity.shape[0]):
         if max(activity_segment):
             activity_segment_normalized = activity_segment/max(activity_segment)
             activity_normalized[j,int(timeline_3[i]):int(timeline_3[i+1])] =activity_segment_normalized
-#neural_activity3 = activity_normalized[1:,:]
-neural_activity3 = activity[1:,:]
+neural_activity3 = activity_normalized[1:,:]
+#neural_activity3 = activity[1:,:]
 corr_matrix3 = stats.corr_matrix(neural_activity = neural_activity3)
 eigenvalues3, eigenvectors3 = stats.compute_PCA(corr_matrix = corr_matrix3)
 proj3 = stats.PCA_projection(neural_activity=neural_activity3, eigenvalues=eigenvalues3,
@@ -103,8 +103,8 @@ for j in range(activity.shape[0]):
         if max(activity_segment):
             activity_segment_normalized = activity_segment/max(activity_segment)
             activity_normalized[j,int(timeline_4[i]):int(timeline_4[i+1])] =activity_segment_normalized
-#neural_activity4 = activity_normalized[1:,:]
-neural_activity4 = activity[1:,:]
+neural_activity4 = activity_normalized[1:,:]
+#neural_activity4 = activity[1:,:]
 corr_matrix4 = stats.corr_matrix(neural_activity = neural_activity4)
 eigenvalues4, eigenvectors4 = stats.compute_PCA(corr_matrix = corr_matrix4)
 proj4 = stats.PCA_projection(neural_activity=neural_activity4, eigenvalues=eigenvalues4,
@@ -116,20 +116,38 @@ directory = PROJECT_DIR + '/data/scoring_time_vector/'
 file_name = 'mouse_56165_session_1.npy'
 behaviour = np.load(directory + file_name)
 elements1 = []
+testing_1 = []
 for i in range(6):
-    elements1.append(proj1[:,np.where(behaviour == i)])
+    vector = proj1[:,:int(timeline_1[40])]
+    vector_beh = behaviour[:int(timeline_1[40])]
+    elements1.append(vector[:,np.where(vector_beh== i)])
+    vector = proj1[:,int(timeline_1[40]):]
+    vector_beh = behaviour[int(timeline_1[40]):]
+    testing_1.append(vector[:,np.where(vector_beh== i)])
 
 file_name = 'mouse_56165_session_3.npy'
 behaviour = np.load(directory + file_name)
 elements3 = []
+testing_3 = []
 for i in range(6):
-    elements3.append(proj3[:,np.where(behaviour == i)])
+    vector = proj3[:,:int(timeline_3[40])]
+    vector_beh = behaviour[:int(timeline_3[40])]
+    elements3.append(vector[:,np.where(vector_beh == i)])
+    vector = proj3[:,int(timeline_3[40]):]
+    vector_beh = behaviour[int(timeline_3[40]):]
+    testing_3.append(vector[:,np.where(vector_beh== i)])
 
 file_name = 'mouse_56165_session_4.npy'
 behaviour = np.load(directory + file_name)
 elements4 = []
+testing_4 = []
 for i in range(6):
-    elements4.append(proj4[:,np.where(behaviour == i)])
+    vector = proj4[:,:int(timeline_4[40])]
+    vector_beh = behaviour[:int(timeline_4[40])]
+    elements4.append(vector[:,np.where(vector_beh == i)])
+    vector = proj4[:,int(timeline_4[40]):]
+    vector_beh = behaviour[int(timeline_4[40]):]
+    testing_4.append(vector[:,np.where(vector_beh== i)])
 
 ### do analysis corr, PCA and correlate with behaviour
 
@@ -250,7 +268,7 @@ axes[0].scatter(elements1[4][0,:,:],elements1[4][1,:,:])
 axes[0].scatter(elements1[5][0,:,:],elements1[5][1,:,:])
 axes[0].set_xlabel('PC1')
 axes[0].set_ylabel('PC2')
-axes[0].legend(['LR', 'LL', 'UR', 'UL'])
+axes[0].legend(['LL', 'LR', 'UR', 'UL'])
 axes[0].set_title('OVERLAPPING')
 
 axes[1].scatter(elements3[2][0,:,:],elements3[2][1,:,:])
@@ -259,7 +277,7 @@ axes[1].scatter(elements3[4][0,:,:],elements3[4][1,:,:])
 axes[1].scatter(elements3[5][0,:,:],elements3[5][1,:,:])
 axes[1].set_xlabel('PC1')
 axes[1].set_ylabel('PC2')
-axes[1].legend(['LR', 'LL', 'UR', 'UL'])
+axes[1].legend(['LL', 'LR', 'UR', 'UL'])
 axes[1].set_title('STABLE')
 
 axes[2].scatter(elements4[2][0,:,:],elements4[2][1,:,:])
@@ -268,9 +286,113 @@ axes[2].scatter(elements4[4][0,:,:],elements4[4][1,:,:])
 axes[2].scatter(elements4[5][0,:,:],elements4[5][1,:,:])
 axes[2].set_xlabel('PC1')
 axes[2].set_ylabel('PC2')
-axes[2].legend(['LR', 'LL', 'UR', 'UL'])
+axes[2].legend(['LL', 'LR', 'UR', 'UL'])
 axes[2].set_title('RANDOM')
 
 figure2.show()
 
 
+###### other plot, same information
+
+figure2 , axes = plt.subplots(2,2)
+axes[0,0].scatter(elements1[2][0,:,:],elements1[2][1,:,:], color = 'b')
+axes[0,0].scatter(testing_1[2][0,:,:],testing_1[2][1,:,:], color = 'r')
+
+axes[1,0].scatter(elements1[3][0,:,:],elements1[3][1,:,:], color = 'b')
+axes[1,0].scatter(testing_1[3][0,:,:],testing_1[3][1,:,:], color = 'r')
+
+axes[0,1].scatter(elements1[4][0,:,:],elements1[4][1,:,:], color = 'b')
+axes[0,1].scatter(testing_1[4][0,:,:],testing_1[4][1,:,:], color = 'r')
+
+axes[1,1].scatter(elements1[5][0,:,:],elements1[5][1,:,:], color = 'b')
+axes[1,1].scatter(testing_1[5][0,:,:],testing_1[5][1,:,:], color = 'r')
+
+axes[0,0].set_xlabel('PC1')
+axes[0,0].set_ylabel('PC2')
+axes[1,0].set_xlabel('PC1')
+axes[1,0].set_ylabel('PC2')
+axes[0,1].set_xlabel('PC1')
+axes[0,1].set_ylabel('PC2')
+axes[1,1].set_xlabel('PC1')
+axes[1,1].set_ylabel('PC2')
+axes[0,0].set_title('LL')
+axes[1,0].set_title('LR')
+axes[0,1].set_title('UR')
+axes[1,1].set_title('UL')
+figure2.suptitle('OVERLAPPING')
+for i in range(2):
+    for j in range(2):
+        axes[i,j].set_xlim([-3,2])
+        axes[i,j].set_ylim([-3,2])
+        axes[i,j].legend(['Training' , 'Testing'])
+figure2.show()
+figure2.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/objects_exploration_OVERLAPPING.png')
+
+
+
+figure2 , axes = plt.subplots(2,2)
+axes[0,0].scatter(elements3[2][0,:,:],elements3[2][1,:,:], color = 'b')
+axes[0,0].scatter(testing_3[2][0,:,:],testing_3[2][1,:,:], color = 'r')
+
+axes[1,0].scatter(elements3[3][0,:,:],elements3[3][1,:,:], color = 'b')
+axes[1,0].scatter(testing_3[3][0,:,:],testing_3[3][1,:,:], color = 'r')
+
+axes[0,1].scatter(elements3[4][0,:,:],elements3[4][1,:,:], color = 'b')
+axes[0,1].scatter(testing_3[4][0,:,:],testing_3[4][1,:,:], color = 'r')
+
+axes[1,1].scatter(elements3[5][0,:,:],elements3[5][1,:,:], color = 'b')
+axes[1,1].scatter(testing_3[5][0,:,:],testing_3[5][1,:,:], color = 'r')
+axes[0,0].set_xlabel('PC1')
+axes[0,0].set_ylabel('PC2')
+axes[1,0].set_xlabel('PC1')
+axes[1,0].set_ylabel('PC2')
+axes[0,1].set_xlabel('PC1')
+axes[0,1].set_ylabel('PC2')
+axes[1,1].set_xlabel('PC1')
+axes[1,1].set_ylabel('PC2')
+axes[0,0].set_title('LL')
+axes[1,0].set_title('LR')
+axes[0,1].set_title('UR')
+axes[1,1].set_title('UL')
+for i in range(2):
+    for j in range(2):
+        axes[i,j].set_xlim([-3,2])
+        axes[i,j].set_ylim([-3,2])
+        axes[i,j].legend(['Training' , 'Testing'])
+figure2.suptitle('STABLE')
+figure2.show()
+figure2.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/objects_exploration_STABLE.png')
+
+
+figure2 , axes = plt.subplots(2,2)
+axes[0,0].scatter(elements4[2][0,:,:],elements4[2][1,:,:], color = 'b')
+axes[0,0].scatter(testing_4[2][0,:,:],testing_4[2][1,:,:], color = 'r')
+
+axes[1,0].scatter(elements4[3][0,:,:],elements4[3][1,:,:], color = 'b')
+axes[1,0].scatter(testing_4[3][0,:,:],testing_4[3][1,:,:], color = 'r')
+
+axes[0,1].scatter(elements4[4][0,:,:],elements4[4][1,:,:], color = 'b')
+axes[0,1].scatter(testing_4[4][0,:,:],testing_4[4][1,:,:], color = 'r')
+
+axes[1,1].scatter(elements4[5][0,:,:],elements4[5][1,:,:], color = 'b')
+axes[1,1].scatter(testing_4[5][0,:,:],testing_4[5][1,:,:], color = 'r')
+axes[0,0].set_xlabel('PC1')
+axes[0,0].set_ylabel('PC2')
+axes[1,0].set_xlabel('PC1')
+axes[1,0].set_ylabel('PC2')
+axes[0,1].set_xlabel('PC1')
+axes[0,1].set_ylabel('PC2')
+axes[1,1].set_xlabel('PC1')
+axes[1,1].set_ylabel('PC2')
+axes[0,0].set_title('LL')
+axes[1,0].set_title('LR')
+axes[0,1].set_title('UR')
+axes[1,1].set_title('UL')
+figure2.suptitle('RANDOM')
+for i in range(2):
+    for j in range(2):
+        axes[i,j].set_xlim([-3,2])
+        axes[i,j].set_ylim([-3,2])
+        axes[i,j].legend(['Training' , 'Testing'])
+figure2.show()
+figure2.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/objects_exploration_RANDOM.png')
