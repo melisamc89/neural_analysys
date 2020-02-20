@@ -10,9 +10,9 @@ import general_statistics as stats
 
 ## load source extracted calcium traces
 file_directory = os.environ['PROJECT_DIR'] + 'data/calcium_activity/'
-file_name = 'mouse_56165_session_1_trial_1_v1.4.100.1.0.1.1.1.npy'
+file_name = 'mouse_56166_session_3_trial_1_v1.4.100.1.0.1.1.1.npy'
 timeline_file_dir = os.environ['PROJECT_DIR'] + 'data/timeline/'
-timeline_file_path = timeline_file_dir +  'mouse_56165_session_1_trial_1_v1.1.1.0.pkl'
+timeline_file_path = timeline_file_dir +  'mouse_56166_session_3_trial_1_v1.1.1.0.pkl'
 
 activity = np.load(file_directory + file_name)
 timeline_file= open(timeline_file_path,'rb')
@@ -31,15 +31,15 @@ timeline[42] = activity.shape[1]
 
 
 ## normalize activity within trial and for each neuron
-#activity_normalized = np.zeros((activity.shape))
-#for j in range(activity.shape[0]):
-#    for i in range(0,len(timeline)-1):
-#        activity_segment = activity[j,int(timeline[i]):int(timeline[i+1])]
-#        activity_segment = activity_segment - min(activity_segment)
-#        if max(activity_segment):
-#            activity_segment_normalized = activity_segment/max(activity_segment)
-#            activity_normalized[j,int(timeline[i]):int(timeline[i+1])] =activity_segment_normalized
-#neural_activity = activity_normalized[1:,:]
+activity_normalized = np.zeros((activity.shape))
+for j in range(activity.shape[0]):
+    for i in range(0,len(timeline)-1):
+        activity_segment = activity[j,int(timeline[i]):int(timeline[i+1])]
+        activity_segment = activity_segment - min(activity_segment)
+        if max(activity_segment):
+            activity_segment_normalized = activity_segment/max(activity_segment)
+            activity_normalized[j,int(timeline[i]):int(timeline[i+1])] =activity_segment_normalized
+neural_activity = activity_normalized[1:,:]
 
 ## do some plotting
 
@@ -49,14 +49,14 @@ timeline[42] = activity.shape[1]
 figure, axes = plt.subplots(1)
 C = activity_normalized.copy()
 C[1,:] += C[1,:].min()
-for j in range(2, len(C)):
-    axes.plot(np.arange(0,activity.shape[1])/10, C[j,:]+j-2)
+for j in range(2, len(C),5):
+    axes.plot(np.arange(0,activity.shape[1])/10, C[j,:]+j/5-2)
 axes.set_xlabel('t [s]')
 axes.set_yticks([])
 axes.set_ylabel('activity')
-figure.set_size_inches([50., .5 * len(C)])
+figure.set_size_inches([50., .5 * len(C)/5])
 figure.show()
-figure.savefig(figure_directory + plot_name)
+figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/mouse_56166_session_3.png')
 
 
 min_time_step = int(min(np.diff(timeline)))

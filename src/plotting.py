@@ -240,7 +240,7 @@ axes.set_title('UL')
 
 fig2.suptitle('RANDOM')
 fig2.show()
-figure_dir = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/objects_random_56166.png'
+figure_dir = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/objects_random_32363.png'
 fig2.savefig(figure_dir)
 
 

@@ -15,6 +15,9 @@ import pickle
 import configuration
 import general_statistics as stats
 import matplotlib.cm as cm
+from sklearn.decomposition import PCA
+from scipy import signal
+
 cmap = cm.jet
 
 mouse = 56165
@@ -62,12 +65,14 @@ for j in range(activity.shape[0]):
             activity_normalized[j,int(timeline_1[i]):int(timeline_1[i+1])] =activity_segment_normalized
 neural_activity1 = activity_normalized[1:,:]
 #neural_activity1 = activity[1:,:]
-corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
-eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
-proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
-                            eigenvectors=eigenvectors1, n_components=6)
+#corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
+#eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
+#proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
+#                            eigenvectors=eigenvectors1, n_components=6)
 
-
+pca = PCA(n_components=6)
+pca.fit(neural_activity1)
+proj1 = pca.components_
 
 ## LOAD BEHAVIOUR
 behaviour = np.load(behaviour_dir + beh_file_name_1)
@@ -114,10 +119,14 @@ for j in range(activity.shape[0]):
             activity_normalized[j,int(timeline_3[i]):int(timeline_3[i+1])] =activity_segment_normalized
 neural_activity3 = activity_normalized[1:,:]
 #neural_activity3 = activity[1:,:]
-corr_matrix3 = stats.corr_matrix(neural_activity = neural_activity3)
-eigenvalues3, eigenvectors3 = stats.compute_PCA(corr_matrix = corr_matrix3)
-proj3 = stats.PCA_projection(neural_activity=neural_activity3, eigenvalues=eigenvalues3,
-                            eigenvectors=eigenvectors3, n_components=6)
+#corr_matrix3 = stats.corr_matrix(neural_activity = neural_activity3)
+#eigenvalues3, eigenvectors3 = stats.compute_PCA(corr_matrix = corr_matrix3)
+#proj3 = stats.PCA_projection(neural_activity=neural_activity3, eigenvalues=eigenvalues3,
+#                            eigenvectors=eigenvectors3, n_components=6)
+
+pca = PCA(n_components=6)
+pca.fit(neural_activity3)
+proj3 = pca.components_
 
 
 behaviour = np.load(behaviour_dir + beh_file_name_2)
@@ -162,10 +171,15 @@ for j in range(activity.shape[0]):
             activity_normalized[j,int(timeline_4[i]):int(timeline_4[i+1])] =activity_segment_normalized
 neural_activity4 = activity_normalized[1:,:]
 #neural_activity4 = activity[1:,:]
-corr_matrix4 = stats.corr_matrix(neural_activity = neural_activity4)
-eigenvalues4, eigenvectors4 = stats.compute_PCA(corr_matrix = corr_matrix4)
-proj4 = stats.PCA_projection(neural_activity=neural_activity4, eigenvalues=eigenvalues4,
-                            eigenvectors=eigenvectors4, n_components=6)
+#corr_matrix4 = stats.corr_matrix(neural_activity = neural_activity4)
+#eigenvalues4, eigenvectors4 = stats.compute_PCA(corr_matrix = corr_matrix4)
+#proj4 = stats.PCA_projection(neural_activity=neural_activity4, eigenvalues=eigenvalues4,
+#                            eigenvectors=eigenvectors4, n_components=6)
+
+
+pca = PCA(n_components=6)
+pca.fit(neural_activity4)
+proj4 = pca.components_
 
 
 behaviour = np.load(behaviour_dir + beh_file_name_4)
@@ -559,6 +573,203 @@ fig2.savefig(figure_dir)
 
 #%%
 
+from scipy.interpolate import interp1d
+from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
+R = 200
+
+fig1 = plt.figure()
+axes = fig1.add_subplot(3, 2, 1, projection='3d')
+
+resample_elements1 = []
+for i in range(3):
+    a = elements1[0][i,:,:][0,0:R*int(elements1[0][i,:,:].shape[1]/R)]
+    a_ = a.reshape(-1, R).mean(axis=1)
+    resample_elements1.append(a_)
+
+points = np.array([resample_elements1[0], resample_elements1[1]]).T.reshape(-1, 1, 2)
+segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+# Create a continuous norm to map from data points to colors
+norm = plt.Normalize(resample_elements1[0].min(), resample_elements1[0].max())
+lc = LineCollection(segments, cmap='viridis', norm=norm)
+# Set the values used for colormapping
+lc.set_array(dydx)
+lc.set_linewidth(2)
+line = axes.add_collection(lc)
+fig1.colorbar(line, ax=axes[0])
+
+axes.scatter(elements1[0][0,:,:],elements1[0][1,:,:],elements1[0][2,:,:], c=color1[0], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+axes.legend(['Resting'])
+axes.set_title('OVERLAPPING')
+
+axes = fig1.add_subplot(3, 2, 2, projection='3d')
+#axes = fig.add_subplot(111, projection='3d')
+axes.scatter(elements1[1][0,:,:],elements1[1][1,:,:],elements1[1][2,:,:], c=color1[1], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+axes.legend(['Not Exploring'])
+axes.set_title('OVERLAPPING')
+
+axes = fig1.add_subplot(3, 2, 3, projection='3d')
+axes.scatter(elements3[0][0,:,:],elements3[0][1,:,:],elements3[0][2,:,:],c=color3[0], cmap=cmap)
+axes.set_title('STABLE')
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+axes.legend(['Resting'])
+
+axes = fig1.add_subplot(3, 2, 4, projection='3d')
+axes.scatter(elements3[1][0,:,:],elements3[1][1,:,:],elements3[1][2,:,:],c=color3[1], cmap=cmap)
+axes.set_title('STABLE')
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+axes.legend(['Not Exploring'])
+
+axes = fig1.add_subplot(3, 2, 5, projection='3d')
+axes.scatter(elements4[0][0,:,:],elements4[0][1,:,:],elements4[0][2,:,:],c=color4[0], cmap=cmap)
+axes.set_title('RANDOM')
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+axes.legend(['Resting'])
+
+axes = fig1.add_subplot(3, 2, 6, projection='3d')
+axes.scatter(elements4[1][0,:,:],elements4[1][1,:,:],elements4[1][2,:,:],c=color4[1], cmap=cmap)
+axes.set_title('RANDOM')
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+axes.legend(['Not Exploring'])
+
+plt.show()
+
+figure_dir = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/resting_vs_exploring_all_conditions.png'
+fig1.savefig(figure_dir)
+
+
+fig2 = plt.figure()
+axes = fig2.add_subplot(2, 2, 1, projection='3d')
+axes.scatter(elements1[2][0,:,:],elements1[2][1,:,:],elements1[2][2,:,:],c=color1[2], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('LR')
+
+axes = fig2.add_subplot(2, 2, 2, projection='3d')
+axes.scatter(elements1[3][0,:,:],elements1[3][1,:,:],elements1[3][2,:,:],c=color1[3], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('LL')
+
+axes = fig2.add_subplot(2, 2, 3, projection='3d')
+axes.scatter(elements1[4][0,:,:],elements1[4][1,:,:],elements1[4][2,:,:],c=color1[4], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('UR')
+
+axes = fig2.add_subplot(2, 2, 4, projection='3d')
+axes.scatter(elements1[5][0,:,:],elements1[5][1,:,:],elements1[5][2,:,:],c=color1[5], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('UL')
+
+fig2.suptitle('OVERLAPPING')
+fig2.show()
+figure_dir = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/objects_overlapping.png'
+fig2.savefig(figure_dir)
+
+
+
+fig2 = plt.figure()
+axes = fig2.add_subplot(2, 2, 1, projection='3d')
+axes.scatter(elements3[2][0,:,:],elements3[2][1,:,:],elements3[2][2,:,:],c=color3[2], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('LR')
+
+axes = fig2.add_subplot(2, 2, 2, projection='3d')
+axes.scatter(elements3[3][0,:,:],elements3[3][1,:,:],elements3[3][2,:,:],c=color3[3], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('LL')
+
+axes = fig2.add_subplot(2, 2, 3, projection='3d')
+axes.scatter(elements3[4][0,:,:],elements3[4][1,:,:],elements3[4][2,:,:],c=color3[4], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('UR')
+
+axes = fig2.add_subplot(2, 2, 4, projection='3d')
+axes.scatter(elements3[5][0,:,:],elements3[5][1,:,:],elements3[5][2,:,:],c=color3[5], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('UL')
+
+fig2.suptitle('STABLE')
+fig2.show()
+figure_dir = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/objects_stable.png'
+fig2.savefig(figure_dir)
+
+
+
+fig2 = plt.figure()
+axes = fig2.add_subplot(2, 2, 1, projection='3d')
+axes.scatter(elements4[2][0,:,:],elements4[2][1,:,:],elements4[2][2,:,:],c=color4[2], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('LR')
+
+axes = fig2.add_subplot(2, 2, 2, projection='3d')
+axes.scatter(elements4[3][0,:,:],elements4[3][1,:,:],elements4[3][2,:,:],c=color4[3], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('LL')
+
+axes = fig2.add_subplot(2, 2, 3, projection='3d')
+axes.scatter(elements4[4][0,:,:],elements4[4][1,:,:],elements4[4][2,:,:],c=color4[4], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('UR')
+
+axes = fig2.add_subplot(2, 2, 4, projection='3d')
+axes.scatter(elements4[5][0,:,:],elements4[5][1,:,:],elements4[5][2,:,:],c=color4[5], cmap=cmap)
+axes.set_xlabel('PC1')
+axes.set_ylabel('PC2')
+axes.set_zlabel('PC3')
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('UL')
+
+fig2.suptitle('RANDOM')
+fig2.show()
+figure_dir = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/objects_random.png'
+fig2.savefig(figure_dir)
 
 
 
