@@ -34,7 +34,7 @@ registration_v = 1
 
 
 ## session 1 files
-session = 4
+session = 1
 file_name_session_1 = 'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.4.'+f'{100}'+\
                       '.'+f'{alignment_v}'+'.'+ f'{equalization_v}' +'.' + f'{source_extraction_v}'+'.' + \
                       f'{component_evaluation_v}' +'.'+ f'{registration_v}' + '.npy'

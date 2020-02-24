@@ -14,10 +14,11 @@ import pickle
 import configuration
 import general_statistics as stats
 import matplotlib.cm as cm
+cmap = cm.jet
+from sklearn.decomposition import PCA
 from scipy import signal
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
-cmap = cm.jet
 
 mouse = 56165
 
@@ -64,10 +65,16 @@ for j in range(activity.shape[0]):
             activity_normalized[j,int(timeline_1[i]):int(timeline_1[i+1])] =activity_segment_normalized
 neural_activity1 = activity_normalized[1:,:]
 #neural_activity1 = activity[1:,:]
-corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
-eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
-proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
-                            eigenvectors=eigenvectors1, n_components=6)
+#corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
+#eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
+#proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
+#                            eigenvectors=eigenvectors1, n_components=6)
+
+pca = PCA(n_components=100)
+pca.fit(neural_activity1)
+proj1 = pca.components_
+EV1 = pca.explained_variance_ratio_
+print(sum(EV1))
 
 ## LOAD BEHAVIOUR
 behaviour = np.load(behaviour_dir + beh_file_name_1)

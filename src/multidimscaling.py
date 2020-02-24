@@ -35,13 +35,14 @@ registration_v = 1
 
 
 ## session 1 files
-session = 1
+session = 2
+
 file_name_session_1 = 'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.4.'+f'{100}'+\
                       '.'+f'{alignment_v}'+'.'+ f'{equalization_v}' +'.' + f'{source_extraction_v}'+'.' + \
                       f'{component_evaluation_v}' +'.'+ f'{registration_v}' + '.npy'
 time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.1.'+f'{1}'+\
                       '.'+f'{0}'+ '.pkl'
-beh_file_name_1 = 'mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.npy'
+beh_file_name_1 = 'mouse_'+f'{mouse}'+'_session_'+f'{3}'+'.npy'
 
 ##session 1
 activity = np.load(file_directory + file_name_session_1)
@@ -64,8 +65,25 @@ for j in range(activity.shape[0]):
 neural_activity1 = activity[1:,:]
 corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
 neural_activity1 = activity_normalized[1:,:]
-neural_activity1 = neural_activity1.T
+corr_matrix1_1 = stats.corr_matrix(neural_activity = neural_activity1)
+eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
+proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
+                            eigenvectors=eigenvectors1, n_components=70)
 
+## LOAD BEHAVIOUR
+behaviour = np.load(behaviour_dir + beh_file_name_1)
+
+### downsample
+sf = 10
+new_sf = 0.1
+re_sf = int(sf/new_sf)
+#mat_proj1 = np.reshape(proj1[:,:int(int(proj1.shape[1]/re_sf )*re_sf) ],(proj1.shape[0],int(proj1.shape[1]/re_sf ),re_sf))
+#resample_proj1 = np.mean(mat_proj1,axis = 2)
+#std_resample_proj1 = np.std(mat_proj1, axis = 2)
+resample_proj1= signal.resample(proj1,int(proj1.shape[1]/re_sf),axis = 1)
 
 embedding = MDS(n_components=3)
-neural_activity_transformed = embedding.fit_transform(neural_activity1)
+proj1_transformed = embedding.fit_transform(resample_proj1.T)
+
+file_name = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/MDS/mouse_' + f'{mouse}' + '_session_' + f'{session}' + '.npy'
+np.save(file_name, proj1_transformed)

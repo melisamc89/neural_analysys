@@ -1,0 +1,109 @@
+
+
+fig2 = plt.figure()
+axes = fig2.add_subplot(1, 2, 1, projection='3d')
+#axes = fig1.add_subplot(111, projection='3d')
+axes.plot3D(elements1_transformed[0][:,0],elements1_transformed[0][:,1],elements1_transformed[0][:,2], color = 'k')
+axes.scatter(elements1_transformed[0][:,0],elements1_transformed[0][:,1],elements1_transformed[0][:,2], c=color1[0], cmap=cmap)
+axes.set_xlabel('MDS1')
+axes.set_ylabel('MDS2')
+axes.set_zlabel('MDS3')
+axes.set_xlim([-1, 1])
+axes.set_ylim([-1, 1])
+axes.set_zlim([-1, 1])
+axes.legend(['Resting'])
+for angle in range(0, 360):
+    axes.view_init(30, angle)
+    plt.draw()
+    plt.pause(.001)
+axes.set_title(task)
+
+axes = fig2.add_subplot(1, 2, 2, projection='3d')
+#axes = fig.add_subplot(111, projection='3d')
+axes.plot3D(elements1_transformed[1][:,0],elements1_transformed[1][:,1],elements1_transformed[1][:,2], color = 'k')
+axes.scatter(elements1_transformed[1][:,0],elements1_transformed[1][:,1],elements1_transformed[1][:,2], c=color1[1], cmap=cmap)
+axes.set_xlabel('MDS1')
+axes.set_ylabel('MDS2')
+axes.set_zlabel('MDS3')
+axes.set_xlim([-1, 1])
+axes.set_ylim([-1, 1])
+axes.set_zlim([-1, 1])
+axes.legend(['Not Exploring'])
+for angle in range(0, 360):
+    axes.view_init(30, angle)
+    plt.draw()
+    plt.pause(.001)
+axes.set_title(task)
+
+plt.show()
+
+#fig2.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+#             'resting_vs_exploring_MDS_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png')
+
+
+
+fig3 = plt.figure()
+axes = fig3.add_subplot(2, 2, 1, projection='3d')
+axes.plot3D(elements1_transformed[2][:,0],elements1_transformed[2][:,1],elements1_transformed[2][:,2], color = 'k')
+axes.scatter(elements1_transformed[2][:,0],elements1_transformed[2][:,1],elements1_transformed[2][:,2], c=color1[2], cmap=cmap)
+axes.set_xlabel('MDS1')
+axes.set_ylabel('MDS2')
+axes.set_zlabel('MDS3')
+axes.set_xlim([-1, 1])
+axes.set_ylim([-1, 1])
+axes.set_zlim([-1, 1])
+for angle in range(0, 360):
+    axes.view_init(30, angle)
+    plt.draw()
+    plt.pause(.001)
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('LR')
+
+axes = fig3.add_subplot(2, 2, 2, projection='3d')
+axes.plot3D(elements1_transformed[3][:,0],elements1_transformed[3][:,1],elements1_transformed[3][:,2], color = 'k')
+axes.scatter(elements1_transformed[3][:,0],elements1_transformed[3][:,1],elements1_transformed[3][:,2], c=color1[3], cmap=cmap)
+axes.set_xlabel('MDS1')
+axes.set_ylabel('MDS2')
+axes.set_zlabel('MDS3')
+axes.set_xlim([-1, 1])
+axes.set_ylim([-1, 1])
+axes.set_zlim([-1, 1])
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('LL')
+
+axes = fig3.add_subplot(2, 2, 3, projection='3d')
+axes.plot3D(elements1_transformed[4][:,0],elements1_transformed[4][:,1],elements1_transformed[4][:,2], color = 'k')
+axes.scatter(elements1_transformed[4][:,0],elements1_transformed[4][:,1],elements1_transformed[4][:,2], c=color1[4], cmap=cmap)
+axes.set_xlabel('MDS1')
+axes.set_ylabel('MDS2')
+axes.set_zlabel('MDS3')
+axes.set_xlim([-1, 1])
+axes.set_ylim([-1, 1])
+axes.set_zlim([-1, 1])
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('UR')
+
+axes = fig2.add_subplot(2, 2, 4, projection='3d')
+axes.plot3D(elements1_transformed[5][:,0],elements1_transformed[5][:,1],elements1_transformed[5][:,2], color = 'k')
+axes.scatter(elements1_transformed[5][:,0],elements1_transformed[5][:,1],elements1_transformed[5][:,2], c=color1[5], cmap=cmap)
+axes.set_xlabel('MDS1')
+axes.set_ylabel('MDS2')
+axes.set_zlabel('MDS3')
+axes.set_xlim([-1, 1])
+axes.set_ylim([-1, 1])
+axes.set_zlim([-1, 1])
+for angle in range(0, 360):
+    axes.view_init(30, angle)
+    plt.draw()
+    plt.pause(.001)
+#axes.legend(['LR', 'LL', 'UR', 'UL'])
+axes.set_title('UL')
+
+fig3.suptitle(task)
+fig3.show()
+
+#fig3.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+#             'object_task_MDS_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png')
+
+
+

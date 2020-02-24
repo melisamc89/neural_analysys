@@ -34,7 +34,14 @@ registration_v = 1
 
 
 ## session 1 files
-session = 1
+session = 4
+if session == 1:
+    task = 'OVERLAPPING'
+else:
+    if session == 2:
+        task = 'STABLE'
+    else:
+        task = 'RANDOM'
 file_name_session_1 = 'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.4.'+f'{100}'+\
                       '.'+f'{alignment_v}'+'.'+ f'{equalization_v}' +'.' + f'{source_extraction_v}'+'.' + \
                       f'{component_evaluation_v}' +'.'+ f'{registration_v}' + '.npy'
@@ -84,7 +91,6 @@ for i in range(6):
     #vector_beh = behaviour[int(timeline_1[40]):]
     #testing_1.append(vector[:,np.where(vector_beh== i)])
 
-
 corr_matrix = []
 for i in range(len(neural_activity_new)):
     corr_matrix.append(stats.corr_matrix(neural_activity = neural_activity_new[i][:,0,:]))
@@ -102,8 +108,10 @@ axes[1,0].set_title('LR', fontsize = 12)
 axes[1,1].set_title('LL', fontsize = 12)
 axes[2,0].set_title('UR', fontsize = 12)
 axes[2,1].set_title('UL', fontsize = 12)
+figure.suptitle(task)
 figure.show()
-figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/correlation_matrix_task_mouse_56165_session_4.png')
+figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+               'correlation_matrix_task_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png')
 
 
 #%% in days correlation matrix
@@ -145,6 +153,7 @@ for i in range(4):
 corr_matrix_resting_days.append(stats.corr_matrix(neural_activity = neural_activity1_resting_testing))
 
 
+##mean and variance
 corr_mean = np.zeros(5)
 corr_std = np.zeros(5)
 corr_mean_resting = np.zeros(5)
@@ -154,8 +163,6 @@ for i in range(5):
     corr_std[i] = np.std(corr_matrix_days[i].flatten())
     corr_mean_resting[i]= np.mean(corr_matrix_resting_days[i].flatten())
     corr_std_resting[i]=np.std(corr_matrix_resting_days[i].flatten())
-
-
 fig, axes = plt.subplots(1)
 axes.errorbar(np.arange(1,6),corr_mean,corr_std)
 axes.errorbar(np.arange(1,6),corr_mean_resting,corr_std_resting)
@@ -163,7 +170,56 @@ axes.set_xlabel('Days',fontsize = 12)
 axes.set_ylabel('Correlation')
 axes.legend(['Trial','Resting'])
 fig.show()
-fig.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/correlation_mouse_56165_session_1.png')
+fig.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+            'correlation_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png')
+
+##distribution of corr values
+histograms, axes = plt.subplots(2,5)
+for i in range(5):
+    x = axes[0,i].hist(corr_matrix_days[i].flatten()[np.where(corr_matrix_days[i].flatten()>0.01)],bins = np.arange(0.01,0.05,0.04/15))
+    y = axes[1,i].hist(corr_matrix_resting_days[i].flatten()[np.where(corr_matrix_resting_days[i].flatten()>0.01)], bins =  np.arange(0.01,0.05,0.04/15))
+    #figures.colorbar(x, ax=axes[0, i])
+    #figures.colorbar(y, ax=axes[1, i])
+    axes[0,i].set_title('Trial Day' + f'{i}', fontsize = 12)
+    axes[1,i].set_title('Rest Day' + f'{i}', fontsize = 12)
+histograms.show()
+
+histograms.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+            'correlation_histogram_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png')
+
+def compute_DKL(p = None, q = None):
+    dkl = np.dot(p + np.finfo(float).eps ,np.log(np.divide(p + np.finfo(float).eps,q + np.finfo(float).eps))+ np.finfo(float).eps)
+    return dkl
+
+
+dkl_matrix = np.zeros((5,5))
+dkl_matrix_resting = np.zeros((5,5))
+for i in range(5):
+    x1 = np.histogram(corr_matrix_days[i].flatten()[np.where(corr_matrix_days[i].flatten() > 0.01)],
+                bins=np.arange(0.01, 0.05, 0.04 / 15))
+    x2 = np.histogram(corr_matrix_resting_days[i].flatten()[np.where(corr_matrix_resting_days[i].flatten() > 0.01)],
+                bins=np.arange(0.01, 0.05, 0.04 / 15))
+    for j in range(5):
+        y1 = np.histogram(corr_matrix_days[j].flatten()[np.where(corr_matrix_days[j].flatten() > 0.01)],
+            bins=np.arange(0.01, 0.05, 0.04 / 15))
+        y2 = np.histogram(corr_matrix_resting_days[j].flatten()[np.where(corr_matrix_resting_days[j].flatten() > 0.01)],
+            bins=np.arange(0.01, 0.05, 0.04 / 15))
+        # figures.colorbar(x, ax=axes[0, i])
+        dkl_matrix[i,j] = compute_DKL(x1[0]/np.sum(x1[0]),y1[0]/np.sum(y1[0]))
+        dkl_matrix_resting[i, j] = compute_DKL(x2[0]/np.sum(x2[0]),y2[0]/np.sum(y2[0]))
+
+fig_dkl, axes= plt.subplots(1,2)
+x = axes[0].imshow(dkl_matrix)
+y = axes[1].imshow(dkl_matrix_resting)
+fig_dkl.colorbar(x, ax=axes[0])
+fig_dkl.colorbar(y, ax=axes[1])
+axes[0].set_title('Trials')
+axes[1].set_title('Resting')
+fig_dkl.suptitle('DKL correlation: ' + task , fontsize = 15)
+fig_dkl.show()
+
+fig_dkl.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+                'correlation_matrix_DKL_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png')
 
 figures, axes = plt.subplots(2,5)
 for i in range(5):
@@ -178,4 +234,101 @@ figures.colorbar(y, ax=axes[1, i])
 figures.suptitle('Activity correlation matrix' , fontsize = 15)
 figures.show()
 
-figures.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/correlation_matrix_mouse_56165_session_4.png')
+figures.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+                'correlation_matrix_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png')
+
+
+#%%% DKL of correlations in a trial by trial base
+
+#%% in days correlation matrix
+neural_activity1_days = []
+time_length = np.diff(timeline_1)
+for i in range(0,42,2):
+    trial_matrix = neural_activity1[:,int(timeline_1[i]):int(timeline_1[i]) + int(time_length[i])]
+    neural_activity1_days.append(trial_matrix)
+
+neural_activity1_resting_days = []
+for i in range(1,42,2):
+    trial_matrix = neural_activity1[:,int(timeline_1[i]):int(timeline_1[i]) + int(time_length[i])]
+    neural_activity1_resting_days.append(trial_matrix)
+
+corr_matrix_days = []
+for i in range(21):
+    corr_matrix_days.append(stats.corr_matrix(neural_activity = neural_activity1_days[i]))
+
+corr_matrix_resting_days = []
+for i in range(21):
+    corr_matrix_resting_days.append(stats.corr_matrix(neural_activity = neural_activity1_resting_days[i]))
+
+
+def compute_DKL(p = None, q = None):
+    dkl = np.dot(p + np.finfo(float).eps ,np.log(np.divide(p + np.finfo(float).eps,q + np.finfo(float).eps))+ np.finfo(float).eps)
+    return dkl
+
+
+dkl_matrix = np.zeros((21,21))
+dkl_matrix_resting = np.zeros((21,21))
+for i in range(21):
+    x1 = np.histogram(corr_matrix_days[i].flatten()[np.where(corr_matrix_days[i].flatten() > 0.01)],
+                bins=np.arange(0.01, 0.05, 0.04 / 15))
+    x2 = np.histogram(corr_matrix_resting_days[i].flatten()[np.where(corr_matrix_resting_days[i].flatten() > 0.01)],
+                bins=np.arange(0.01, 0.05, 0.04 / 15))
+    for j in range(21):
+        y1 = np.histogram(corr_matrix_days[j].flatten()[np.where(corr_matrix_days[j].flatten() > 0.01)],
+            bins=np.arange(0.01, 0.05, 0.04 / 15))
+        y2 = np.histogram(corr_matrix_resting_days[j].flatten()[np.where(corr_matrix_resting_days[j].flatten() > 0.01)],
+            bins=np.arange(0.01, 0.05, 0.04 / 15))
+        # figures.colorbar(x, ax=axes[0, i])
+        dkl_matrix[i,j] = compute_DKL(x1[0]/np.sum(x1[0]),y1[0]/np.sum(y1[0]))
+        dkl_matrix_resting[i, j] = compute_DKL(x2[0]/np.sum(x2[0]),y2[0]/np.sum(y2[0]))
+
+fig_dkl, axes= plt.subplots(1,2)
+x = axes[0].imshow(dkl_matrix)
+y = axes[1].imshow(dkl_matrix_resting)
+fig_dkl.colorbar(x, ax=axes[0])
+fig_dkl.colorbar(y, ax=axes[1])
+axes[0].set_title('Trials')
+axes[1].set_title('Resting')
+fig_dkl.suptitle('DKL correlation: ' + task , fontsize = 15)
+fig_dkl.show()
+
+
+directory = '/home/sebastian/Documents/Melisa/calcium_imaging_behaviour/data/object_positions/'
+overlapping_file = directory + 'overlapping_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.npy'
+overlapping_matrix = np.load(overlapping_file)
+
+fig_dkl, axes= plt.subplots(1,3)
+x = axes[0].imshow(dkl_matrix)
+y = axes[1].imshow(dkl_matrix_resting)
+z = axes[2].imshow(overlapping_matrix)
+fig_dkl.colorbar(x, ax=axes[0])
+fig_dkl.colorbar(y, ax=axes[1])
+fig_dkl.colorbar(z, ax=axes[2])
+axes[0].set_title('Trials')
+axes[1].set_title('Resting')
+axes[2].set_title('Objects')
+fig_dkl.suptitle('DKL correlation: ' + task , fontsize = 15)
+fig_dkl.show()
+
+aux1 = []
+aux2 = []
+aux3 = []
+for i in range(21):
+    for j in range(i+1,21):
+        aux1.append(dkl_matrix[i,j])
+        aux2.append(dkl_matrix_resting[i,j])
+        aux3.append(overlapping_matrix[i,j])
+
+correlation1 = np.corrcoef(np.array(aux1),np.array(aux3))
+corr_value1 = round(correlation1[0,1],2)
+axes[0].set_title('Trial,C:' + f'{corr_value1}')
+
+correlation2= np.corrcoef(np.array(aux2),np.array(aux3))
+corr_value2 = round(correlation2[0,1],2)
+axes[1].set_title('Rest,C:' + f'{corr_value2}')
+
+fig_dkl.suptitle('DKL correlation: ' + task , fontsize = 15)
+fig_dkl.show()
+
+fig_dkl.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+                'correlation_matrix_DKL_trial_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'2.png')
