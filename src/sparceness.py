@@ -32,6 +32,9 @@ source_extraction_v = 1
 component_evaluation_v = 1
 registration_v = 1
 
+bin_vector = [1, 2, 5, 10, 25, 50, 75, 100, 150]
+bin_vector = np.arange(1, 150, 1)
+sf = 10
 figure, axes = plt.subplots(3,1)
 ## session 1 files
 plotting = 0
@@ -68,15 +71,12 @@ for session in [1,2,4]:
     sparceness_mean = []
     sparceness_std = []
 
-    bin_vector = [1,2,5,10,25,50,75,100,150]
-    bin_vector = np.arange(1,150,1)
-    sf = 10
     for re_sf in bin_vector:
         reshape_neural_activity = np.reshape(neural_activity1[:,:int(int(neural_activity1.shape[1]/re_sf )*re_sf) ],
                                               (neural_activity1 .shape[0],int(neural_activity1.shape[1]/re_sf ),re_sf))
         resample_neural_activity = np.mean(reshape_neural_activity,axis= 2)
-        nominator = np.mean(np.multiply(resample_neural_activity,resample_neural_activity),axis=1)
-        denominator = np.multiply(np.mean(resample_neural_activity,axis=1),np.mean(resample_neural_activity,axis=1))
+        denominator = np.mean(np.multiply(resample_neural_activity,resample_neural_activity),axis=1)
+        nominator = np.multiply(np.mean(resample_neural_activity,axis=1),np.mean(resample_neural_activity,axis=1))
         sparceness = np.divide(nominator,denominator)
         sparceness_mean.append(np.mean(sparceness))
         sparceness_std.append(np.std(sparceness))
@@ -89,13 +89,10 @@ figure.show()
 axes[0].set_title('OVERLAPPING')
 axes[1].set_title('STABLE')
 axes[2].set_title('RANDOM')
-axes[2].set_xlabel('Bin size')
-axes[0].set_ylabel('< <f^2> / <f>^2 > ')
-axes[1].set_ylabel('< <f^2> / <f>^2 > ')
-axes[2].set_ylabel('< <f^2> / <f>^2 > ')
-
+axes[2].set_xlabel('Bin size [frames]')
+axes[0].set_ylabel(' <f>^2  /  <f^2>  ')
+axes[1].set_ylabel(' <f>^2  /  <f^2>  ')
+axes[2].set_ylabel('  <f>^2 / < <f^2>   ')
 
 figure.show()
-
-
-figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/sparceness.png')
+figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/sparcity_mouse_'+f'{mouse}'+'.png')

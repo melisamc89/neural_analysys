@@ -14,7 +14,9 @@ import pickle
 import configuration
 import general_statistics as stats
 import matplotlib.cm as cm
+from matplotlib import colors
 from scipy import signal
+import scipy
 cmap = cm.jet
 
 mouse = 56165
@@ -33,8 +35,85 @@ component_evaluation_v = 1
 registration_v = 1
 
 
-## session 1 files
-session = 4
+sf = 10
+re_sf= 10
+
+## session files
+correlation_matrix = []
+for session in [1,2,4]:
+
+    if session == 1:
+        task = 'OVERLAPPING'
+    else:
+        if session == 2:
+            task = 'STABLE'
+        else:
+            task = 'RANDOM'
+
+    file_name_session_1 = 'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.4.'+f'{100}'+\
+                          '.'+f'{alignment_v}'+'.'+ f'{equalization_v}' +'.' + f'{source_extraction_v}'+'.' + \
+                          f'{component_evaluation_v}' +'.'+ f'{registration_v}' + '.npy'
+    time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.1.'+f'{1}'+\
+                          '.'+f'{0}'+ '.pkl'
+    beh_file_name_1 = 'mouse_'+f'{mouse}'+'_session_'+f'{session}'+'_event_'+f'{re_sf}'+'.npy'
+
+    ##session 1
+    activity = np.load(file_directory + file_name_session_1)
+    timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
+    timeline_info = pickle.load(timeline_file)
+    timeline_1 = np.zeros(42+1)
+    for i in range(42):
+        timeline_1[i] = timeline_info[i][1]
+    timeline_1[42] = activity.shape[1]
+    timeline_1 = timeline_1 / re_sf
+
+    ## normalize activity within trial and for each neuron
+    activity_normalized = np.zeros((activity.shape))
+    for j in range(activity.shape[0]):
+        for i in range(0,len(timeline_1)-1):
+            activity_segment = activity[j,int(timeline_1[i]):int(timeline_1[i+1])]
+            activity_segment = activity_segment - min(activity_segment)
+            if max(activity_segment):
+                activity_segment_normalized = activity_segment/max(activity_segment)
+                activity_normalized[j,int(timeline_1[i]):int(timeline_1[i+1])] =activity_segment_normalized
+    neural_activity1 = activity_normalized[1:,:]
+
+    reshape_neural_activity = np.reshape(neural_activity1[:, :int(int(neural_activity1.shape[1] / re_sf) * re_sf)],
+                                         (neural_activity1.shape[0], int(neural_activity1.shape[1] / re_sf), re_sf))
+    resample_neural_activity_mean = np.mean(reshape_neural_activity, axis=2)
+    resample_neural_activity_std = np.std(reshape_neural_activity, axis=2)
+
+    correlation_matrix.append(stats.corr_matrix(neural_activity = resample_neural_activity_mean))
+
+
+#%% plottin corr matrix for all conditions
+figure, axes = plt.subplots(2,2)
+images = []
+for i in range(2):
+    for j in range(2):
+        images.append(axes[i,j].imshow(np.log10(correlation_matrix[i*2+j]),cmap = 'viridis'))
+        axes[i,j].label_outer()
+
+vmin = min(image.get_array().min() for image in images)
+vmax = max(image.get_array().max() for image in images)
+norm = colors.Normalize(vmin=vmin, vmax=vmax)
+for im in images:
+    im.set_norm(norm)
+axes[0,0].set_title('OVERLAPPING')
+axes[0,1].set_title('STABLE')
+axes[1,0].set_title('RANDOM')
+
+figure.colorbar(images[0], ax=axes[1,1], orientation='vertical', fraction=0.1)
+#figure.suptitle('Correlation Matrix. Bin size:' + f'{re_sf}' + 'frames' , fontsize = 15)
+
+figure.show()
+
+figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
+               'correlation_matrix_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'_binsize_'+f'{re_sf}'+'.png')
+
+#%% In task correlation matrix
+
+session = 2
 if session == 1:
     task = 'OVERLAPPING'
 else:
@@ -42,53 +121,57 @@ else:
         task = 'STABLE'
     else:
         task = 'RANDOM'
-file_name_session_1 = 'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.4.'+f'{100}'+\
-                      '.'+f'{alignment_v}'+'.'+ f'{equalization_v}' +'.' + f'{source_extraction_v}'+'.' + \
-                      f'{component_evaluation_v}' +'.'+ f'{registration_v}' + '.npy'
-time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.1.'+f'{1}'+\
-                      '.'+f'{0}'+ '.pkl'
-beh_file_name_1 = 'mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.npy'
+
+file_name_session_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_1_v' + f'{decoding_v}' + '.4.' + f'{100}' + \
+                      '.' + f'{alignment_v}' + '.' + f'{equalization_v}' + '.' + f'{source_extraction_v}' + '.' + \
+                      f'{component_evaluation_v}' + '.' + f'{registration_v}' + '.npy'
+time_file_session_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_1_v' + f'{decoding_v}' + '.1.' + f'{1}' + \
+                      '.' + f'{0}' + '.pkl'
+beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_event_' + f'{re_sf}' + '.npy'
 
 ##session 1
 activity = np.load(file_directory + file_name_session_1)
-timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
+timeline_file = open(timeline_file_dir + time_file_session_1, 'rb')
 timeline_info = pickle.load(timeline_file)
-timeline_1 = np.zeros(42+1)
+timeline_1 = np.zeros(42 + 1)
 for i in range(42):
     timeline_1[i] = timeline_info[i][1]
 timeline_1[42] = activity.shape[1]
-### do analysis corr, PCA
+timeline_1 = timeline_1 / re_sf
+
 ## normalize activity within trial and for each neuron
 activity_normalized = np.zeros((activity.shape))
 for j in range(activity.shape[0]):
-    for i in range(0,len(timeline_1)-1):
-        activity_segment = activity[j,int(timeline_1[i]):int(timeline_1[i+1])]
+    for i in range(0, len(timeline_1) - 1):
+        activity_segment = activity[j, int(timeline_1[i]):int(timeline_1[i + 1])]
         activity_segment = activity_segment - min(activity_segment)
         if max(activity_segment):
-            activity_segment_normalized = activity_segment/max(activity_segment)
-            activity_normalized[j,int(timeline_1[i]):int(timeline_1[i+1])] =activity_segment_normalized
-neural_activity1 = activity_normalized[1:,:]
-#neural_activity1 = activity[1:,:]
-#corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
-#eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
-#proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
-#                            eigenvectors=eigenvectors1, n_components=6)
+            activity_segment_normalized = activity_segment / max(activity_segment)
+            activity_normalized[j, int(timeline_1[i]):int(timeline_1[i + 1])] = activity_segment_normalized
+neural_activity1 = activity_normalized[1:, :]
 
-#%% In task correlation matrix
+reshape_neural_activity = np.reshape(neural_activity1[:, :int(int(neural_activity1.shape[1] / re_sf) * re_sf)],
+                                     (neural_activity1.shape[0], int(neural_activity1.shape[1] / re_sf), re_sf))
+resample_neural_activity_mean = np.mean(reshape_neural_activity, axis=2)
+resample_neural_activity_std = np.std(reshape_neural_activity, axis=2)
+
+correlation_matrix.append(stats.corr_matrix(neural_activity=resample_neural_activity_mean))
 
 ## LOAD BEHAVIOUR
 behaviour = np.load(behaviour_dir + beh_file_name_1)
 #c = np.linspace(0, 20, len(behaviour))
 neural_activity_new= []
 testing = []
+reshape_behaviour = np.reshape(behaviour[:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+resample_beh1 = np.reshape(scipy.stats.mode(reshape_behaviour,axis=1)[0],reshape_behaviour.shape[0])
+
 #color1=[]
+vector = resample_neural_activity_mean[:, :int(timeline_1[40])]
+vector_beh = resample_beh1 [:int(timeline_1[40])]
 for i in range(6):
-    vector = neural_activity1[:,:int(timeline_1[40])]
-    vector_beh = behaviour[:int(timeline_1[40])]
     neural_activity_new.append(vector[:,np.where(vector_beh== i)])
     #color1.append(c[np.where(vector_beh==i)])
     #vector = proj1[:,int(timeline_1[40]):]
-    #vector_beh = behaviour[int(timeline_1[40]):]
     #testing_1.append(vector[:,np.where(vector_beh== i)])
 
 corr_matrix = []
@@ -96,11 +179,21 @@ for i in range(len(neural_activity_new)):
     corr_matrix.append(stats.corr_matrix(neural_activity = neural_activity_new[i][:,0,:]))
 
 figure, axes = plt.subplots(3,2)
+images = []
 for i in range(3):
     for j in range(2):
-        x = axes[i,j].imshow(np.log(corr_matrix[i*2+j]/np.max(corr_matrix[i*2+j].flatten())),cmap = 'viridis')
+        images.append(axes[i,j].imshow(np.log10(corr_matrix[i*2+j]),cmap = 'viridis'))
+        axes[i, j].label_outer()
+        figure.colorbar(images[i], ax=axes[i,j])
 
-figure.colorbar(x, ax=axes[i,j])
+vmin = min(image.get_array().min() for image in images)
+vmax = 0
+#vmax = max(image.get_array().max() for image in images)
+norm = colors.Normalize(vmin=vmin, vmax=vmax)
+for im in images:
+    im.set_norm(norm)
+#figure.colorbar(images[0], ax=axes, orientation='vertical', fraction=0.1)
+
 #axes.legend(['LR', 'LL', 'UR', 'UL'])
 axes[0,0].set_title('Resting', fontsize = 12)
 axes[0,1].set_title('Not exploring', fontsize = 12)
@@ -111,7 +204,7 @@ axes[2,1].set_title('UL', fontsize = 12)
 figure.suptitle(task)
 figure.show()
 figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/'
-               'correlation_matrix_task_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png')
+               'correlation_matrix_task_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'_binsize_'+f'{re_sf}'+'.png')
 
 
 #%% in days correlation matrix
