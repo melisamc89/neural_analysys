@@ -5,6 +5,51 @@ import configuration
 import math
 from numpy import linalg as LA
 
+def normalize_neural_activity(activity = None, timeline = None):
+
+    '''
+    Takes the neural activity and the timeline of concatenated points, and do a normalization
+    for ever trial (segment of the entire signal)
+    :param activity: np 2-D array with size (number_neurons+1) X (time). Activity consists of many concatenated
+    trials
+    :param timeline: Has the information about frames where the concatenation was done
+    :return: the new normalized matrix and a nd-array with the timeline information
+    '''
+
+    timeline_vector = np.zeros(42 + 1)
+    for i in range(42):
+        timeline_vector[i] = timeline[i][1]
+    timeline_vector[42] = activity.shape[1]
+    ### do analysis corr, PCA
+    ## normalize activity within trial and for each neuron
+    activity_normalized = np.zeros((activity.shape))
+    for j in range(activity.shape[0]):
+        for i in range(0, len(timeline_vector) - 1):
+            activity_segment = activity[j, int(timeline_vector[i]):int(timeline_vector[i + 1])]
+            activity_segment = activity_segment - min(activity_segment)
+            if max(activity_segment):
+                activity_segment_normalized = activity_segment / max(activity_segment)
+                activity_normalized[j, int(timeline_vector[i]):int(timeline_vector[i + 1])] = \
+                    activity_segment_normalized
+    neural_activity_normalized = activity_normalized[1:, :]
+
+    return neural_activity_normalized, timeline_vector
+
+def resample_matrix(neural_activity= None, re_sf= 1):
+
+    '''
+    Resample the neural activity by the mean, and also gives the variance.
+    :param neural_activity: 2D np.array of size (number_neurons+1) X (time)
+    :param re_sf: int with resample value
+    :return: resample mean activity and std
+    '''
+    reshape_neural_activity = np.reshape(neural_activity[:, :int(int(neural_activity.shape[1] / re_sf) * re_sf)],
+                                         (neural_activity.shape[0], int(neural_activity.shape[1] / re_sf), re_sf))
+    resample_neural_activity_mean = np.mean(reshape_neural_activity, axis=2)
+    resample_neural_activity_std = np.std(reshape_neural_activity, axis=2)
+
+    return resample_neural_activity_mean, resample_neural_activity_std
+
 def corr_matrix(neural_activity = None):
 
     '''
@@ -58,6 +103,13 @@ def PCA_projection(neural_activity = None, eigenvalues = None, eigenvectors = No
     Proj_Act = np.dot(EigV_PC.T,neural_activity)
 
     return Proj_Act
+
+def compute_DKL(p = None, q = None):
+    dkl = np.dot(p + np.finfo(float).eps ,np.log(np.divide(p + np.finfo(float).eps,q + np.finfo(float).eps))+ np.finfo(float).eps)
+    return dkl
+
+
+
 
 ##
 '''

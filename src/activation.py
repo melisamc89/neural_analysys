@@ -20,9 +20,9 @@ cmap = cm.jet
 mouse = 56165
 
 ## load source extracted calcium traces condition SESSION 1
-file_directory = os.environ['PROJECT_DIR'] + 'data/calcium_activity/'
-timeline_file_dir = os.environ['PROJECT_DIR'] + 'data/timeline/'
-behaviour_dir = '/home/sebastian/Documents/Melisa/calcium_imaging_behaviour/data/scoring_time_vector/'
+file_directory = os.environ['PROJECT_DIR'] + 'neural_analysis/data/calcium_activity/'
+timeline_file_dir = os.environ['PROJECT_DIR'] + 'neural_analysis/data/timeline/'
+behaviour_dir = os.environ['PROJECT_DIR'] + 'calcium_imaging_behaviour/data/scoring_time_vector/'
 
 decoding_v = 1
 motion_correction_v = 100 ### means everything was aligned
@@ -31,7 +31,6 @@ equalization_v = 0
 source_extraction_v = 1
 component_evaluation_v = 1
 registration_v = 1
-
 
 ## session 1 files
 session = 1
@@ -42,46 +41,14 @@ time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1
                       '.'+f'{0}'+ '.pkl'
 beh_file_name_1 = 'mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.npy'
 
-##session 1
+## load activity matrix and time inforamtion
 activity = np.load(file_directory + file_name_session_1)
 timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
 timeline_info = pickle.load(timeline_file)
-timeline_1 = np.zeros(42+1)
-for i in range(42):
-    timeline_1[i] = timeline_info[i][1]
-timeline_1[42] = activity.shape[1]
-### do analysis corr, PCA
-## normalize activity within trial and for each neuron
-activity_normalized = np.zeros((activity.shape))
-for j in range(activity.shape[0]):
-    for i in range(0,len(timeline_1)-1):
-        activity_segment = activity[j,int(timeline_1[i]):int(timeline_1[i+1])]
-        activity_segment = activity_segment - min(activity_segment)
-        if max(activity_segment):
-            activity_segment_normalized = activity_segment/max(activity_segment)
-            activity_normalized[j,int(timeline_1[i]):int(timeline_1[i+1])] =activity_segment_normalized
-neural_activity1 = activity[1:,:]
-corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
-neural_activity1 = activity_normalized[1:,:]
-corr_matrix1_1 = stats.corr_matrix(neural_activity = neural_activity1)
-#eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
-#proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
-#                            eigenvectors=eigenvectors1, n_components=6)
+neural_activity1 , timeline_1  = stats.normalize_neural_activity(activity = activity,timeline = timeline_info)
 
 
-figure, axes = plt.subplots(1,2)
-x = axes[0].imshow(np.log(corr_matrix1/max(corr_matrix1.flatten())))
-y = axes[1].imshow(np.log(corr_matrix1_1/max(corr_matrix1_1.flatten())))
-axes[0].set_title('Raw Calcium traces')
-axes[1].set_title('Normalized Calcium traces')
-figure.colorbar(x, ax = axes[0])
-figure.colorbar(y, ax = axes[1])
-figure.suptitle('                             Correlation matrix',fontsize = 15)
-figure.show()
-figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/correlation_matrix_all_mouse_56165_session_4.png')
 
-
-#%%
 
 mean_neural_activity = np.mean(neural_activity1,axis = 1)
 sorted_mean = np.argsort(mean_neural_activity)

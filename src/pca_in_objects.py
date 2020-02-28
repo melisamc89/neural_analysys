@@ -23,9 +23,9 @@ cmap = cm.jet
 mouse = 56165
 
 ## load source extracted calcium traces condition SESSION 1
-file_directory = os.environ['PROJECT_DIR'] + 'data/calcium_activity/'
-timeline_file_dir = os.environ['PROJECT_DIR'] + 'data/timeline/'
-behaviour_dir = '/home/sebastian/Documents/Melisa/calcium_imaging_behaviour/data/scoring_time_vector/'
+file_directory = os.environ['PROJECT_DIR'] + 'neural_analysis/data/calcium_activity/'
+timeline_file_dir = os.environ['PROJECT_DIR'] + 'neural_analysis/data/timeline/'
+behaviour_dir = os.environ['PROJECT_DIR'] + 'calcium_imaging_behaviour/data/scoring_time_vector/'
 
 decoding_v = 1
 motion_correction_v = 100 ### means everything was aligned
@@ -34,7 +34,6 @@ equalization_v = 0
 source_extraction_v = 1
 component_evaluation_v = 1
 registration_v = 1
-
 
 ## session 1 files
 session = 1

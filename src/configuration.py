@@ -1,7 +1,7 @@
 import os
 
 #%% ENVIRONMENT VARIABLES
-os.environ['PROJECT_DIR_LOCAL'] = '/home/sebastian/Documents/Melisa/neural_analysis/'
+os.environ['PROJECT_DIR_LOCAL'] = '/home/sebastian/Documents/Melisa/'
 os.environ['PROJECT_DIR_SERVER'] = '/home/mmaidana/src/neural_analysis/'
 
 os.environ['DATA_DIR_LOCAL'] = '/mnt/Data01/data/neural_analysis/'
