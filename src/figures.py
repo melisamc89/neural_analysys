@@ -312,3 +312,113 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     fig.savefig(path_save)
 
     return
+
+
+def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None, path_save = None, title = None):
+
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(2, 2)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.set_title('Correlation trials', fontsize = 12)
+    corr_of_corr = np.zeros((len(corr_matrix1),len(corr_matrix1)))
+    for i in range(len(corr_matrix1)):
+        for j in range(len(corr_matrix1)):
+            correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
+            corr_of_corr[i,j] = correlation[0,1]
+    x = ax1.imshow(np.log10(corr_of_corr),cmap = 'gray')
+    fig.colorbar(x, ax=ax1)
+
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax2.set_title('Correlation resting', fontsize = 12)
+    corr_of_corr = np.zeros((len(corr_matrix2),len(corr_matrix2)))
+    for i in range(len(corr_matrix1)):
+        for j in range(len(corr_matrix2)):
+            correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
+            corr_of_corr[i,j] = correlation[0,1]
+    x = ax2.imshow(np.log10(corr_of_corr),cmap = 'gray')
+    fig.colorbar(x, ax=ax2)
+
+    dkl_matrix1 = np.zeros((len(corr_matrix1),len(corr_matrix2)))
+    dkl_matrix2= np.zeros((len(corr_matrix1),len(corr_matrix2)))
+    for i in range(len(corr_matrix1)):
+        x1 = np.histogram(corr_matrix1[i].flatten()[np.where(corr_matrix1[i].flatten() > 0.01)],
+                          bins=np.arange(0.01, 0.05, 0.04 / 15))
+        x2 = np.histogram(corr_matrix2[i].flatten()[np.where(corr_matrix2[i].flatten() > 0.01)],
+                          bins=np.arange(0.01, 0.05, 0.04 / 15))
+        for j in range(len(corr_matrix1)):
+            y1 = np.histogram(corr_matrix1[j].flatten()[np.where(corr_matrix1[j].flatten() > 0.01)],
+                              bins=np.arange(0.01, 0.05, 0.04 / 15))
+            y2 = np.histogram(
+                corr_matrix2[j].flatten()[np.where(corr_matrix2[j].flatten() > 0.01)],
+                bins=np.arange(0.01, 0.05, 0.04 / 15))
+            # figures.colorbar(x, ax=axes[0, i])
+            dkl_matrix1[i, j] = stats.compute_DKL(x1[0] / np.sum(x1[0]), y1[0] / np.sum(y1[0]))
+            dkl_matrix2[i, j] = stats.compute_DKL(x2[0] / np.sum(x2[0]), y2[0] / np.sum(y2[0]))
+
+
+    ax3 = fig.add_subplot(gs[1, 0])
+    ax3.set_title('KLD trials', fontsize = 12)
+    x = ax3.imshow(dkl_matrix1,cmap = 'viridis')
+    fig.colorbar(x, ax=ax3)
+
+    ax4 = fig.add_subplot(gs[1, 1])
+    ax4.set_title('KLD resting', fontsize=12)
+    x = ax4.imshow(dkl_matrix2, cmap='viridis')
+    fig.colorbar(x, ax=ax4)
+
+    fig.set_size_inches(20, 9)
+    fig.suptitle(title,fontsize = 15)
+    fig.savefig(path_save)
+
+    return
+
+def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None, overlapping_matrix = None,path_save = None, title = None):
+
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(2, 2)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.set_title('Correlation trials', fontsize=12)
+    corr_of_corr1 = np.zeros((len(corr_matrix1), len(corr_matrix1)))
+    for i in range(len(corr_matrix1)):
+        for j in range(len(corr_matrix1)):
+            correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
+            corr_of_corr1[i, j] = correlation[0, 1]
+    x = ax1.imshow(np.log10(corr_of_corr1), cmap='gray')
+    fig.colorbar(x, ax=ax1)
+
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax2.set_title('Correlation resting', fontsize=12)
+    corr_of_corr2 = np.zeros((len(corr_matrix2), len(corr_matrix2)))
+    for i in range(len(corr_matrix1)):
+        for j in range(len(corr_matrix2)):
+            correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
+            corr_of_corr2[i, j] = correlation[0, 1]
+    x = ax2.imshow(np.log10(corr_of_corr2), cmap='gray')
+    fig.colorbar(x, ax=ax2)
+
+    aux1 = []
+    aux2 = []
+    aux3 = []
+    for i in range(21):
+        for j in range(i + 1, 21):
+            aux1.append(corr_of_corr1[i, j])
+            aux2.append(corr_of_corr2[i, j])
+            aux3.append(overlapping_matrix[i, j])
+
+    correlation1 = np.corrcoef(np.array(aux1), np.array(aux3))
+    corr_value1 = round(correlation1[0, 1], 2)
+    ax1.set_title('Correlation trials, C:'+ f'{corr_value1}', fontsize=15)
+
+    correlation2 = np.corrcoef(np.array(aux2), np.array(aux3))
+    corr_value2 = round(correlation2[0, 1], 2)
+    ax2.set_title('Correlation trials, C:'+ f'{corr_value2}', fontsize=15)
+
+    ax3 = fig.add_subplot(gs[1, 1])
+    ax3.set_title('Objects Overlapping', fontsize=15)
+    x = ax3.imshow(overlapping_matrix, cmap='viridis')
+    fig.colorbar(x, ax=ax3)
+
+    fig.suptitle('OBJECTS POSITIONS: ' + title, fontsize=15)
+    fig.savefig(path_save)
+
+    return
