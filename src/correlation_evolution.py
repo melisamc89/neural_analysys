@@ -2,7 +2,7 @@
 Created on Wed 19 Feb 2020
 Author: Melisa
 
-Checking whether correlation matrix for different trials conditions change
+Checking whether correlation matrix for different object configurations
 
 '''
 import os
@@ -54,9 +54,11 @@ time_file_session_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_tri
                       '.' + f'{0}' + '.pkl'
 beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_event_' + f'{re_sf}' + '.npy'
 
-overlapping_objects_file = objects_dir + 'overlapping_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.npy'
+condition_objects_file = objects_dir + 'condition_vector_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.npy'
+condition_objects_file_matrix = objects_dir + 'condition_matrix_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.npy'
 
-overlapping_matrix = np.load(overlapping_objects_file)
+condition_vector= np.load(condition_objects_file)
+condition_matrix= np.load(condition_objects_file_matrix)
 
 ##load activity and timeline
 activity = np.load(file_directory + file_name_session_1)
@@ -96,11 +98,10 @@ corr_matrix_resting_days = []
 for i in range(21):
     corr_matrix_resting_days.append(stats.corr_matrix(neural_activity = neural_activity1_resting_days[i]))
 
-#%%
+#%% plotting
 
-objects_fig_path = os.environ['PROJECT_DIR'] + 'neural_analysis/data/process/figures/' \
-                                               'correlation_with_object_position_'+f'{mouse}'+\
+corr_evol_path = os.environ['PROJECT_DIR'] + 'neural_analysis/data/process/figures/' \
+                                               'correlation_with_resting_evoluction_'+f'{mouse}'+\
                    '_session_'+f'{session}'+'_binsize_'+f'{re_sf}'+'.png'
-figs.plot_correlation_statistics_objects(corr_matrix1=corr_matrix_days, corr_matrix2=corr_matrix_resting_days,
-                                         overlapping_matrix=overlapping_matrix, path_save=objects_fig_path,
-                                    title=task)
+
+figs.plot_correlation_with_reting_evolution(corr_matrix1 = corr_matrix_days, corr_matrix2 =corr_matrix_resting_days,path_save = corr_evol_path)

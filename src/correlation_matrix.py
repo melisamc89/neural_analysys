@@ -39,6 +39,7 @@ re_sf= 20
 #%% Correlation in conditions
 ## session files
 correlation_matrix = []
+#cov_matrix = []
 task_list = []
 for session in [1,2,4]:
 
@@ -66,6 +67,7 @@ for session in [1,2,4]:
     ##downsample neural activity
     resample_neural_activity_mean, resample_neural_activity_std = stats.resample_matrix(neural_activity=neural_activity1,re_sf=re_sf)
     correlation_matrix.append(stats.corr_matrix(neural_activity = resample_neural_activity_mean))
+    #cov_matrix.append(stats.cov_matrix(neural_activity = resample_neural_activity_mean))
     task_list.append(task)
 
 #%% plotting corr matrix for all conditions
@@ -74,3 +76,9 @@ correlation_fig_path =  os.environ['PROJECT_DIR'] + 'neural_analysis/data/proces
                         '_binsize_'+f'{re_sf}'+'.png'
 figs.plot_correlation_matrix_conditions(matrix_list = correlation_matrix, save_path = correlation_fig_path,
                                         title = 'CorrelationMatrix' , conditions = task_list)
+
+#cov_fig_path =  os.environ['PROJECT_DIR'] + 'neural_analysis/data/process/figures/' \
+#                                                    'cov_matrix_mouse_'+f'{mouse}'+'_session_'+f'{session}'+\
+#                        '_binsize_'+f'{re_sf}'+'.png'
+#figs.plot_correlation_matrix_conditions(matrix_list = cov_matrix, save_path = cov_fig_path,
+#                                        title = 'CorrelationMatrix' , conditions = task_list)

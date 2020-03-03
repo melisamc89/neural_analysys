@@ -61,11 +61,35 @@ def corr_matrix(neural_activity = None):
     n_time = neural_activity.shape[1]
 
     mean_activity = np.mean(neural_activity,axis = 1)
+    std_activity = np.std(neural_activity,axis = 1)
     corr_matrix = np.dot((neural_activity - mean_activity[:,np.newaxis]), (neural_activity - mean_activity[:,np.newaxis]).T)
     #corr_matrix = corr_matrix / math.sqrt(n_time * (n_time-1))
     corr_matrix = corr_matrix / (n_time-1)
+    for i in range(n_neurons):
+        for j in range(n_neurons):
+            if std_activity[i] > 0 and std_activity[j] > 0 :
+                corr_matrix[i,j] = corr_matrix[i,j]/(std_activity[i]*std_activity[j])
+            else:
+                corr_matrix[i, j] = 0
 
     return corr_matrix
+
+def cov_matrix(neural_activity = None):
+
+    '''
+    This function creates the correlation between time traces of calcium activity, subtracting the mean
+    Input : neural_activity -> numpy array matrix containing n_neurons rows X time columns
+    Output: cross_matrix -> numoy array n_neurons X n_neurons matrix containing the correlation matrix
+    '''
+    n_neurons = neural_activity.shape[0]
+    n_time = neural_activity.shape[1]
+
+    mean_activity = np.mean(neural_activity,axis = 1)
+    cov_matrix = np.dot((neural_activity - mean_activity[:,np.newaxis]), (neural_activity - mean_activity[:,np.newaxis]).T)
+    #corr_matrix = corr_matrix / math.sqrt(n_time * (n_time-1))
+    cov_matrix = cov_matrix / (n_time-1)
+
+    return cov_matrix
 
 def compute_PCA(corr_matrix = None):
 

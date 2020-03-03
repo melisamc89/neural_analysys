@@ -79,6 +79,7 @@ corr_matrix = []
 for i in range(6):
     neural_activity_new.append(vector[:,np.where(vector_beh== i)])
     corr_matrix.append(stats.corr_matrix(neural_activity = neural_activity_new[i][:,0,:]))
+    #corr_matrix.append(stats.cov_matrix(neural_activity = neural_activity_new[i][:,0,:]))
 
 #%%
 correlation_behaviour_path = os.environ['PROJECT_DIR'] + 'neural_analysis/data/process/figures/' \
@@ -87,7 +88,9 @@ correlation_behaviour_path = os.environ['PROJECT_DIR'] + 'neural_analysis/data/p
 
 figs.plot_correlation_matrix_behaviour(corr_matrix_list = corr_matrix, path_save = correlation_behaviour_path, title = task)
 
+
 #%% Statistics of correlation values
 correlation_stats_path = os.environ['PROJECT_DIR'] + 'neural_analysis/data/process/figures/' \
-                                                     'correlation_statistics_mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.png'
+                                                     'correlation_statistics_mouse_'+f'{mouse}'+'_session_'\
+                         +f'{session}'+'_binsize_'+f'{re_sf}'+'.png'
 figs.plot_correlation_statistics_behaviour(corr_matrix=corr_matrix, path_save=correlation_stats_path)

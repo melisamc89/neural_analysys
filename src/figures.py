@@ -129,7 +129,7 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, path_save = None):
     min_corr= 0.0001
     max_corr = 0.002
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(3, 12)
+    gs = plt.GridSpec(3, 12)
     ax1 = fig.add_subplot(gs[0, 0:2])
     ax1.set_title('Resting', fontsize = 15)
     [counter,bin_num] = np.histogram(corr_matrix[0].flatten(),bins=np.arange(0.0, max_corr, max_corr / 20))
@@ -233,7 +233,7 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
             max_corr = max_value
 
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(2, 3)
+    gs = plt.GridSpec(2, 3)
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.set_title('In trial period', fontsize=12)
     conditions = ['day1', 'day2', 'day3', 'day4', 'Test']
@@ -419,6 +419,35 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
     fig.colorbar(x, ax=ax3)
 
     fig.suptitle('OBJECTS POSITIONS: ' + title, fontsize=15)
+    fig.savefig(path_save)
+
+    return
+
+def plot_correlation_with_reting_evolution(corr_matrix1 = None, corr_matrix2 = None,path_save = None):
+
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(2,1)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.set_title('Correlation with post resting activity', fontsize=15)
+    corr_evolution = np.zeros((len(corr_matrix1),1))
+    for i in range(len(corr_matrix1)):
+        correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix2[i].flatten())
+        corr_evolution[i] = correlation[0, 1]
+
+    ax1.plot(np.arange(1,len(corr_matrix1)+1), corr_evolution)
+    ax1.set_ylabel('Correlation')
+    ax1.set_ylim([0,1])
+
+    ax2 = fig.add_subplot(gs[1, 0])
+    ax2.set_title('Correlation with pre resting activity', fontsize=15)
+    corr_evolution = np.zeros((len(corr_matrix1),1))
+    for i in range(1,len(corr_matrix1)-1):
+        correlation = np.corrcoef(corr_matrix1[i+1].flatten(), corr_matrix2[i].flatten())
+        corr_evolution[i] = correlation[0, 1]
+
+    ax2.plot(np.arange(1,len(corr_matrix1)+1), corr_evolution)
+    ax2.set_ylabel('Correlation')
+    ax2.set_ylim([0,1])
     fig.savefig(path_save)
 
     return
