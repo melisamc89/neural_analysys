@@ -104,4 +104,4 @@ corr_evol_path = os.environ['PROJECT_DIR'] + 'neural_analysis/data/process/figur
                                                'correlation_with_resting_evoluction_'+f'{mouse}'+\
                    '_session_'+f'{session}'+'_binsize_'+f'{re_sf}'+'.png'
 
-figs.plot_correlation_with_reting_evolution(corr_matrix1 = corr_matrix_days, corr_matrix2 =corr_matrix_resting_days,path_save = corr_evol_path)
+figs.plot_correlation_with_resting_evolution(corr_matrix1 = corr_matrix_days, corr_matrix2 =corr_matrix_resting_days,path_save = corr_evol_path)

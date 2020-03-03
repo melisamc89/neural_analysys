@@ -102,6 +102,7 @@ for i in range(21):
 
 #%%
 
+
 objects_fig_path = os.environ['PROJECT_DIR'] + 'neural_analysis/data/process/figures/' \
                                                'correlation_with_object_position_'+f'{mouse}'+\
                    '_session_'+f'{session}'+'_binsize_'+f'{re_sf}'+'.png'

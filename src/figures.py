@@ -317,7 +317,7 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
 def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None, path_save = None, title = None):
 
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(2, 2)
+    gs = plt.GridSpec(2, 2)
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.set_title('Correlation trials', fontsize = 12)
     corr_of_corr = np.zeros((len(corr_matrix1),len(corr_matrix1)))
@@ -375,7 +375,7 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
 def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None, overlapping_matrix = None,path_save = None, title = None):
 
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(2, 2)
+    gs = plt.GridSpec(2, 2)
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.set_title('Correlation trials', fontsize=12)
     corr_of_corr1 = np.zeros((len(corr_matrix1), len(corr_matrix1)))
@@ -418,15 +418,16 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
     x = ax3.imshow(overlapping_matrix, cmap='viridis')
     fig.colorbar(x, ax=ax3)
 
+    fig.set_size_inches(10, 10)
     fig.suptitle('OBJECTS POSITIONS: ' + title, fontsize=15)
     fig.savefig(path_save)
 
     return
 
-def plot_correlation_with_reting_evolution(corr_matrix1 = None, corr_matrix2 = None,path_save = None):
+def plot_correlation_with_resting_evolution(corr_matrix1 = None, corr_matrix2 = None,path_save = None):
 
     fig = plt.figure(constrained_layout=True)
-    gs = fig.add_gridspec(2,1)
+    gs = plt.GridSpec(2,1)
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.set_title('Correlation with post resting activity', fontsize=15)
     corr_evolution = np.zeros((len(corr_matrix1),1))
@@ -437,6 +438,7 @@ def plot_correlation_with_reting_evolution(corr_matrix1 = None, corr_matrix2 = N
     ax1.plot(np.arange(1,len(corr_matrix1)+1), corr_evolution)
     ax1.set_ylabel('Correlation')
     ax1.set_ylim([0,1])
+    ax1.set_xticklabels([])
 
     ax2 = fig.add_subplot(gs[1, 0])
     ax2.set_title('Correlation with pre resting activity', fontsize=15)
@@ -448,6 +450,7 @@ def plot_correlation_with_reting_evolution(corr_matrix1 = None, corr_matrix2 = N
     ax2.plot(np.arange(1,len(corr_matrix1)+1), corr_evolution)
     ax2.set_ylabel('Correlation')
     ax2.set_ylim([0,1])
+    ax2.set_xlabel('Trials')
     fig.savefig(path_save)
 
     return
