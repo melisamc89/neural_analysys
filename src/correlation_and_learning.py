@@ -83,24 +83,24 @@ for i in range(4):
     for j in range(0,10,2):
         trial = i*10 + j
         day_matrix[:,start_time:start_time+ int(time_length[trial])] = \
-            neural_activity1[:,int(timeline_1[trial]):int(timeline_1[trial]) + int(time_length[trial])]
+            neural_activity1[:,int(resample_timeline[trial]):int(resample_timeline[trial]) + int(time_length[trial])]
         start_time = start_time + int(time_length[trial])
     neural_activity1_days.append(day_matrix)
 
 neural_activity1_resting_days = []
-time_length = np.diff(timeline_1)
+time_length = np.diff(resample_timeline)
 for i in range(4):
     day_matrix = np.zeros((neural_activity1.shape[0],int(np.sum(time_length[i*10+1:(i+1)*10+1:2]))))
     start_time = 0
     for j in range(1,10,2):
         trial = i*10 + j
         day_matrix[:,start_time:start_time+ int(time_length[trial])] = \
-            neural_activity1[:,int(timeline_1[trial]):int(timeline_1[trial]) + int(time_length[trial])]
+            neural_activity1[:,int(resample_timeline[trial]):int(resample_timeline[trial]) + int(time_length[trial])]
         start_time = start_time + int(time_length[trial])
     neural_activity1_resting_days.append(day_matrix)
 
-neural_activity1_resting_testing = neural_activity1[:,int(timeline_1[-2]):int(timeline_1[-1])]
-neural_activity1_testing = neural_activity1[:,int(timeline_1[-3]):int(timeline_1[-2])]
+neural_activity1_resting_testing = neural_activity1[:,int(resample_timeline[-2]):int(resample_timeline[-1])]
+neural_activity1_testing = neural_activity1[:,int(resample_timeline[-3]):int(resample_timeline[-2])]
 
 #%%
 corr_matrix_days = []

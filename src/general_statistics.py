@@ -33,6 +33,14 @@ def normalize_neural_activity(activity = None, timeline = None):
                     activity_segment_normalized
     neural_activity_normalized = activity_normalized[1:, :]
 
+    delete_list = []
+    sum_activity = np.sum(neural_activity_normalized, axis=1)
+    for i in range(neural_activity_normalized.shape[0]):
+        if sum_activity[i] == 0:
+            delete_list.append(i)
+    for i in delete_list:
+        neural_activity_normalized = np.delete(neural_activity_normalized, i, 0)
+
     return neural_activity_normalized, timeline_vector
 
 def resample_matrix(neural_activity= None, re_sf= 1):

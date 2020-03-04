@@ -18,9 +18,6 @@ from matplotlib import colors
 import general_statistics as gstats
 from scipy import signal
 import scipy
-cmap = cm.jet
-
-
 
 def plot_correlation_matrix(corr_matrix = None, save_path = None, title = None):
 
@@ -451,6 +448,364 @@ def plot_correlation_with_resting_evolution(corr_matrix1 = None, corr_matrix2 = 
     ax2.set_ylabel('Correlation')
     ax2.set_ylim([0,1])
     ax2.set_xlabel('Trials')
+    fig.savefig(path_save)
+
+    return
+
+
+def plot_pca_decomposition(eigenvalues = None, eigenvectors = None, n_components = None, title = None , path_save = None):
+
+    fig = plt.figure(constrained_layout=True)
+    gs = plt.GridSpec(2, 1)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.set_title('Eigenvalue Spectrum', fontsize=13)
+    ax1.scatter(np.arange(eigenvalues.shape[0]), eigenvalues)
+    ax1.vlines(n_components, ymin=0, ymax=np.max(eigenvalues), color='k', linestyle='--')
+    ax1.legend(['EV= ' + f'{round(np.sum(eigenvalues[:n_components] / np.sum(eigenvalues)),2)}'])
+    ax1.set_xlabel('Order', fontsize = 12)
+    ax1.set_ylabel('Eigenvalue')
+
+    ax2 = fig.add_subplot(gs[1, 0])
+    ax2.set_title('Eigenvectors', fontsize=13)
+    ax2.plot(np.arange(eigenvalues.shape[0]), eigenvectors[:,:n_components] )
+    ax2.set_xlabel('Dimension', fontsize = 12)
+    ax2.set_ylabel('Projection')
+
+    fig.suptitle(title)
+    fig.savefig(path_save)
+    return
+
+def plot_pca_projection(projection = None, title = None, path_save = None):
+
+    cmap = cm.jet
+    n_components = projection.shape[0]
+    color = np.linspace(0, 20, projection.shape[1])
+
+    fig = plt.figure(constrained_layout=True)
+    gs = plt.GridSpec(int(n_components/4), 2)
+
+    for i in range(int(n_components/4)):
+        ax1 = fig.add_subplot(gs[i, 0],projection='3d')
+        ax1.scatter(projection[0,:], projection[i*4+1,:], projection[i*4+2,:], c=color, cmap=cmap)
+        ax1.set_xlabel('PC1', fontsize = 12)
+        ax1.set_ylabel('PC'+f'{i*4+2}')
+        ax1.set_zlabel('PC'+f'{i*4+3}')
+
+        ax2 = fig.add_subplot(gs[i, 1],projection='3d')
+        ax2.scatter(projection[0,:], projection[i*4+3,:], projection[i*4+4,:], c=color, cmap=cmap)
+        ax2.set_xlabel('PC1', fontsize = 12)
+        ax2.set_ylabel('PC'+f'{i*4+4}')
+        ax2.set_zlabel('PC'+f'{i*4+5}')
+
+    fig.suptitle(title)
+    fig.set_size_inches(10, 9)
+    fig.savefig(path_save)
+
+    return
+
+def plot_pca_behavioral_representation(components_list = None, color = None, title = None, path_save = None):
+
+    cmap = cm.jet
+
+    max_projection = np.zeros((components_list[0].shape[0],1))
+    min_projection = np.ones((components_list[0].shape[0],1)) * 100000
+    for i in range(len(components_list)):
+        components_max = np.max(components_list[i],axis = 2)
+        components_min = np.min(components_list[i],axis = 2)
+        for j in range(components_list[i].shape[0]):
+            if components_max[j] > max_projection[j]:
+                max_projection[j] = components_max[j]
+            if components_min[j] < min_projection[j]:
+                min_projection[j] = components_min[j]
+
+    fig1 = plt.figure()
+    axes = fig1.add_subplot(3, 2, 1, projection='3d')
+    # axes = fig.add_subplot(111, projection='3d')
+    axes.scatter(components_list[0][0, :, :],components_list[0][1, :, :], components_list[0][2, :, :], c=color[0], cmap=cmap)
+    axes.set_xlabel('PC1')
+    axes.set_ylabel('PC2')
+    axes.set_zlabel('PC3')
+    axes.set_xlim([min_projection[0], max_projection[0]])
+    axes.set_ylim([min_projection[1], max_projection[1]])
+    axes.set_zlim([min_projection[2], max_projection[2]])
+    axes.set_title('Resting', fontsize = 12)
+
+    axes = fig1.add_subplot(3, 2, 2, projection='3d')
+    # axes = fig.add_subplot(111, projection='3d')
+    axes.scatter(components_list[1][0, :, :],components_list[1][1, :, :], components_list[1][2, :, :], c=color[1], cmap=cmap)
+    axes.set_xlabel('PC1')
+    axes.set_ylabel('PC2')
+    axes.set_zlabel('PC3')
+    axes.set_xlim([min_projection[0], max_projection[0]])
+    axes.set_ylim([min_projection[1], max_projection[1]])
+    axes.set_zlim([min_projection[2], max_projection[2]])
+    axes.set_title('Not Exploring', fontsize = 12)
+
+    axes = fig1.add_subplot(3, 2, 3, projection='3d')
+    axes.scatter(components_list[2][0, :, :],components_list[2][1, :, :], components_list[2][2, :, :], c=color[2], cmap=cmap)
+    axes.set_xlabel('PC1')
+    axes.set_ylabel('PC2')
+    axes.set_zlabel('PC3')
+    axes.set_xlim([min_projection[0], max_projection[0]])
+    axes.set_ylim([min_projection[1], max_projection[1]])
+    axes.set_zlim([min_projection[2], max_projection[2]])
+    axes.set_title('LR', fontsize = 12)
+
+    axes = fig1.add_subplot(3, 2, 4, projection='3d')
+    axes.scatter(components_list[3][0, :, :], components_list[3][1, :, :], components_list[3][2, :, :], c=color[3], cmap=cmap)
+    axes.set_xlabel('PC1')
+    axes.set_ylabel('PC2')
+    axes.set_zlabel('PC3')
+    axes.set_xlim([min_projection[0], max_projection[0]])
+    axes.set_ylim([min_projection[1], max_projection[1]])
+    axes.set_zlim([min_projection[2], max_projection[2]])
+    axes.set_title('LL', fontsize = 12)
+
+    axes = fig1.add_subplot(3, 2, 5, projection='3d')
+    axes.scatter(components_list[4][0, :, :], components_list[4][1, :, :], components_list[4][2, :, :], c=color[4], cmap=cmap)
+    axes.set_xlabel('PC1')
+    axes.set_ylabel('PC2')
+    axes.set_zlabel('PC3')
+    axes.set_xlim([min_projection[0], max_projection[0]])
+    axes.set_ylim([min_projection[1], max_projection[1]])
+    axes.set_zlim([min_projection[2], max_projection[2]])
+    axes.set_title('UR', fontsize = 12)
+
+    axes = fig1.add_subplot(3, 2, 6, projection='3d')
+    axes.scatter(components_list[5][0, :, :], components_list[5][1, :, :], components_list[5][2, :, :], c=color[5], cmap=cmap)
+    axes.set_xlabel('PC1')
+    axes.set_ylabel('PC2')
+    axes.set_zlabel('PC3')
+    axes.set_xlim([min_projection[0], max_projection[0]])
+    axes.set_ylim([min_projection[1], max_projection[1]])
+    axes.set_zlim([min_projection[2], max_projection[2]])
+    axes.set_title('UL', fontsize = 12)
+
+    #fig1.set_size_inches(15, 9)
+    fig1.suptitle('Behavioural Projections: ' + title)
+    fig1.savefig(path_save)
+
+    return
+
+
+def plot_pca_spectrum_behaviour(eigenvalues = None, n_components = None , title = None, path_save = None):
+
+    fig = plt.figure(constrained_layout=True)
+    gs = plt.GridSpec(len(eigenvalues), 1)
+
+    for i in range(len(eigenvalues)):
+        ax1 = fig.add_subplot(gs[i, 0])
+        ax1.scatter(np.arange(eigenvalues[i].shape[0]), eigenvalues[i])
+        ax1.vlines(n_components, ymin=0, ymax=np.max(eigenvalues[i]), color='k', linestyle='--')
+        ax1.legend(['EV= ' + f'{round(np.sum(eigenvalues[i][:n_components] / np.sum(eigenvalues[i])), 2)}'])
+        ax1.set_ylabel('Eigenvalue')
+
+    ax1.set_xlabel('Order', fontsize=12)
+    fig.suptitle('Eigenvalue Spectrum: ' + title, fontsize = 15)
+    fig.set_size_inches(5, 8)
+    fig.savefig(path_save)
+
+    return
+
+def plot_pca_eigenvector_distance_behaviour(eigenvectors = None, n_components = None , title = None, path_save = None):
+
+    size = len(eigenvectors)
+    fig, axes = plt.subplots(size, size)
+
+    distance_list = []
+    for i in range(len(eigenvectors)):
+        for j in range(i,len(eigenvectors)):
+            distance = np.zeros((n_components,n_components))
+            for eig1 in range(n_components):
+                for eig2 in range(n_components):
+                    vec1 = eigenvectors[i][:,eig1]
+                    vec2 = eigenvectors[j][:,eig2]
+                    dist = np.linalg.norm(vec1 - vec2)
+                    distance[eig1,eig2] = dist
+            distance_list.append(distance)
+
+    images = []
+    counter = 0
+    for i in range(len(eigenvectors)):
+        for j in range(i,len(eigenvectors)):
+            if counter < len(distance_list):
+                images.append(axes[i, j].imshow(distance_list[counter], cmap='viridis'))
+                counter = counter+1
+                axes[i, j].label_outer()
+                axes[i, j].axis('off')
+
+    vmin = min(dist.get_array().min() for dist in images)
+    vmax = max(dist.get_array().max() for dist in images)
+    norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    for im in images:
+        im.set_norm(norm)
+
+    for i in range(len(eigenvectors)):
+        for j in range(i):
+            axes[i, j].axis('off')
+
+    axes[0,0].set_title('Rest')
+    axes[0,1].set_title('NotE')
+    axes[0,2].set_title('LR')
+    axes[0,3].set_title('LL')
+    axes[0,4].set_title('UR')
+    axes[0,5].set_title('UL')
+
+
+    for i in range(len(eigenvectors)):
+        for j in range(len(eigenvectors)):
+            axes[i, j].axis('off')
+    fig.colorbar(images[0], ax=axes[1:size-1, 0], orientation='vertical', fraction=0.9)
+
+    fig.suptitle('Distance between eigenvectors: ' + title, fontsize=15)
+    fig.set_size_inches(6, 9)
+    fig.savefig(path_save)
+
+    return
+
+
+def plot_pca_eigenvector_distance_distribution_behaviour(eigenvectors = None, n_components = None , title = None, path_save = None):
+
+    size = len(eigenvectors)
+    fig, axes = plt.subplots(2, 2)
+
+    distance_list = []
+    for i in range(len(eigenvectors)):
+        for j in range(i,len(eigenvectors)):
+            distance = np.zeros((n_components,n_components))
+            for eig1 in range(n_components):
+                for eig2 in range(n_components):
+                    vec1 = eigenvectors[i][:,eig1]
+                    vec2 = eigenvectors[j][:,eig2]
+                    dist = np.linalg.norm(vec1 - vec2)
+                    distance[eig1,eig2] = dist
+            distance_list.append(distance)
+
+    for i in range(len(eigenvectors)):
+        [hist_val, bins_val] = np.histogram(distance_list[i].flatten(),bins = np.arange(0,2,2/15))
+        axes[0,0].plot(bins_val[:-1],hist_val/np.sum(hist_val))
+    for i in range(len(eigenvectors),len(eigenvectors)+5):
+        [hist_val, bins_val] = np.histogram(distance_list[i].flatten(),bins = np.arange(0,2,2/15))
+        axes[0,1].plot(bins_val[:-1],hist_val/np.sum(hist_val))
+
+    for i in range(len(eigenvectors)+6,len(distance_list)):
+        [hist_val, bins_val] = np.histogram(distance_list[i].flatten(),bins = np.arange(0,2,2/15))
+        axes[1,1].plot(bins_val[:-1],hist_val/np.sum(hist_val))
+
+    for i in range(2):
+        for j in range(2):
+            axes[i,j].set_ylim([0,1])
+            axes[i,j].set_ylabel('Count Normalized')
+            axes[i,j].set_ylabel('Distance')
+
+    axes[0,0].set_title('Distance with resting')
+    axes[0,1].set_title('Distance with not exploting')
+    axes[1,1].set_title('Distance between objects')
+    axes[1, 0].axis('off')
+
+    fig.suptitle('Distance between eigenvectors distributions: ' + title, fontsize=15)
+    fig.set_size_inches(6, 9)
+    fig.savefig(path_save)
+
+    return
+
+def plot_eigenvalues_spectrum_learning(eigenvalues = None, n_components = None , title = None, path_save = None):
+
+    fig = plt.figure()
+    for i in range(len(eigenvalues)):
+        axes = fig.add_subplot(2, 5 ,i+1)
+        axes.scatter(np.arange(len(eigenvalues[i])),eigenvalues[i])
+        axes.vlines(n_components, ymin=0, ymax=np.max(eigenvalues[i]), color='k', linestyle='--')
+        axes.legend(['EV= ' + f'{round(np.sum(eigenvalues[i][:n_components] / np.sum(eigenvalues[i])), 2)}'])
+        axes.set_ylabel('Eigenvalue')
+        axes.set_xlabel('Order')
+        if i+1 < 6:
+            axes.set_title('Day '+ f'{i+1}')
+        else:
+            axes.set_title('Resting')
+    fig.set_size_inches(15, 6)
+    fig.suptitle('Eigenvalue Spectrum in days: ' + title, fontsize=15)
+    fig.savefig(path_save)
+
+    return
+
+
+def plot_pca_eigenvector_distance_learning(eigenvectors = None, n_components = None , title = None, path_save = None):
+
+    size = len(eigenvectors)
+    fig, axes = plt.subplots(size, size)
+
+    distance_list = []
+    for i in range(len(eigenvectors)):
+        for j in range(i,len(eigenvectors)):
+            distance = np.zeros((n_components,n_components))
+            for eig1 in range(n_components):
+                for eig2 in range(n_components):
+                    vec1 = eigenvectors[i][:,eig1]
+                    vec2 = eigenvectors[j][:,eig2]
+                    dist = np.linalg.norm(vec1 - vec2)
+                    distance[eig1,eig2] = dist
+            distance_list.append(distance)
+
+    images = []
+    counter = 0
+    for i in range(len(eigenvectors)):
+        for j in range(i,len(eigenvectors)):
+            if counter < len(distance_list):
+                images.append(axes[i, j].imshow(distance_list[counter], cmap='viridis'))
+                counter = counter+1
+                axes[i, j].label_outer()
+                axes[i, j].axis('off')
+
+    vmin = min(dist.get_array().min() for dist in images)
+    vmax = max(dist.get_array().max() for dist in images)
+    norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    for im in images:
+        im.set_norm(norm)
+
+    for i in range(len(eigenvectors)):
+        for j in range(i):
+            axes[i, j].axis('off')
+
+    axes[0,0].set_title('Day1')
+    axes[0,1].set_title('Day2')
+    axes[0,2].set_title('Day3')
+    axes[0,3].set_title('Day4')
+    axes[0,4].set_title('Test')
+    axes[0,5].set_title('Rest1')
+    axes[0,6].set_title('Rest2')
+    axes[0,7].set_title('Rest3')
+    axes[0,8].set_title('Rest4')
+    axes[0,9].set_title('RestTest')
+
+    for i in range(len(eigenvectors)):
+        for j in range(len(eigenvectors)):
+            axes[i, j].axis('off')
+    fig.colorbar(images[0], ax=axes[1:size-1, 0], orientation='vertical', fraction=0.9)
+
+    fig.suptitle('Distance between eigenvectors: ' + title, fontsize=15)
+    fig.set_size_inches(8, 10)
+    fig.savefig(path_save)
+
+    return
+
+def plot_pca_EV_learning(eigenvalues1= None, eigenvalues2 = None, n_components = None, title = None, path_save = None):
+
+    EV_trials = np.zeros((len(eigenvalues1), 1))
+    EV_rest = np.zeros((len(eigenvalues2), 1))
+
+    fig, axes = plt.subplots(1)
+    for n in range(n_components-5,n_components+5):
+        for i in range(len(eigenvalues1)):
+            EV_trials[i] = np.sum(eigenvalues1[i][:n] / np.sum(eigenvalues1[i]))
+            EV_rest[i] = np.sum(eigenvalues2[i][:n] / np.sum(eigenvalues2[i]))
+        axes.plot(np.arange(1, EV_trials.shape[0] + 1), EV_trials, c='b')
+        axes.plot(np.arange(1, EV_rest.shape[0] + 1), EV_rest, c='r')
+
+    axes.set_ylim([0, 1])
+    axes.set_xlabel('Trials', fontsize = 12)
+    axes.set_ylabel('EV', fontsize = 12)
+    fig.suptitle('Explained Variance: '+ title)
     fig.savefig(path_save)
 
     return

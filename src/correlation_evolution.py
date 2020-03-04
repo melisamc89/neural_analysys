@@ -80,14 +80,14 @@ resample_timeline = timeline_1/re_sf
 
 #%% Correlation in trials, data reshape
 neural_activity1_days = []
-time_length = np.diff(timeline_1)
+time_length = np.diff(resample_timeline)
 for i in range(0,42,2):
-    trial_matrix = neural_activity1[:,int(timeline_1[i]):int(timeline_1[i]) + int(time_length[i])]
+    trial_matrix = neural_activity1[:,int(resample_timeline[i]):int(resample_timeline[i]) + int(time_length[i])]
     neural_activity1_days.append(trial_matrix)
 
 neural_activity1_resting_days = []
 for i in range(1,42,2):
-    trial_matrix = neural_activity1[:,int(timeline_1[i]):int(timeline_1[i]) + int(time_length[i])]
+    trial_matrix = neural_activity1[:,int(resample_timeline[i]):int(resample_timeline[i]) + int(time_length[i])]
     neural_activity1_resting_days.append(trial_matrix)
 
 corr_matrix_days = []
