@@ -1,0 +1,863 @@
+
+% Default to the notebook output style
+
+    
+
+
+% Inherit from the specified cell style.
+
+
+
+
+    
+\documentclass[11pt]{article}
+
+    
+    
+    \usepackage[T1]{fontenc}
+    % Nicer default font (+ math font) than Computer Modern for most use cases
+    \usepackage{mathpazo}
+
+    % Basic figure setup, for now with no caption control since it's done
+    % automatically by Pandoc (which extracts ![](path) syntax from Markdown).
+    \usepackage{graphicx}
+    % We will generate all images so they have a width \maxwidth. This means
+    % that they will get their normal width if they fit onto the page, but
+    % are scaled down if they would overflow the margins.
+    \makeatletter
+    \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth
+    \else\Gin@nat@width\fi}
+    \makeatother
+    \let\Oldincludegraphics\includegraphics
+    % Set max figure width to be 80% of text width, for now hardcoded.
+    \renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=.8\maxwidth]{#1}}
+    % Ensure that by default, figures have no caption (until we provide a
+    % proper Figure object with a Caption API and a way to capture that
+    % in the conversion process - todo).
+    \usepackage{caption}
+    \DeclareCaptionLabelFormat{nolabel}{}
+    \captionsetup{labelformat=nolabel}
+
+    \usepackage{adjustbox} % Used to constrain images to a maximum size 
+    \usepackage{xcolor} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage{textcomp} % defines textquotesingle
+    % Hack from http://tex.stackexchange.com/a/47451/13684:
+    \AtBeginDocument{%
+        \def\PYZsq{\textquotesingle}% Upright quotes in Pygmentized code
+    }
+    \usepackage{upquote} % Upright quotes for verbatim code
+    \usepackage{eurosym} % defines \euro
+    \usepackage[mathletters]{ucs} % Extended unicode (utf-8) support
+    \usepackage[utf8x]{inputenc} % Allow utf-8 characters in the tex document
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics 
+                         % to support a larger range 
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    \usepackage{booktabs}  % table support for pandoc > 1.12.2
+    \usepackage[inline]{enumitem} % IRkernel/repr support (it uses the enumerate* environment)
+    \usepackage[normalem]{ulem} % ulem is needed to support strikethroughs (\sout)
+                                % normalem makes italics be italics, not underlines
+    
+
+    
+    
+    % Colors for the hyperref package
+    \definecolor{urlcolor}{rgb}{0,.145,.698}
+    \definecolor{linkcolor}{rgb}{.71,0.21,0.01}
+    \definecolor{citecolor}{rgb}{.12,.54,.11}
+
+    % ANSI colors
+    \definecolor{ansi-black}{HTML}{3E424D}
+    \definecolor{ansi-black-intense}{HTML}{282C36}
+    \definecolor{ansi-red}{HTML}{E75C58}
+    \definecolor{ansi-red-intense}{HTML}{B22B31}
+    \definecolor{ansi-green}{HTML}{00A250}
+    \definecolor{ansi-green-intense}{HTML}{007427}
+    \definecolor{ansi-yellow}{HTML}{DDB62B}
+    \definecolor{ansi-yellow-intense}{HTML}{B27D12}
+    \definecolor{ansi-blue}{HTML}{208FFB}
+    \definecolor{ansi-blue-intense}{HTML}{0065CA}
+    \definecolor{ansi-magenta}{HTML}{D160C4}
+    \definecolor{ansi-magenta-intense}{HTML}{A03196}
+    \definecolor{ansi-cyan}{HTML}{60C6C8}
+    \definecolor{ansi-cyan-intense}{HTML}{258F8F}
+    \definecolor{ansi-white}{HTML}{C5C1B4}
+    \definecolor{ansi-white-intense}{HTML}{A1A6B2}
+
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+    
+    % Additional commands for more recent versions of Pandoc
+    \newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{{#1}}}
+    \newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{{#1}}}
+    \newcommand{\ImportTok}[1]{{#1}}
+    \newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{{#1}}}}
+    \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{{#1}}}
+    \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{{#1}}}
+    \newcommand{\BuiltInTok}[1]{{#1}}
+    \newcommand{\ExtensionTok}[1]{{#1}}
+    \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{{#1}}}
+    \newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{{#1}}}
+    \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    
+    
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatability definitions
+    \def\gt{>}
+    \def\lt{<}
+    % Document parameters
+    \title{correlation\_analysis}
+    
+    
+    
+
+    % Pygments definitions
+    
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\expandafter\def\csname PY@tok@w\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\expandafter\def\csname PY@tok@c\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.74,0.48,0.00}{##1}}}
+\expandafter\def\csname PY@tok@k\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\expandafter\def\csname PY@tok@o\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@ow\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@ne\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.82,0.25,0.23}{##1}}}
+\expandafter\def\csname PY@tok@nv\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@no\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@ni\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.60,0.60,0.60}{##1}}}
+\expandafter\def\csname PY@tok@na\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.49,0.56,0.16}{##1}}}
+\expandafter\def\csname PY@tok@nt\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@s\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sd\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@si\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@se\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sr\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@ss\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sx\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@m\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@gh\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gu\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gr\endcsname{\def\PY@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@ge\endcsname{\let\PY@it=\textit}
+\expandafter\def\csname PY@tok@gs\endcsname{\let\PY@bf=\textbf}
+\expandafter\def\csname PY@tok@gp\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@go\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.53,0.53}{##1}}}
+\expandafter\def\csname PY@tok@gt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\expandafter\def\csname PY@tok@err\endcsname{\def\PY@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
+\expandafter\def\csname PY@tok@kc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kd\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@kr\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@bp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@fm\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@vc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@vg\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@vi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@vm\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sa\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@dl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@s2\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@s1\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@mb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@il\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mo\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@ch\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cm\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cpf\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@c1\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cs\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % Exact colors from NB
+    \definecolor{incolor}{rgb}{0.0, 0.0, 0.5}
+    \definecolor{outcolor}{rgb}{0.545, 0.0, 0.0}
+
+
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy 
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=urlcolor,
+      linkcolor=linkcolor,
+      citecolor=citecolor,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+    
+    
+
+    \begin{document}
+    
+    
+    \maketitle
+    
+    
+
+    
+    \section{Correlation analysis}\label{correlation-analysis}
+
+''' Created on Tue 03 Mar 2020'''
+
+Based on version Wed 19 Feb 2020 of correlation analysis
+
+    This Notebook is intended to do the entire correlation matrix analysis
+for the different trials, object configuration, object exploration.
+
+\subsection{Importation of libraries and definition of specific data to
+use}\label{importation-of-libraries-and-definition-of-specific-data-to-use}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}66}]:} \PY{k+kn}{import} \PY{n+nn}{os}
+         \PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k}{as} \PY{n+nn}{np}
+         \PY{k+kn}{import} \PY{n+nn}{matplotlib}\PY{n+nn}{.}\PY{n+nn}{pyplot} \PY{k}{as} \PY{n+nn}{plt}
+         \PY{k+kn}{from} \PY{n+nn}{mpl\PYZus{}toolkits}\PY{n+nn}{.}\PY{n+nn}{mplot3d} \PY{k}{import} \PY{n}{Axes3D}  \PY{c+c1}{\PYZsh{} noqa: F401 unused import}
+         \PY{k+kn}{import} \PY{n+nn}{pickle}
+         \PY{k+kn}{import} \PY{n+nn}{configuration}
+         \PY{k+kn}{import} \PY{n+nn}{general\PYZus{}statistics} \PY{k}{as} \PY{n+nn}{stats}
+         \PY{k+kn}{import} \PY{n+nn}{figures} \PY{k}{as} \PY{n+nn}{figs}
+         \PY{k+kn}{import} \PY{n+nn}{matplotlib}\PY{n+nn}{.}\PY{n+nn}{cm} \PY{k}{as} \PY{n+nn}{cm}
+         \PY{k+kn}{from} \PY{n+nn}{matplotlib} \PY{k}{import} \PY{n}{colors}
+         \PY{k+kn}{from} \PY{n+nn}{scipy} \PY{k}{import} \PY{n}{signal}
+         \PY{k+kn}{import} \PY{n+nn}{scipy}
+         \PY{n}{cmap} \PY{o}{=} \PY{n}{cm}\PY{o}{.}\PY{n}{jet}
+\end{Verbatim}
+
+
+    Define mouse to analize as well as preprocessing analysis versions
+
+mouse -\textgreater{} mouse identity // decoding\_v -\textgreater{}
+decoding version // motion\_correction\_v - \textgreater{} motion
+correction version. 100 is aligned one. // alignment\_v -\textgreater{}
+alignment version// equalization\_v -\textgreater{} equalization
+version// source\_extraction\_v -\textgreater{} source extraction
+version// component\_evaluation\_v -\textgreater{} component evaluation
+version// registration\_v -\textgreater{} registration version//
+
+sf = 10 -\textgreater{} signal sampling frequency // re\_sf= 20
+-\textgreater{} resample integer (will take one every re\_sf point ans
+use the mean)
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}67}]:} \PY{n}{mouse} \PY{o}{=} \PY{l+m+mi}{56165}             \PY{c+c1}{\PYZsh{}\PYZsh{}\PYZsh{} mouse number id}
+         \PY{n}{decoding\PYZus{}v} \PY{o}{=} \PY{l+m+mi}{1}            \PY{c+c1}{\PYZsh{}\PYZsh{} decoding version, normaly equal to one}
+         \PY{n}{motion\PYZus{}correction\PYZus{}v} \PY{o}{=} \PY{l+m+mi}{100} \PY{c+c1}{\PYZsh{}\PYZsh{}\PYZsh{} 100 means everything was aligned, 200 means it was also equalized}
+         \PY{n}{alignment\PYZus{}v} \PY{o}{=} \PY{l+m+mi}{1}           \PY{c+c1}{\PYZsh{}\PYZsh{} alignment version}
+         \PY{n}{equalization\PYZus{}v} \PY{o}{=} \PY{l+m+mi}{0}        \PY{c+c1}{\PYZsh{}\PYZsh{} equalization version}
+         \PY{n}{source\PYZus{}extraction\PYZus{}v} \PY{o}{=} \PY{l+m+mi}{1}   \PY{c+c1}{\PYZsh{}\PYZsh{} source extraction version}
+         \PY{n}{component\PYZus{}evaluation\PYZus{}v} \PY{o}{=} \PY{l+m+mi}{1} \PY{c+c1}{\PYZsh{}\PYZsh{} component evaluation version}
+         \PY{n}{registration\PYZus{}v} \PY{o}{=} \PY{l+m+mi}{1}        \PY{c+c1}{\PYZsh{}\PYZsh{} registration version}
+         \PY{n}{sf} \PY{o}{=} \PY{l+m+mi}{10}                   \PY{c+c1}{\PYZsh{}\PYZsh{} sampling frequency of the original signal }
+         \PY{n}{re\PYZus{}sf}\PY{o}{=} \PY{l+m+mi}{20}                 \PY{c+c1}{\PYZsh{}\PYZsh{} value of resampling}
+         
+         \PY{n}{sessions} \PY{o}{=} \PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{]}       \PY{c+c1}{\PYZsh{}\PYZsh{} sessions for this particular mouse}
+         \PY{n}{session\PYZus{}now} \PY{o}{=} \PY{l+m+mi}{2}              \PY{c+c1}{\PYZsh{}\PYZsh{} session that will run}
+         
+         \PY{c+c1}{\PYZsh{}\PYZsh{} define task for plotting. This will cahnge for other mice!!!!}
+         \PY{k}{if} \PY{n}{session\PYZus{}now} \PY{o}{==} \PY{l+m+mi}{1}\PY{p}{:}
+             \PY{n}{task} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{OVERLAPPING}\PY{l+s+s1}{\PYZsq{}}
+         \PY{k}{else}\PY{p}{:}
+             \PY{k}{if} \PY{n}{session\PYZus{}now} \PY{o}{==} \PY{l+m+mi}{2}\PY{p}{:}
+                 \PY{n}{task} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{STABLE}\PY{l+s+s1}{\PYZsq{}}
+             \PY{k}{else}\PY{p}{:}
+                 \PY{n}{task} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{RANDOM}\PY{l+s+s1}{\PYZsq{}}
+\end{Verbatim}
+
+
+    Define all necesary directories from calcium activity, behavioural data,
+objects position and timeline
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}68}]:} \PY{n}{file\PYZus{}directory} \PY{o}{=} \PY{n}{os}\PY{o}{.}\PY{n}{environ}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{PROJECT\PYZus{}DIR}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{neural\PYZus{}analysis/data/calcium\PYZus{}activity/}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{timeline\PYZus{}file\PYZus{}dir} \PY{o}{=} \PY{n}{os}\PY{o}{.}\PY{n}{environ}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{PROJECT\PYZus{}DIR}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{neural\PYZus{}analysis/data/timeline/}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{behaviour\PYZus{}dir} \PY{o}{=} \PY{n}{os}\PY{o}{.}\PY{n}{environ}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{PROJECT\PYZus{}DIR}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{calcium\PYZus{}imaging\PYZus{}behaviour/data/scoring\PYZus{}time\PYZus{}vector/}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{objects\PYZus{}dir}\PY{o}{=} \PY{n}{os}\PY{o}{.}\PY{n}{environ}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{PROJECT\PYZus{}DIR}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{calcium\PYZus{}imaging\PYZus{}behaviour/data/object\PYZus{}positions/}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{figure\PYZus{}path} \PY{o}{=} \PY{n}{os}\PY{o}{.}\PY{n}{environ}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{PROJECT\PYZus{}DIR}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{neural\PYZus{}analysis/data/process/figures/correlation/}\PY{l+s+s1}{\PYZsq{}}
+\end{Verbatim}
+
+
+    \subsection{Compare correlation matrix in multiple
+conditions}\label{compare-correlation-matrix-in-multiple-conditions}
+
+For comparison of multiple sessions, load all sessions and normalize the
+data trial by trial
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}47}]:} \PY{n}{correlation\PYZus{}matrix} \PY{o}{=} \PY{p}{[}\PY{p}{]}   \PY{c+c1}{\PYZsh{}\PYZsh{} correlation matrix that will contain all the correlation matrix of multiple sessions}
+         \PY{n}{task\PYZus{}list} \PY{o}{=} \PY{p}{[}\PY{p}{]}            \PY{c+c1}{\PYZsh{}\PYZsh{} condition list}
+         \PY{k}{for} \PY{n}{session} \PY{o+ow}{in} \PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{4}\PY{p}{]}\PY{p}{:}
+         
+             \PY{k}{if} \PY{n}{session} \PY{o}{==} \PY{l+m+mi}{1}\PY{p}{:}
+                 \PY{n}{task} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{OVERLAPPING}\PY{l+s+s1}{\PYZsq{}}
+             \PY{k}{else}\PY{p}{:}
+                 \PY{k}{if} \PY{n}{session} \PY{o}{==} \PY{l+m+mi}{2}\PY{p}{:}
+                     \PY{n}{task} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{STABLE}\PY{l+s+s1}{\PYZsq{}}
+                 \PY{k}{else}\PY{p}{:}
+                     \PY{n}{task} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{RANDOM}\PY{l+s+s1}{\PYZsq{}}
+         
+             \PY{n}{file\PYZus{}name\PYZus{}session\PYZus{}1} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}trial\PYZus{}1\PYZus{}v}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}decoding\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.4.}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}100\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PYZbs{}
+                                   \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}alignment\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}equalization\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}source\PYZus{}extraction\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PYZbs{}
+                                   \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}component\PYZus{}evaluation\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}registration\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.npy}\PY{l+s+s1}{\PYZsq{}}
+             \PY{n}{time\PYZus{}file\PYZus{}session\PYZus{}1} \PY{o}{=}  \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}trial\PYZus{}1\PYZus{}v}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}decoding\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.1.}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}1\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PYZbs{}
+                                   \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}0\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.pkl}\PY{l+s+s1}{\PYZsq{}}
+             \PY{n}{beh\PYZus{}file\PYZus{}name\PYZus{}1} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}event\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.npy}\PY{l+s+s1}{\PYZsq{}}
+         
+             \PY{c+c1}{\PYZsh{}\PYZsh{}load activity and timeline}
+             \PY{n}{activity} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{file\PYZus{}directory} \PY{o}{+} \PY{n}{file\PYZus{}name\PYZus{}session\PYZus{}1}\PY{p}{)}
+             \PY{n}{timeline\PYZus{}file}\PY{o}{=} \PY{n+nb}{open}\PY{p}{(}\PY{n}{timeline\PYZus{}file\PYZus{}dir} \PY{o}{+} \PY{n}{time\PYZus{}file\PYZus{}session\PYZus{}1}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{rb}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+             \PY{n}{timeline\PYZus{}info} \PY{o}{=} \PY{n}{pickle}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{timeline\PYZus{}file}\PY{p}{)}
+             \PY{c+c1}{\PYZsh{}\PYZsh{}normalize neural activity}
+             \PY{n}{neural\PYZus{}activity1}\PY{p}{,} \PY{n}{timeline\PYZus{}1} \PY{o}{=} \PY{n}{stats}\PY{o}{.}\PY{n}{normalize\PYZus{}neural\PYZus{}activity}\PY{p}{(}\PY{n}{activity}\PY{o}{=}\PY{n}{activity}\PY{p}{,} \PY{n}{timeline}\PY{o}{=}\PY{n}{timeline\PYZus{}info}\PY{p}{)}
+             \PY{c+c1}{\PYZsh{}\PYZsh{}downsample neural activity}
+             \PY{n}{resample\PYZus{}neural\PYZus{}activity\PYZus{}mean}\PY{p}{,} \PY{n}{resample\PYZus{}neural\PYZus{}activity\PYZus{}std} \PY{o}{=} \PY{n}{stats}\PY{o}{.}\PY{n}{resample\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity}\PY{o}{=}\PY{n}{neural\PYZus{}activity1}\PY{p}{,}\PY{n}{re\PYZus{}sf}\PY{o}{=}\PY{n}{re\PYZus{}sf}\PY{p}{)}
+             \PY{n}{correlation\PYZus{}matrix}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stats}\PY{o}{.}\PY{n}{corr\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity} \PY{o}{=} \PY{n}{resample\PYZus{}neural\PYZus{}activity\PYZus{}mean}\PY{p}{)}\PY{p}{)}
+             \PY{c+c1}{\PYZsh{}cov\PYZus{}matrix.append(stats.cov\PYZus{}matrix(neural\PYZus{}activity = resample\PYZus{}neural\PYZus{}activity\PYZus{}mean))}
+             \PY{n}{task\PYZus{}list}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{task}\PY{p}{)}
+\end{Verbatim}
+
+
+    Define path for new figures and plot correlation matrix for multiple
+conditions for this mouse
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}69}]:} \PY{n}{correlation\PYZus{}fig\PYZus{}path} \PY{o}{=}  \PY{n}{figure\PYZus{}path} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{correlation\PYZus{}matrix\PYZus{}mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PYZbs{}
+                                 \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}binsize\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.png}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{figs}\PY{o}{.}\PY{n}{plot\PYZus{}correlation\PYZus{}matrix\PYZus{}conditions}\PY{p}{(}\PY{n}{matrix\PYZus{}list} \PY{o}{=} \PY{n}{correlation\PYZus{}matrix}\PY{p}{,} \PY{n}{save\PYZus{}path} \PY{o}{=} \PY{n}{correlation\PYZus{}fig\PYZus{}path}\PY{p}{,}
+                                                 \PY{n}{title} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{CorrelationMatrix}\PY{l+s+s1}{\PYZsq{}} \PY{p}{,} \PY{n}{conditions} \PY{o}{=} \PY{n}{task\PYZus{}list}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/Documents/Melisa/neural\_analysis/src/figures.py:62: RuntimeWarning: invalid value encountered in log10
+  images.append(axes[i, j].imshow(np.log10(matrix\_list[counter]), cmap='viridis'))
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_10_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsection{Correlation matrix in different behavioural
+conditions}\label{correlation-matrix-in-different-behavioural-conditions}
+
+Behavioural condions here refers to resting periods (in between trials),
+non exploration periods (time inside the arena but not exploring the
+objects) and different objects exploration periods. Objects exploration
+are refered as the position they occupaid in the arena (LL, LR, UL, UR).
+Two main figures are ploted from here, the correlation matrix for all
+behavioural conditions and the statistical analysis of the correlation
+values in those correlation matrix.
+
+First define all the files paths, and the load and normalize
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}70}]:} \PY{c+c1}{\PYZsh{} define all relevant files names}
+         \PY{n}{session} \PY{o}{=} \PY{n}{session\PYZus{}now}
+         \PY{n}{file\PYZus{}name\PYZus{}session\PYZus{}1} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}trial\PYZus{}1\PYZus{}v}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}decoding\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.4.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}100\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PYZbs{}
+                               \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}alignment\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}equalization\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}source\PYZus{}extraction\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PYZbs{}
+                               \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}component\PYZus{}evaluation\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}registration\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.npy}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{time\PYZus{}file\PYZus{}session\PYZus{}1} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}trial\PYZus{}1\PYZus{}v}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}decoding\PYZus{}v\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.1.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}1\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PYZbs{}
+                               \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}0\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.pkl}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{beh\PYZus{}file\PYZus{}name\PYZus{}1} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}event\PYZus{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.npy}\PY{l+s+s1}{\PYZsq{}}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}71}]:} \PY{c+c1}{\PYZsh{}\PYZsh{}load activity and timeline}
+         \PY{n}{activity} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{file\PYZus{}directory} \PY{o}{+} \PY{n}{file\PYZus{}name\PYZus{}session\PYZus{}1}\PY{p}{)}
+         \PY{n}{timeline\PYZus{}file} \PY{o}{=} \PY{n+nb}{open}\PY{p}{(}\PY{n}{timeline\PYZus{}file\PYZus{}dir} \PY{o}{+} \PY{n}{time\PYZus{}file\PYZus{}session\PYZus{}1}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{rb}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{timeline\PYZus{}info} \PY{o}{=} \PY{n}{pickle}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{timeline\PYZus{}file}\PY{p}{)}
+         \PY{c+c1}{\PYZsh{}\PYZsh{}normalize neural activity}
+         \PY{n}{neural\PYZus{}activity1}\PY{p}{,} \PY{n}{timeline\PYZus{}1} \PY{o}{=} \PY{n}{stats}\PY{o}{.}\PY{n}{normalize\PYZus{}neural\PYZus{}activity}\PY{p}{(}\PY{n}{activity}\PY{o}{=}\PY{n}{activity}\PY{p}{,} \PY{n}{timeline}\PY{o}{=}\PY{n}{timeline\PYZus{}info}\PY{p}{)}
+         \PY{c+c1}{\PYZsh{}\PYZsh{}downsample neural activity}
+         \PY{n}{resample\PYZus{}neural\PYZus{}activity\PYZus{}mean}\PY{p}{,} \PY{n}{resample\PYZus{}neural\PYZus{}activity\PYZus{}std} \PY{o}{=} \PY{n}{stats}\PY{o}{.}\PY{n}{resample\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity}\PY{o}{=}\PY{n}{neural\PYZus{}activity1}\PY{p}{,}
+                                                                                             \PY{n}{re\PYZus{}sf}\PY{o}{=}\PY{n}{re\PYZus{}sf}\PY{p}{)}
+         \PY{c+c1}{\PYZsh{}\PYZsh{} LOAD BEHAVIOUR}
+         \PY{n}{behaviour} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{behaviour\PYZus{}dir} \PY{o}{+} \PY{n}{beh\PYZus{}file\PYZus{}name\PYZus{}1}\PY{p}{)}
+         \PY{c+c1}{\PYZsh{}c = np.linspace(0, 20, len(behaviour))}
+         \PY{n}{neural\PYZus{}activity\PYZus{}new}\PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{n}{testing} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{n}{reshape\PYZus{}behaviour} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{reshape}\PY{p}{(}\PY{n}{behaviour}\PY{p}{[}\PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n+nb}{int}\PY{p}{(}\PY{n}{behaviour}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{/}\PY{n}{re\PYZus{}sf}\PY{p}{)}\PY{o}{*}\PY{n}{re\PYZus{}sf}\PY{p}{)}\PY{p}{]}\PY{p}{,}\PY{p}{(}\PY{n+nb}{int}\PY{p}{(}\PY{n}{behaviour}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{/}\PY{n}{re\PYZus{}sf}\PY{p}{)}\PY{p}{,}\PY{n}{re\PYZus{}sf}\PY{p}{)}\PY{p}{)}
+         \PY{n}{resample\PYZus{}beh1} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{reshape}\PY{p}{(}\PY{n}{scipy}\PY{o}{.}\PY{n}{stats}\PY{o}{.}\PY{n}{mode}\PY{p}{(}\PY{n}{reshape\PYZus{}behaviour}\PY{p}{,}\PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,}\PY{n}{reshape\PYZus{}behaviour}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{)}
+         \PY{n}{resample\PYZus{}timeline} \PY{o}{=} \PY{n}{timeline\PYZus{}1}\PY{o}{/}\PY{n}{re\PYZus{}sf}
+\end{Verbatim}
+
+
+    Separate parts of the signal that belong to different bahavioural
+conditions.
+
+This activity will be saved in the list nerual\_activity\_new, and the
+correlation matrix will be computed and saved in corr\_matrix list.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}72}]:} \PY{c+c1}{\PYZsh{}separate neural activity that belongs to traiing without testing trial}
+         \PY{n}{vector} \PY{o}{=} \PY{n}{resample\PYZus{}neural\PYZus{}activity\PYZus{}mean}\PY{p}{[}\PY{p}{:}\PY{p}{,} \PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{l+m+mi}{40}\PY{p}{]}\PY{p}{)}\PY{p}{]}
+         \PY{n}{vector\PYZus{}beh} \PY{o}{=} \PY{n}{resample\PYZus{}beh1} \PY{p}{[}\PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{l+m+mi}{40}\PY{p}{]}\PY{p}{)}\PY{p}{]}
+         \PY{c+c1}{\PYZsh{}define list where data will be saved}
+         \PY{n}{neural\PYZus{}activity\PYZus{}new} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{n}{corr\PYZus{}matrix} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{6}\PY{p}{)}\PY{p}{:}
+             \PY{n}{neural\PYZus{}activity\PYZus{}new}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{vector}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{vector\PYZus{}beh}\PY{o}{==} \PY{n}{i}\PY{p}{)}\PY{p}{]}\PY{p}{)}
+             \PY{n}{corr\PYZus{}matrix}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stats}\PY{o}{.}\PY{n}{corr\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity} \PY{o}{=} \PY{n}{neural\PYZus{}activity\PYZus{}new}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+             \PY{c+c1}{\PYZsh{}corr\PYZus{}matrix.append(stats.cov\PYZus{}matrix(neural\PYZus{}activity = neural\PYZus{}activity\PYZus{}new[i][:,0,:]))}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:3335: RuntimeWarning: Mean of empty slice.
+  out=out, **kwargs)
+/home/sebastian/anaconda3/lib/python3.6/site-packages/numpy/core/\_methods.py:154: RuntimeWarning: invalid value encountered in true\_divide
+  ret, rcount, out=ret, casting='unsafe', subok=False)
+/home/sebastian/anaconda3/lib/python3.6/site-packages/numpy/core/\_methods.py:217: RuntimeWarning: Degrees of freedom <= 0 for slice
+  keepdims=keepdims)
+/home/sebastian/anaconda3/lib/python3.6/site-packages/numpy/core/\_methods.py:186: RuntimeWarning: invalid value encountered in true\_divide
+  arrmean, rcount, out=arrmean, casting='unsafe', subok=False)
+/home/sebastian/anaconda3/lib/python3.6/site-packages/numpy/core/\_methods.py:207: RuntimeWarning: invalid value encountered in true\_divide
+  ret, rcount, out=ret, casting='unsafe', subok=False)
+
+    \end{Verbatim}
+
+    Plot correlation matrix for the different behavioural conditions
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}73}]:} \PY{c+c1}{\PYZsh{} define file name to save figure and plot}
+         \PY{n}{correlation\PYZus{}behaviour\PYZus{}path} \PY{o}{=} \PY{n}{figure\PYZus{}path} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{correlation\PYZus{}matrix\PYZus{}task\PYZus{}mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PYZbs{}
+                                      \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}binsize\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.png}\PY{l+s+s1}{\PYZsq{}}
+         
+         \PY{n}{figs}\PY{o}{.}\PY{n}{plot\PYZus{}correlation\PYZus{}matrix\PYZus{}behaviour}\PY{p}{(}\PY{n}{corr\PYZus{}matrix\PYZus{}list} \PY{o}{=} \PY{n}{corr\PYZus{}matrix}\PY{p}{,} \PY{n}{path\PYZus{}save} \PY{o}{=} \PY{n}{correlation\PYZus{}behaviour\PYZus{}path}\PY{p}{,} \PY{n}{title} \PY{o}{=} \PY{n}{task}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/Documents/Melisa/neural\_analysis/src/figures.py:90: RuntimeWarning: divide by zero encountered in log10
+  images.append(axes[i, j].imshow(np.log10(corr\_matrix\_list[i * 2 + j]), cmap='viridis'))
+/home/sebastian/Documents/Melisa/neural\_analysis/src/figures.py:90: RuntimeWarning: invalid value encountered in log10
+  images.append(axes[i, j].imshow(np.log10(corr\_matrix\_list[i * 2 + j]), cmap='viridis'))
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_17_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    Generate statistics over the correlation matrix values. Compute
+distribution, mean and std values and compare the different conditions
+by computing correlation between correlation matrix and KLD betwween the
+distributions.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}74}]:} \PY{c+c1}{\PYZsh{} define file name to save figure and plot}
+         \PY{n}{correlation\PYZus{}stats\PYZus{}path} \PY{o}{=} \PY{n}{figure\PYZus{}path} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{correlation\PYZus{}statistics\PYZus{}mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PYZbs{}
+                                  \PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}binsize\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.png}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{figs}\PY{o}{.}\PY{n}{plot\PYZus{}correlation\PYZus{}statistics\PYZus{}behaviour}\PY{p}{(}\PY{n}{corr\PYZus{}matrix}\PY{o}{=}\PY{n}{corr\PYZus{}matrix}\PY{p}{,} \PY{n}{path\PYZus{}save}\PY{o}{=}\PY{n}{correlation\PYZus{}stats\PYZus{}path}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/numpy/lib/function\_base.py:2534: RuntimeWarning: invalid value encountered in true\_divide
+  c /= stddev[:, None]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/numpy/lib/function\_base.py:2535: RuntimeWarning: invalid value encountered in true\_divide
+  c /= stddev[None, :]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/matplotlib-2.2.2-py3.6-linux-x86\_64.egg/matplotlib/figure.py:2223: UserWarning: Calling figure.constrained\_layout, but figure not setup to do constrained layout.     You either called GridSpec without the fig keyword, you are using plt.subplot, or you need to call figure or subplotswith the constrained\_layout=True kwarg.
+  warnings.warn("Calling figure.constrained\_layout, but figure "
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_19_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsection{Correlation matrix over days and
+trials}\label{correlation-matrix-over-days-and-trials}
+
+Analysis of the evaluation of the correlation matrix over different days
+of the experiment and over different trials.
+
+\subsubsection{Days of the experiment}\label{days-of-the-experiment}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}75}]:} \PY{c+c1}{\PYZsh{} Separate neural activity belonging to different days of the experiment, considering as different the resting}
+         \PY{c+c1}{\PYZsh{} and the trial parts.}
+         
+         \PY{n}{neural\PYZus{}activity1\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{n}{time\PYZus{}length} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{)}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}\PY{p}{:}
+             \PY{n}{day\PYZus{}matrix} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{neural\PYZus{}activity1}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{i}\PY{o}{*}\PY{l+m+mi}{10}\PY{p}{:}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{o}{*}\PY{l+m+mi}{10}\PY{p}{:}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{)}
+             \PY{n}{start\PYZus{}time} \PY{o}{=} \PY{l+m+mi}{0}
+             \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{10}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{:}
+                 \PY{n}{trial} \PY{o}{=} \PY{n}{i}\PY{o}{*}\PY{l+m+mi}{10} \PY{o}{+} \PY{n}{j}
+                 \PY{n}{day\PYZus{}matrix}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n}{start\PYZus{}time}\PY{p}{:}\PY{n}{start\PYZus{}time}\PY{o}{+} \PY{n+nb}{int}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}\PY{p}{]} \PY{o}{=} \PYZbs{}
+                     \PY{n}{neural\PYZus{}activity1}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}\PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)} \PY{o}{+} \PY{n+nb}{int}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}\PY{p}{]}
+                 \PY{n}{start\PYZus{}time} \PY{o}{=} \PY{n}{start\PYZus{}time} \PY{o}{+} \PY{n+nb}{int}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}
+             \PY{n}{neural\PYZus{}activity1\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{day\PYZus{}matrix}\PY{p}{)}
+         
+         \PY{n}{neural\PYZus{}activity1\PYZus{}resting\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{n}{time\PYZus{}length} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{)}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}\PY{p}{:}
+             \PY{n}{day\PYZus{}matrix} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{neural\PYZus{}activity1}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{i}\PY{o}{*}\PY{l+m+mi}{10}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{:}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{o}{*}\PY{l+m+mi}{10}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{:}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{)}
+             \PY{n}{start\PYZus{}time} \PY{o}{=} \PY{l+m+mi}{0}
+             \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{10}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{:}
+                 \PY{n}{trial} \PY{o}{=} \PY{n}{i}\PY{o}{*}\PY{l+m+mi}{10} \PY{o}{+} \PY{n}{j}
+                 \PY{n}{day\PYZus{}matrix}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n}{start\PYZus{}time}\PY{p}{:}\PY{n}{start\PYZus{}time}\PY{o}{+} \PY{n+nb}{int}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}\PY{p}{]} \PY{o}{=} \PYZbs{}
+                     \PY{n}{neural\PYZus{}activity1}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}\PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)} \PY{o}{+} \PY{n+nb}{int}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}\PY{p}{]}
+                 \PY{n}{start\PYZus{}time} \PY{o}{=} \PY{n}{start\PYZus{}time} \PY{o}{+} \PY{n+nb}{int}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{trial}\PY{p}{]}\PY{p}{)}
+             \PY{n}{neural\PYZus{}activity1\PYZus{}resting\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{day\PYZus{}matrix}\PY{p}{)}
+         
+         \PY{n}{neural\PYZus{}activity1\PYZus{}resting\PYZus{}testing} \PY{o}{=} \PY{n}{neural\PYZus{}activity1}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}\PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{)}\PY{p}{]}
+         \PY{n}{neural\PYZus{}activity1\PYZus{}testing} \PY{o}{=} \PY{n}{neural\PYZus{}activity1}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{3}\PY{p}{]}\PY{p}{)}\PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}\PY{p}{]}
+\end{Verbatim}
+
+
+    Compute correlation matrix for the different subsets of neural activity,
+including separately the testing day. Correlation matrix are saved in
+lists.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}76}]:} \PY{n}{corr\PYZus{}matrix\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}\PY{p}{:}
+             \PY{n}{corr\PYZus{}matrix\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stats}\PY{o}{.}\PY{n}{corr\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity} \PY{o}{=} \PY{n}{neural\PYZus{}activity1\PYZus{}days}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+             \PY{c+c1}{\PYZsh{}corr\PYZus{}matrix\PYZus{}days.append(stats.cov\PYZus{}matrix(neural\PYZus{}activity = neural\PYZus{}activity1\PYZus{}days[i]))}
+         
+         \PY{n}{corr\PYZus{}matrix\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stats}\PY{o}{.}\PY{n}{corr\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity} \PY{o}{=} \PY{n}{neural\PYZus{}activity1\PYZus{}testing}\PY{p}{)}\PY{p}{)}
+         \PY{c+c1}{\PYZsh{}corr\PYZus{}matrix\PYZus{}days.append(stats.cov\PYZus{}matrix(neural\PYZus{}activity = neural\PYZus{}activity1\PYZus{}testing))}
+         
+         \PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}\PY{p}{:}
+             \PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stats}\PY{o}{.}\PY{n}{corr\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity} \PY{o}{=} \PY{n}{neural\PYZus{}activity1\PYZus{}resting\PYZus{}days}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+             \PY{c+c1}{\PYZsh{}corr\PYZus{}matrix\PYZus{}resting\PYZus{}days.append(stats.cov\PYZus{}matrix(neural\PYZus{}activity = neural\PYZus{}activity1\PYZus{}resting\PYZus{}days[i]))}
+         \PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stats}\PY{o}{.}\PY{n}{corr\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity} \PY{o}{=} \PY{n}{neural\PYZus{}activity1\PYZus{}resting\PYZus{}testing}\PY{p}{)}\PY{p}{)}
+         \PY{c+c1}{\PYZsh{}corr\PYZus{}matrix\PYZus{}resting\PYZus{}days.append(stats.cov\PYZus{}matrix(neural\PYZus{}activity = neural\PYZus{}activity1\PYZus{}resting\PYZus{}testing))}
+\end{Verbatim}
+
+
+    For analyzing the correlation matrix over days plot statistics and
+correlations over them. Here we plot the mean values (and error of the
+mean) of correlation matrix over multiple days, the correlation between
+different days correlation matrix and the Kullback-Leiber Divergence of
+the distributions of correlation values during diferent days. Note:
+Correlation of correlation matrix is simetric while KLD is not!
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}77}]:} \PY{c+c1}{\PYZsh{} define the path to save the figure and plot}
+         \PY{n}{correlation\PYZus{}path} \PY{o}{=} \PY{n}{figure\PYZus{}path} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{correlation\PYZus{}mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}binsize\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.png}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{figs}\PY{o}{.}\PY{n}{plot\PYZus{}correlation\PYZus{}statistics\PYZus{}learning}\PY{p}{(}\PY{n}{corr\PYZus{}matrix1}\PY{o}{=}\PY{n}{corr\PYZus{}matrix\PYZus{}days}\PY{p}{,} \PY{n}{corr\PYZus{}matrix2}\PY{o}{=}\PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{p}{,}
+                                              \PY{n}{path\PYZus{}save}\PY{o}{=}\PY{n}{correlation\PYZus{}path}\PY{p}{,} \PY{n}{title}\PY{o}{=}\PY{n}{task}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/matplotlib-2.2.2-py3.6-linux-x86\_64.egg/matplotlib/figure.py:2223: UserWarning: Calling figure.constrained\_layout, but figure not setup to do constrained layout.     You either called GridSpec without the fig keyword, you are using plt.subplot, or you need to call figure or subplotswith the constrained\_layout=True kwarg.
+  warnings.warn("Calling figure.constrained\_layout, but figure "
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_25_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsubsection{Trials of the experiment}\label{trials-of-the-experiment}
+
+Fisrt separate the data corresponding to different trials by using the
+timeline data, and then compute correlation matrix for each trial.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}78}]:} \PY{c+c1}{\PYZsh{} Separate neural activity for different trials and save in the neural\PYZus{}activity\PYZus{}days and}
+         \PY{c+c1}{\PYZsh{} neural\PYZus{}activity\PYZus{}resting\PYZus{}days lists.}
+         
+         \PY{n}{neural\PYZus{}activity1\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{n}{time\PYZus{}length} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{)}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{42}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{:}
+             \PY{n}{trial\PYZus{}matrix} \PY{o}{=} \PY{n}{neural\PYZus{}activity1}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)} \PY{o}{+} \PY{n+nb}{int}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{]}
+             \PY{n}{neural\PYZus{}activity1\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{trial\PYZus{}matrix}\PY{p}{)}
+         
+         \PY{n}{neural\PYZus{}activity1\PYZus{}resting\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{42}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{:}
+             \PY{n}{trial\PYZus{}matrix} \PY{o}{=} \PY{n}{neural\PYZus{}activity1}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{:}\PY{n+nb}{int}\PY{p}{(}\PY{n}{resample\PYZus{}timeline}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)} \PY{o}{+} \PY{n+nb}{int}\PY{p}{(}\PY{n}{time\PYZus{}length}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{]}
+             \PY{n}{neural\PYZus{}activity1\PYZus{}resting\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{trial\PYZus{}matrix}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}79}]:} \PY{n}{corr\PYZus{}matrix\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{21}\PY{p}{)}\PY{p}{:}
+             \PY{n}{corr\PYZus{}matrix\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stats}\PY{o}{.}\PY{n}{corr\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity} \PY{o}{=} \PY{n}{neural\PYZus{}activity1\PYZus{}days}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+             \PY{c+c1}{\PYZsh{}corr\PYZus{}matrix\PYZus{}days.append(stats.cov\PYZus{}matrix(neural\PYZus{}activity = neural\PYZus{}activity1\PYZus{}days[i]))}
+         
+         \PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{21}\PY{p}{)}\PY{p}{:}
+             \PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{stats}\PY{o}{.}\PY{n}{corr\PYZus{}matrix}\PY{p}{(}\PY{n}{neural\PYZus{}activity} \PY{o}{=} \PY{n}{neural\PYZus{}activity1\PYZus{}resting\PYZus{}days}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+             \PY{c+c1}{\PYZsh{}corr\PYZus{}matrix\PYZus{}resting\PYZus{}days.append(stats.cov\PYZus{}matrix(neural\PYZus{}activity = neural\PYZus{}activity1\PYZus{}resting\PYZus{}days[i]))}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}80}]:} \PY{c+c1}{\PYZsh{} define figure save path and plot}
+         \PY{n}{correlation\PYZus{}path} \PY{o}{=} \PY{n}{figure\PYZus{}path} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{correlation\PYZus{}mouse\PYZus{}trials\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}binsize\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.png}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{figs}\PY{o}{.}\PY{n}{plot\PYZus{}correlation\PYZus{}statistics\PYZus{}trials}\PY{p}{(}\PY{n}{corr\PYZus{}matrix1}\PY{o}{=}\PY{n}{corr\PYZus{}matrix\PYZus{}days}\PY{p}{,} \PY{n}{corr\PYZus{}matrix2}\PY{o}{=}\PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{p}{,}
+                                              \PY{n}{path\PYZus{}save}\PY{o}{=}\PY{n}{correlation\PYZus{}path}\PY{p}{,} \PY{n}{title}\PY{o}{=}\PY{n}{task}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/matplotlib-2.2.2-py3.6-linux-x86\_64.egg/matplotlib/figure.py:2223: UserWarning: Calling figure.constrained\_layout, but figure not setup to do constrained layout.     You either called GridSpec without the fig keyword, you are using plt.subplot, or you need to call figure or subplotswith the constrained\_layout=True kwarg.
+  warnings.warn("Calling figure.constrained\_layout, but figure "
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_29_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsection{Correlation matrix and object
+positions}\label{correlation-matrix-and-object-positions}
+
+Now we focus in the relationship between the neural correlation matrix
+and the object positions and repetitions of object positions (as
+enviromnetal configuration changes). The key idea is to search for a
+neural representation of environmental configuration.
+
+In general there are 6 posible configurations. In Overlapping condition
+only three are explored, in stable only one and random has the 6 posible
+configurations.
+
+We separated the analysis in two: conting number of overlapping (0, 1 or
+2) objects in multiple trials or exact repetition of object
+configuration in different trials. For this we used correlation matrix
+computed in the previous steps for trial by trial analysis.
+
+\subsubsection{Overlapping analysis.}\label{overlapping-analysis.}
+
+Using object position information to check the number of overlapping
+with other trials.
+
+Correlation matrix are the same as before but here we also plot the
+overlapping matrix that represents when teh condition is the same,
+similar or totaly different in between two trials.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}81}]:} \PY{c+c1}{\PYZsh{} load overlapping information}
+         \PY{n}{overlapping\PYZus{}objects\PYZus{}file} \PY{o}{=} \PY{n}{objects\PYZus{}dir} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{overlapping\PYZus{}mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.npy}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{overlapping\PYZus{}matrix} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{overlapping\PYZus{}objects\PYZus{}file}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}82}]:} \PY{c+c1}{\PYZsh{} define path to save figura and plot}
+         \PY{n}{objects\PYZus{}fig\PYZus{}path} \PY{o}{=} \PY{n}{figure\PYZus{}path} \PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{correlation\PYZus{}with\PYZus{}object\PYZus{}position\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PYZbs{}
+                            \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}binsize\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.png}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{figs}\PY{o}{.}\PY{n}{plot\PYZus{}correlation\PYZus{}statistics\PYZus{}objects}\PY{p}{(}\PY{n}{corr\PYZus{}matrix1}\PY{o}{=}\PY{n}{corr\PYZus{}matrix\PYZus{}days}\PY{p}{,} \PY{n}{corr\PYZus{}matrix2}\PY{o}{=}\PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{p}{,}
+                                                  \PY{n}{overlapping\PYZus{}matrix}\PY{o}{=}\PY{n}{overlapping\PYZus{}matrix}\PY{p}{,} \PY{n}{path\PYZus{}save}\PY{o}{=}\PY{n}{objects\PYZus{}fig\PYZus{}path}\PY{p}{,}
+                                             \PY{n}{title}\PY{o}{=}\PY{n}{task}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/matplotlib-2.2.2-py3.6-linux-x86\_64.egg/matplotlib/figure.py:2223: UserWarning: Calling figure.constrained\_layout, but figure not setup to do constrained layout.     You either called GridSpec without the fig keyword, you are using plt.subplot, or you need to call figure or subplotswith the constrained\_layout=True kwarg.
+  warnings.warn("Calling figure.constrained\_layout, but figure "
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_32_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsubsection{Enviromental configuration
+analysis}\label{enviromental-configuration-analysis}
+
+Now we analyze the two object position in simultaneous as a environment
+configurations. For that we compute the correlation matrix as before,
+but for visualization we reaorganized it so trials that belong to the
+same configuration are together (as represented in the configuration
+matrix, that shows one for same configuration and cero for different in
+between trials).
+
+As before we use the correlation matrix computed previously for trial by
+trial correlation matrix analysis.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}83}]:} \PY{c+c1}{\PYZsh{} load the information about object configurations. This files have the configuration vector}
+         \PY{c+c1}{\PYZsh{} (a vector with values 1 to 6 for the different configurations) and the configuration matrix }
+         \PY{c+c1}{\PYZsh{} (a matrix that has ones for trials with the same configuration and cero for different)}
+         
+         \PY{n}{condition\PYZus{}objects\PYZus{}file} \PY{o}{=} \PY{n}{objects\PYZus{}dir} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{condition\PYZus{}vector\PYZus{}mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.npy}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{condition\PYZus{}objects\PYZus{}file\PYZus{}matrix} \PY{o}{=} \PY{n}{objects\PYZus{}dir} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{condition\PYZus{}matrix\PYZus{}mouse\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.npy}\PY{l+s+s1}{\PYZsq{}}
+         
+         \PY{n}{condition\PYZus{}vector}\PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{condition\PYZus{}objects\PYZus{}file}\PY{p}{)}
+         \PY{n}{condition\PYZus{}matrix}\PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{condition\PYZus{}objects\PYZus{}file\PYZus{}matrix}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}84}]:} \PY{c+c1}{\PYZsh{}reorder trials acording to conditon (objects configuration)}
+         \PY{n}{new\PYZus{}corr\PYZus{}matrix\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{n}{new\PYZus{}corr\PYZus{}matrix\PYZus{}resting\PYZus{}days} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{n}{new\PYZus{}condition\PYZus{}matrix} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{condition\PYZus{}vector}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,}\PY{n}{condition\PYZus{}vector}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+         \PY{n}{counter} \PY{o}{=} \PY{l+m+mi}{0}
+         \PY{n}{repetitions} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+         \PY{k}{for} \PY{n}{condition} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{7}\PY{p}{)}\PY{p}{:}
+             \PY{n}{positions} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{where}\PY{p}{(}\PY{n}{condition\PYZus{}vector} \PY{o}{==} \PY{n}{condition}\PY{p}{)}
+             \PY{k}{if} \PY{n}{positions}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]} \PY{o}{\PYZgt{}} \PY{l+m+mi}{0}\PY{p}{:}
+                 \PY{n}{repetitions}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{positions}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{)}
+                 \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n}{positions}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{:}
+                     \PY{n}{new\PYZus{}corr\PYZus{}matrix\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{corr\PYZus{}matrix\PYZus{}days}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{)}
+                     \PY{n}{new\PYZus{}corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{)}
+                     \PY{n}{counter} \PY{o}{=} \PY{n}{counter} \PY{o}{+}\PY{l+m+mi}{1}
+         
+         \PY{n}{rep\PYZus{}cumsum} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{repetitions}\PY{p}{)}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}
+         \PY{n}{rep\PYZus{}cumsum}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{:}\PY{p}{]}\PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{cumsum}\PY{p}{(}\PY{n}{repetitions}\PY{p}{)}
+         \PY{k}{for} \PY{n}{rep} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{repetitions}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+             \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{int}\PY{p}{(}\PY{n}{rep\PYZus{}cumsum}\PY{p}{[}\PY{n}{rep}\PY{p}{]}\PY{p}{)}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{rep\PYZus{}cumsum}\PY{p}{[}\PY{n}{rep}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+                 \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{int}\PY{p}{(}\PY{n}{rep\PYZus{}cumsum}\PY{p}{[}\PY{n}{rep}\PY{p}{]}\PY{p}{)}\PY{p}{,}\PY{n+nb}{int}\PY{p}{(}\PY{n}{rep\PYZus{}cumsum}\PY{p}{[}\PY{n}{rep}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+                     \PY{n}{new\PYZus{}condition\PYZus{}matrix}\PY{p}{[}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{1}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}85}]:} \PY{c+c1}{\PYZsh{} define path to save figura and plot}
+         \PY{n}{objects\PYZus{}fig\PYZus{}path} \PY{o}{=} \PY{n}{figure\PYZus{}path} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{correlation\PYZus{}with\PYZus{}object\PYZus{}configuration\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PYZbs{}
+                            \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}binsize\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.png}\PY{l+s+s1}{\PYZsq{}}
+         \PY{n}{figs}\PY{o}{.}\PY{n}{plot\PYZus{}correlation\PYZus{}statistics\PYZus{}objects}\PY{p}{(}\PY{n}{corr\PYZus{}matrix1}\PY{o}{=}\PY{n}{new\PYZus{}corr\PYZus{}matrix\PYZus{}days}\PY{p}{,} \PY{n}{corr\PYZus{}matrix2}\PY{o}{=}\PY{n}{new\PYZus{}corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{p}{,}
+                                                  \PY{n}{overlapping\PYZus{}matrix}\PY{o}{=}\PY{n}{new\PYZus{}condition\PYZus{}matrix}\PY{p}{,} \PY{n}{path\PYZus{}save}\PY{o}{=}\PY{n}{objects\PYZus{}fig\PYZus{}path}\PY{p}{,}
+                                             \PY{n}{title}\PY{o}{=}\PY{n}{task}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/matplotlib-2.2.2-py3.6-linux-x86\_64.egg/matplotlib/figure.py:2223: UserWarning: Calling figure.constrained\_layout, but figure not setup to do constrained layout.     You either called GridSpec without the fig keyword, you are using plt.subplot, or you need to call figure or subplotswith the constrained\_layout=True kwarg.
+  warnings.warn("Calling figure.constrained\_layout, but figure "
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_36_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsection{Evolution of correlation with resting over
+trials}\label{evolution-of-correlation-with-resting-over-trials}
+
+Here the question is whether there is any correlation between pre and
+post trial activity. So, we computed the correlation between the
+correlation matrix during the trial and the pre and post resting
+activity.
+
+For this, only correlation matrix computed before for trial by trial
+analysis are requird (for trial and resting periods).
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}86}]:} \PY{c+c1}{\PYZsh{} define path to save the figure and plot}
+         \PY{n}{corr\PYZus{}evol\PYZus{}path} \PY{o}{=} \PY{n}{figure\PYZus{}path} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{correlation\PYZus{}with\PYZus{}resting\PYZus{}evoluction\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}mouse\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PYZbs{}
+                            \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}session\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}session\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZus{}binsize\PYZus{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{n}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}re\PYZus{}sf\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.png}\PY{l+s+s1}{\PYZsq{}}
+         
+         \PY{n}{figs}\PY{o}{.}\PY{n}{plot\PYZus{}correlation\PYZus{}with\PYZus{}resting\PYZus{}evolution}\PY{p}{(}\PY{n}{corr\PYZus{}matrix1} \PY{o}{=} \PY{n}{corr\PYZus{}matrix\PYZus{}days}\PY{p}{,} \PY{n}{corr\PYZus{}matrix2} \PY{o}{=}\PY{n}{corr\PYZus{}matrix\PYZus{}resting\PYZus{}days}\PY{p}{,}\PY{n}{path\PYZus{}save} \PY{o}{=} \PY{n}{corr\PYZus{}evol\PYZus{}path}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+/home/sebastian/anaconda3/lib/python3.6/site-packages/matplotlib-2.2.2-py3.6-linux-x86\_64.egg/matplotlib/figure.py:2223: UserWarning: Calling figure.constrained\_layout, but figure not setup to do constrained layout.     You either called GridSpec without the fig keyword, you are using plt.subplot, or you need to call figure or subplotswith the constrained\_layout=True kwarg.
+  warnings.warn("Calling figure.constrained\_layout, but figure "
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_38_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    % Add a bibliography block to the postdoc
+    
+    
+    
+    \end{document}

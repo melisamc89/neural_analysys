@@ -13,78 +13,68 @@ import pickle
 import configuration
 import general_statistics as stats
 import matplotlib.cm as cm
-from scipy import signal
+import figures as figs
+from sklearn.decomposition import PCA
+import scipy
 from sklearn.datasets import load_digits
 from sklearn.manifold import MDS
 cmap = cm.jet
 
-mouse = 56165
 
+mouse = 56165             ### mouse number id
+decoding_v = 1            ## decoding version, normaly equal to one
+motion_correction_v = 100 ### 100 means everything was aligned, 200 means it was also equalized
+alignment_v = 1           ## alignment version
+equalization_v = 0        ## equalization version
+source_extraction_v = 1   ## source extraction version
+component_evaluation_v = 1 ## component evaluation version
+registration_v = 1        ## registration version
+sf = 10                   ## sampling frequency of the original signal
+re_sf= 50                 ## value of resampling
 
-## load source extracted calcium traces condition SESSION 1
+sessions = [1,2,4]       ## sessions for this particular mouse
+session_now = 2          ## session that will run
+
+## define task for plotting. This will cahnge for other mice!!!!
+if session_now == 1:
+    task = 'OVERLAPPING'
+else:
+    if session_now == 2:
+        task = 'STABLE'
+    else:
+        task = 'RANDOM'
+
 file_directory = os.environ['PROJECT_DIR'] + 'neural_analysis/data/calcium_activity/'
 timeline_file_dir = os.environ['PROJECT_DIR'] + 'neural_analysis/data/timeline/'
 behaviour_dir = os.environ['PROJECT_DIR'] + 'calcium_imaging_behaviour/data/scoring_time_vector/'
+objects_dir= os.environ['PROJECT_DIR'] + 'calcium_imaging_behaviour/data/object_positions/'
+figures_path = os.environ['PROJECT_DIR'] +'neural_analysis/data/process/figures/MDS/'
 
-decoding_v = 1
-motion_correction_v = 100 ### means everything was aligned
-alignment_v = 1
-equalization_v = 0
-source_extraction_v = 1
-component_evaluation_v = 1
-registration_v = 1
+#%%
+# define all relevant files names
+session = session_now
+file_name_session = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_1_v' + f'{decoding_v}' + '.4.' + f'{100}' + \
+                      '.' + f'{alignment_v}' + '.' + f'{equalization_v}' + '.' + f'{source_extraction_v}' + '.' + \
+                      f'{component_evaluation_v}' + '.' + f'{registration_v}' + '.npy'
+time_file_session = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_1_v' + f'{decoding_v}' + '.1.' + f'{1}' + \
+                      '.' + f'{0}' + '.pkl'
+beh_file_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_event_' + f'{re_sf}' + '.npy'
 
-
-## session 1 files
-session = 2
-
-file_name_session_1 = 'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.4.'+f'{100}'+\
-                      '.'+f'{alignment_v}'+'.'+ f'{equalization_v}' +'.' + f'{source_extraction_v}'+'.' + \
-                      f'{component_evaluation_v}' +'.'+ f'{registration_v}' + '.npy'
-time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.1.'+f'{1}'+\
-                      '.'+f'{0}'+ '.pkl'
-beh_file_name_1 = 'mouse_'+f'{mouse}'+'_session_'+f'{3}'+'.npy'
-
-##session 1
-activity = np.load(file_directory + file_name_session_1)
-timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
+##load activity and timeline
+activity = np.load(file_directory + file_name_session)
+timeline_file = open(timeline_file_dir + time_file_session, 'rb')
 timeline_info = pickle.load(timeline_file)
-timeline_1 = np.zeros(42+1)
-for i in range(42):
-    timeline_1[i] = timeline_info[i][1]
-timeline_1[42] = activity.shape[1]
-### do analysis corr, PCA
-## normalize activity within trial and for each neuron
-activity_normalized = np.zeros((activity.shape))
-for j in range(activity.shape[0]):
-    for i in range(0,len(timeline_1)-1):
-        activity_segment = activity[j,int(timeline_1[i]):int(timeline_1[i+1])]
-        activity_segment = activity_segment - min(activity_segment)
-        if max(activity_segment):
-            activity_segment_normalized = activity_segment/max(activity_segment)
-            activity_normalized[j,int(timeline_1[i]):int(timeline_1[i+1])] =activity_segment_normalized
-neural_activity1 = activity[1:,:]
-corr_matrix1 = stats.corr_matrix(neural_activity = neural_activity1)
-neural_activity1 = activity_normalized[1:,:]
-corr_matrix1_1 = stats.corr_matrix(neural_activity = neural_activity1)
-eigenvalues1, eigenvectors1 = stats.compute_PCA(corr_matrix = corr_matrix1)
-proj1 = stats.PCA_projection(neural_activity=neural_activity1, eigenvalues=eigenvalues1,
-                            eigenvectors=eigenvectors1, n_components=70)
+##normalize neural activity
+neural_activity, timeline = stats.normalize_neural_activity(activity=activity, timeline=timeline_info)
+##downsample neural activity
+resample_neural_activity_mean, resample_neural_activity_std = stats.resample_matrix(neural_activity=neural_activity,
+                                                                                    re_sf=re_sf)
 
-## LOAD BEHAVIOUR
-behaviour = np.load(behaviour_dir + beh_file_name_1)
-
-### downsample
-sf = 10
-new_sf = 0.1
-re_sf = int(sf/new_sf)
-#mat_proj1 = np.reshape(proj1[:,:int(int(proj1.shape[1]/re_sf )*re_sf) ],(proj1.shape[0],int(proj1.shape[1]/re_sf ),re_sf))
-#resample_proj1 = np.mean(mat_proj1,axis = 2)
-#std_resample_proj1 = np.std(mat_proj1, axis = 2)
-resample_proj1= signal.resample(proj1,int(proj1.shape[1]/re_sf),axis = 1)
+#%%
 
 embedding = MDS(n_components=3)
-proj1_transformed = embedding.fit_transform(resample_proj1.T)
+neural_activity_transformed = embedding.fit_transform(resample_neural_activity_mean.T)
 
-file_name = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/MDS/mouse_' + f'{mouse}' + '_session_' + f'{session}' + '.npy'
-np.save(file_name, proj1_transformed)
+file_name = '/home/sebastian/Documents/Melisa/neural_analysis/data/process/MDS/mouse_' + f'{mouse}' + \
+            '_session_' + f'{session}' + '_binsize_'+f'{re_sf}'+'.npy'
+np.save(file_name, neural_activity_transformed)

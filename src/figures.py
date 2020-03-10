@@ -18,6 +18,10 @@ from matplotlib import colors
 import general_statistics as gstats
 from scipy import signal
 import scipy
+from mpl_toolkits.mplot3d import axes3d
+from IPython.display import HTML
+import matplotlib.animation as animation
+
 
 def plot_correlation_matrix(corr_matrix = None, save_path = None, title = None):
 
@@ -471,7 +475,8 @@ def plot_pca_decomposition(eigenvalues = None, eigenvectors = None, n_components
     ax2.set_xlabel('Dimension', fontsize = 12)
     ax2.set_ylabel('Projection')
 
-    fig.suptitle(title)
+    fig.set_size_inches(9, 5)
+    fig.suptitle('PCA analysis: ' + title)
     fig.savefig(path_save)
     return
 
@@ -497,7 +502,7 @@ def plot_pca_projection(projection = None, title = None, path_save = None):
         ax2.set_ylabel('PC'+f'{i*4+4}')
         ax2.set_zlabel('PC'+f'{i*4+5}')
 
-    fig.suptitle(title)
+    fig.suptitle('PC projection: ' + title, fontsize = 15)
     fig.set_size_inches(10, 9)
     fig.savefig(path_save)
 
@@ -581,7 +586,7 @@ def plot_pca_behavioral_representation(components_list = None, color = None, tit
     axes.set_zlim([min_projection[2], max_projection[2]])
     axes.set_title('UL', fontsize = 12)
 
-    #fig1.set_size_inches(15, 9)
+    fig1.set_size_inches(15, 9)
     fig1.suptitle('Behavioural Projections: ' + title)
     fig1.savefig(path_save)
 
@@ -790,7 +795,16 @@ def plot_pca_eigenvector_distance_learning(eigenvectors = None, n_components = N
     return
 
 def plot_pca_EV_learning(eigenvalues1= None, eigenvalues2 = None, n_components = None, title = None, path_save = None):
+    '''
+    Plots explained variance (EV) for evolving trials, using different number of components.
 
+    :param eigenvalues1:
+    :param eigenvalues2:
+    :param n_components:
+    :param title:
+    :param path_save:
+    :return:
+    '''
     EV_trials = np.zeros((len(eigenvalues1), 1))
     EV_rest = np.zeros((len(eigenvalues2), 1))
 
@@ -807,5 +821,87 @@ def plot_pca_EV_learning(eigenvalues1= None, eigenvalues2 = None, n_components =
     axes.set_ylabel('EV', fontsize = 12)
     fig.suptitle('Explained Variance: '+ title)
     fig.savefig(path_save)
+
+    return
+
+
+def plot_MDS_multisessions(neural_activity_msd = [], sessions = [], task = [], path_save=None):
+    '''
+    Scatter plot MDS for all sessions in the sessions list
+    :param neural_activity_msd:
+    :param sessions:
+    :param task:
+    :param path_save:
+    :return: None
+    '''
+
+    cmap = cm.jet
+    fig1 = plt.figure()
+    for session in range(len(sessions)):
+        axes = fig1.add_subplot(1, len(sessions), session + 1, projection='3d')
+        color = np.linspace(0, 20, neural_activity_msd[session].shape[0])
+        axes.scatter(neural_activity_msd[session][:, 0], neural_activity_msd[session][:, 1],
+                     neural_activity_msd[session][:, 2], c=color, cmap=cmap)
+        axes.set_xlabel('MDS1')
+        axes.set_ylabel('MDS2')
+        axes.set_zlabel('MDS3')
+        axes.set_title(task[session], fontsize=12)
+        #for angle in range(0, 360):
+        #    axes.view_init(30, angle)
+    fig1.suptitle('MDS', fontsize=15)
+    fig1.set_size_inches(15, 9)
+    #plt.draw()
+    #plt.pause(.001)
+    fig1.savefig(path_save)
+
+    return
+
+
+def plot_MDS_multisession_behaviour(neural_activity_msd = None, resample_timeline= None, resample_beh=None, task = None,  save_path = None):
+
+    color = ['k', 'b', 'r', 'g', 'm', 'c']
+    ## separate different behavioural parts of the experiment in the mds
+    for session in range(len(task)):
+        # define a variable with only training data (remove testing)
+        training_data = neural_activity_msd[session][:int(resample_timeline[session][40]),
+                        :]  ## neural activity in training
+        training_data_beh = resample_beh[session][
+                            :int(resample_timeline[session][40])]  ## bahavioural vector in training
+        testing_data = neural_activity_msd[session][int(resample_timeline[session][40]):,
+                       :]  ## neural activity mds in testing
+        testing_data_beh = resample_beh[session][
+                           int(resample_timeline[session][40]):]  ## neural activity mds in testing
+
+        mds_training = []  ## list containing neural activity mds for different bahavioural parts
+        mds_testing = []  ## list containing different behaviours in the testing trial
+
+        # color_training=[]           ## arrange of colors. Will be necesary to have a common color criteria when plotting
+        # color_testing = []
+        for i in range(6):  ## 6 different behaviours defined here
+            mds_training.append(training_data[np.where(training_data_beh == i), :])
+            mds_testing.append(testing_data[np.where(testing_data_beh == i), :])
+            # color_training.append(color[np.where(training_data_beh ==i)])
+            # color_testing.append(color[np.where(testing_data_beh==i)])
+
+        fig1 = plt.figure()
+        axes = fig1.add_subplot(1, 2, 1, projection='3d')
+        for i in range(0, 2):
+            axes.scatter(mds_training[i][0, :, 0], mds_training[i][0, :, 1], mds_training[i][0, :, 2], c=color[i])
+        axes.set_xlabel('MDS1')
+        axes.set_ylabel('MDS2')
+        axes.set_zlabel('MDS3')
+        axes.legend(['Resting', 'Non Exploring'])
+        axes = fig1.add_subplot(1, 2, 2, projection='3d')
+        for i in range(2, 6):
+            axes.scatter(mds_training[i][0, :, 0], mds_training[i][0, :, 1], mds_training[i][0, :, 2], c=color[i])
+        axes.set_xlabel('MDS1')
+        axes.set_ylabel('MDS2')
+        axes.set_zlabel('MDS3')
+        axes.legend(['LR','LL', 'UR','UL'])
+        axes.set_xlim([-2, 2])
+        axes.set_ylim([-2, 2])
+        axes.set_zlim([-2, 2])
+        fig1.suptitle('Behavioural Conditions: ' + task[session])
+        fig1.savefig(save_path + task[session] + '.png')
 
     return
