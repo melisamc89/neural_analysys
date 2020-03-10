@@ -67,6 +67,7 @@ def plot_correlation_matrix_conditions(matrix_list = None, save_path = None, tit
                 counter = counter+1
                 axes[i, j].label_outer()
 
+
     vmin = min(image.get_array().min() for image in images)
     vmax = max(image.get_array().max() for image in images)
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
@@ -77,9 +78,13 @@ def plot_correlation_matrix_conditions(matrix_list = None, save_path = None, tit
         for j in range(size):
             if counter < len(matrix_list):
                 axes[i, j].set_title(conditions[counter])
+                axes[i, j].set_xlabel('Neuron')
+                axes[i, j].set_ylabel('Neuron')
                 counter = counter +1
+
     figure.colorbar(images[0], ax=axes[1, 1], orientation='vertical', fraction=0.1)
     figure.suptitle(title , fontsize = 15)
+    figure.set_size_inches(9, 6)
     figure.savefig(save_path)
 
     return
@@ -110,12 +115,17 @@ def plot_correlation_matrix_behaviour(corr_matrix_list = None , path_save = None
     axes[1, 1].set_title('LL', fontsize=12)
     axes[2, 0].set_title('UR', fontsize=12)
     axes[2, 1].set_title('UL', fontsize=12)
+    for i in range(3):
+        for j in range(2):
+            axes[i, j].set_xlabel('Neuron')
+            axes[i, j].set_ylabel('Neuron')
     figure.suptitle(title)
+    figure.set_size_inches(12, 9)
     figure.savefig(path_save)
 
     return
 
-def plot_correlation_statistics_behaviour(corr_matrix = None, path_save = None):
+def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_save = None):
 
     corr_mean = np.zeros(len(corr_matrix))
     corr_error = np.zeros(len(corr_matrix))
@@ -169,30 +179,41 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, path_save = None):
 
     ax7 = fig.add_subplot(gs[1:3, 0:4])
     conditions= ['Rest', 'NotE', 'LR','LL','UR','UL']
+
     x_pos = np.arange(len(conditions))
     ax7.bar(x_pos, corr_mean, yerr=corr_error, align='center', alpha=0.5, ecolor='black', capsize=10)
-    ax7.set_ylabel('Mean Correlation')
+    ax7.set_ylabel('Mean Correlation', fontsize = 12)
+    ax7.set_xlabel('Behavioural Conditions', fontsize = 12)
     ax7.set_xticks(x_pos)
     ax7.set_xticklabels(conditions)
-    ax7.set_title('Correlation statistics', fontsize = 15)
+    ax7.set_title('Correlation Statistics', fontsize = 15)
     ax7.yaxis.grid(True)
     ax7.set_ylim(0,np.max(corr_mean)+5*np.max(corr_error))
     fig.tight_layout()
 
 
     ax8 = fig.add_subplot(gs[1:3, 4:8])
-    ax8.set_title('Correlation', fontsize = 15)
+    ax8.set_title('Pearson Correlation', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix),len(corr_matrix)))
     for i in range(len(corr_matrix)):
         for j in range(len(corr_matrix)):
             correlation = np.corrcoef(corr_matrix[i].flatten(), corr_matrix[j].flatten())
             corr_of_corr[i,j] = correlation[0,1]
     x = ax8.imshow(corr_of_corr,cmap = 'gray')
+    ax8.set_xticks(np.arange(len(conditions)))
+    ax8.set_yticks(np.arange(len(conditions)))
+    # ... and label them with the respective list entries
+    ax8.set_yticklabels(conditions)
+    ax8.set_xticklabels(conditions)
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax8.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+    ax8.set_xlabel('Behavioural Conditions', fontsize = 12)
+    ax8.set_ylabel('Behavioural Conditions', fontsize = 12)
     fig.colorbar(x, ax=ax8)
 
-
     ax9 = fig.add_subplot(gs[1:3, 8:12])
-    ax9.set_title('KLD', fontsize = 15)
+    ax9.set_title('Kullback-Leiber Divergence', fontsize = 15)
     dkl_matrix = np.zeros((len(corr_matrix), len(corr_matrix)))
     for i in range(len(corr_matrix)):
         [x1, bin_num1] = np.histogram(corr_matrix[i].flatten(),
@@ -203,8 +224,19 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, path_save = None):
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
     x = ax9.imshow(dkl_matrix,cmap = 'viridis')
+    ax9.set_xticks(np.arange(len(conditions)))
+    ax9.set_yticks(np.arange(len(conditions)))
+    # ... and label them with the respective list entries
+    ax9.set_yticklabels(conditions)
+    ax9.set_xticklabels(conditions)
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax9.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+    ax9.set_xlabel('Behavioural Conditions', fontsize = 12)
+    ax9.set_ylabel('Behavioural Conditions', fontsize = 12)
     fig.colorbar(x, ax=ax9)
 
+    fig.suptitle('Correlation Matrix Statistics over behaviour:' + task, fontsize = 20)
     fig.set_size_inches(20, 9)
     fig.savefig(path_save)
 
@@ -236,41 +268,53 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     fig = plt.figure(constrained_layout=True)
     gs = plt.GridSpec(2, 3)
     ax1 = fig.add_subplot(gs[0, 0])
-    ax1.set_title('In trial period', fontsize=12)
+    ax1.set_title('In trial period', fontsize=15)
     conditions = ['day1', 'day2', 'day3', 'day4', 'Test']
     x_pos = np.arange(len(conditions))
     ax1.bar(x_pos, corr_mean1, yerr=corr_error1, align='center', alpha=0.5, ecolor='black', capsize=10)
-    ax1.set_ylabel('Mean Correlation')
+    ax1.set_ylabel('Mean Correlation', fontsize = 12)
     ax1.set_xticks(x_pos)
     ax1.set_xticklabels(conditions)
     ax1.yaxis.grid(True)
     ax1.set_ylim(0, np.max(corr_mean1) + 5 * np.max(corr_error1))
+    ax1.set_xlabel('Days in session', fontsize = 12)
     fig.tight_layout()
 
     ax2 = fig.add_subplot(gs[1, 0])
-    ax2.set_title('Resting period', fontsize=12)
+    ax2.set_title('Resting period', fontsize=15)
     conditions = ['day1', 'day2', 'day3', 'day4', 'Test']
     x_pos = np.arange(len(conditions))
     ax2.bar(x_pos, corr_mean2, yerr=corr_error2, align='center', alpha=0.5, ecolor='black', capsize=10)
-    ax2.set_ylabel('Mean Correlation')
+    ax2.set_ylabel('Mean Correlation', fontsize = 12)
     ax2.set_xticks(x_pos)
     ax2.set_xticklabels(conditions)
     ax2.yaxis.grid(True)
+    ax2.set_xlabel('Days in session', fontsize = 12)
     ax2.set_ylim(0, np.max(corr_mean1) + 5 * np.max(corr_error1))
     fig.tight_layout()
 
     ax3 = fig.add_subplot(gs[0, 1])
-    ax3.set_title('Correlation', fontsize = 12)
+    ax3.set_title('Pearson Correlation', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix1),len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
         for j in range(len(corr_matrix1)):
             correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
             corr_of_corr[i,j] = correlation[0,1]
     x = ax3.imshow(np.log10(corr_of_corr),cmap = 'gray')
+    ax3.set_xticks(np.arange(len(conditions)))
+    ax3.set_yticks(np.arange(len(conditions)))
+    # ... and label them with the respective list entries
+    ax3.set_yticklabels(conditions)
+    ax3.set_xticklabels(conditions)
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax3.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+    ax3.set_xlabel('Days in session', fontsize = 12)
+    ax3.set_ylabel('Days in session', fontsize = 12)
     fig.colorbar(x, ax=ax3)
 
     ax4 = fig.add_subplot(gs[1, 1])
-    ax4.set_title('Correlation', fontsize = 12)
+    ax4.set_title('Pearson Correlation', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix2),len(corr_matrix2)))
     for i in range(len(corr_matrix2)):
         for j in range(len(corr_matrix2)):
@@ -278,10 +322,19 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
             corr_of_corr[i,j] = correlation[0,1]
     x = ax4.imshow(np.log10(corr_of_corr),cmap = 'gray')
     fig.colorbar(x, ax=ax4)
-
+    ax4.set_xticks(np.arange(len(conditions)))
+    ax4.set_yticks(np.arange(len(conditions)))
+    # ... and label them with the respective list entries
+    ax4.set_yticklabels(conditions)
+    ax4.set_xticklabels(conditions)
+    ax4.set_xlabel('Days in session', fontsize = 12)
+    ax4.set_ylabel('Days in session', fontsize = 12)
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax4.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
 
     ax5 = fig.add_subplot(gs[0, 2])
-    ax5.set_title('KLD', fontsize = 12)
+    ax5.set_title('Kullback-Leiber Divergence', fontsize = 15)
     dkl_matrix = np.zeros((len(corr_matrix1), len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
         [x1, bin_num1] = np.histogram(corr_matrix1[i].flatten(),
@@ -292,10 +345,20 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
     x = ax5.imshow(dkl_matrix,cmap = 'viridis')
+    ax5.set_xticks(np.arange(len(conditions)))
+    ax5.set_yticks(np.arange(len(conditions)))
+    # ... and label them with the respective list entries
+    ax5.set_yticklabels(conditions)
+    ax5.set_xticklabels(conditions)
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax5.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+    ax5.set_xlabel('Days in session', fontsize = 12)
+    ax5.set_ylabel('Days in session', fontsize = 12)
     fig.colorbar(x, ax=ax5)
 
     ax6 = fig.add_subplot(gs[1, 2])
-    ax6.set_title('KLD', fontsize = 12)
+    ax6.set_title('Kullback-Leiber Divergence', fontsize = 15)
     dkl_matrix = np.zeros((len(corr_matrix2), len(corr_matrix2)))
     for i in range(len(corr_matrix2)):
         [x1, bin_num1] = np.histogram(corr_matrix2[i].flatten(),
@@ -306,10 +369,20 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
     x = ax6.imshow(dkl_matrix,cmap = 'viridis')
+    ax6.set_xticks(np.arange(len(conditions)))
+    ax6.set_yticks(np.arange(len(conditions)))
+    # ... and label them with the respective list entries
+    ax6.set_yticklabels(conditions)
+    ax6.set_xticklabels(conditions)
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax6.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+    ax6.set_xlabel('Days in session', fontsize = 12)
+    ax6.set_ylabel('Days in session', fontsize = 12)
     fig.colorbar(x, ax=ax6)
 
     fig.set_size_inches(20, 9)
-    fig.suptitle(title,fontsize = 15)
+    fig.suptitle('Correlation matrix evolution over days: ' + title,fontsize = 20)
     fig.savefig(path_save)
 
     return
@@ -320,23 +393,27 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
     fig = plt.figure(constrained_layout=True)
     gs = plt.GridSpec(2, 2)
     ax1 = fig.add_subplot(gs[0, 0])
-    ax1.set_title('Correlation trials', fontsize = 12)
+    ax1.set_title('Pearson Correlation (trial)', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix1),len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
         for j in range(len(corr_matrix1)):
             correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
             corr_of_corr[i,j] = correlation[0,1]
+    ax1.set_xlabel('Trial number', fontsize=12)
+    ax1.set_ylabel('Trial number', fontsize=12)
     x = ax1.imshow(np.log10(corr_of_corr),cmap = 'gray')
     fig.colorbar(x, ax=ax1)
 
     ax2 = fig.add_subplot(gs[0, 1])
-    ax2.set_title('Correlation resting', fontsize = 12)
+    ax2.set_title('Pearson Correlation (rest)', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix2),len(corr_matrix2)))
     for i in range(len(corr_matrix1)):
         for j in range(len(corr_matrix2)):
             correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
             corr_of_corr[i,j] = correlation[0,1]
     x = ax2.imshow(np.log10(corr_of_corr),cmap = 'gray')
+    ax2.set_xlabel('Trial number', fontsize=12)
+    ax2.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax2)
 
     dkl_matrix1 = np.zeros((len(corr_matrix1),len(corr_matrix2)))
@@ -358,17 +435,21 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
 
 
     ax3 = fig.add_subplot(gs[1, 0])
-    ax3.set_title('KLD trials', fontsize = 12)
+    ax3.set_title('Kullback-Leiber Divergence (trial)', fontsize = 15)
     x = ax3.imshow(dkl_matrix1,cmap = 'viridis')
+    ax3.set_xlabel('Trial number', fontsize=12)
+    ax3.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax3)
 
     ax4 = fig.add_subplot(gs[1, 1])
-    ax4.set_title('KLD resting', fontsize=12)
+    ax4.set_title('Kullback-Leiber Divergence (rest)', fontsize=12)
     x = ax4.imshow(dkl_matrix2, cmap='viridis')
+    ax4.set_xlabel('Trial number', fontsize=12)
+    ax4.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax4)
 
     fig.set_size_inches(20, 9)
-    fig.suptitle(title,fontsize = 15)
+    fig.suptitle('Activity correlation over trials in a session: '+ title, fontsize = 20)
     fig.savefig(path_save)
 
     return
@@ -378,23 +459,27 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
     fig = plt.figure(constrained_layout=True)
     gs = plt.GridSpec(2, 2)
     ax1 = fig.add_subplot(gs[0, 0])
-    ax1.set_title('Correlation trials', fontsize=12)
+    ax1.set_title('Pearson Correlation (trials)', fontsize=15)
     corr_of_corr1 = np.zeros((len(corr_matrix1), len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
         for j in range(len(corr_matrix1)):
             correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
             corr_of_corr1[i, j] = correlation[0, 1]
     x = ax1.imshow(np.log10(corr_of_corr1), cmap='gray')
+    ax1.set_xlabel('Trial number', fontsize=12)
+    ax1.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax1)
 
     ax2 = fig.add_subplot(gs[0, 1])
-    ax2.set_title('Correlation resting', fontsize=12)
+    ax2.set_title('Pearson Correlation (rest)', fontsize=15)
     corr_of_corr2 = np.zeros((len(corr_matrix2), len(corr_matrix2)))
     for i in range(len(corr_matrix1)):
         for j in range(len(corr_matrix2)):
             correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
             corr_of_corr2[i, j] = correlation[0, 1]
     x = ax2.imshow(np.log10(corr_of_corr2), cmap='gray')
+    ax2.set_xlabel('Trial number', fontsize=12)
+    ax2.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax2)
 
     aux1 = []
@@ -408,19 +493,21 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
 
     correlation1 = np.corrcoef(np.array(aux1), np.array(aux3))
     corr_value1 = round(correlation1[0, 1], 2)
-    ax1.set_title('Correlation trials, C:'+ f'{corr_value1}', fontsize=15)
+    ax1.set_title('Pearson Correlation (trials), C:'+ f'{corr_value1}',  fontsize=15)
 
     correlation2 = np.corrcoef(np.array(aux2), np.array(aux3))
     corr_value2 = round(correlation2[0, 1], 2)
-    ax2.set_title('Correlation trials, C:'+ f'{corr_value2}', fontsize=15)
+    ax2.set_title('Pearson Correlation (rest), C:'+  f'{corr_value2}', fontsize=15)
 
     ax3 = fig.add_subplot(gs[1, 1])
     ax3.set_title('Objects Overlapping', fontsize=15)
     x = ax3.imshow(overlapping_matrix, cmap='viridis')
+    ax3.set_xlabel('Trial number', fontsize=12)
+    ax3.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax3)
 
     fig.set_size_inches(10, 10)
-    fig.suptitle('OBJECTS POSITIONS: ' + title, fontsize=15)
+    fig.suptitle('Activity correlation over trials in a session and objects position overlapping: '+ title, fontsize = 20)
     fig.savefig(path_save)
 
     return
@@ -475,8 +562,8 @@ def plot_pca_decomposition(eigenvalues = None, eigenvectors = None, n_components
     ax2.set_xlabel('Dimension', fontsize = 12)
     ax2.set_ylabel('Projection')
 
-    fig.set_size_inches(9, 5)
-    fig.suptitle('PCA analysis: ' + title)
+    fig.set_size_inches(9, 9)
+    fig.suptitle('PCA analysis: ' + title, fontsize = 20)
     fig.savefig(path_save)
     return
 
@@ -502,7 +589,7 @@ def plot_pca_projection(projection = None, title = None, path_save = None):
         ax2.set_ylabel('PC'+f'{i*4+4}')
         ax2.set_zlabel('PC'+f'{i*4+5}')
 
-    fig.suptitle('PC projection: ' + title, fontsize = 15)
+    fig.suptitle('PC projection: ' + title, fontsize = 20)
     fig.set_size_inches(10, 9)
     fig.savefig(path_save)
 
@@ -533,7 +620,7 @@ def plot_pca_behavioral_representation(components_list = None, color = None, tit
     axes.set_xlim([min_projection[0], max_projection[0]])
     axes.set_ylim([min_projection[1], max_projection[1]])
     axes.set_zlim([min_projection[2], max_projection[2]])
-    axes.set_title('Resting', fontsize = 12)
+    axes.set_title('Resting', fontsize = 15)
 
     axes = fig1.add_subplot(3, 2, 2, projection='3d')
     # axes = fig.add_subplot(111, projection='3d')
@@ -544,7 +631,7 @@ def plot_pca_behavioral_representation(components_list = None, color = None, tit
     axes.set_xlim([min_projection[0], max_projection[0]])
     axes.set_ylim([min_projection[1], max_projection[1]])
     axes.set_zlim([min_projection[2], max_projection[2]])
-    axes.set_title('Not Exploring', fontsize = 12)
+    axes.set_title('Not Exploring', fontsize = 15)
 
     axes = fig1.add_subplot(3, 2, 3, projection='3d')
     axes.scatter(components_list[2][0, :, :],components_list[2][1, :, :], components_list[2][2, :, :], c=color[2], cmap=cmap)
@@ -554,7 +641,7 @@ def plot_pca_behavioral_representation(components_list = None, color = None, tit
     axes.set_xlim([min_projection[0], max_projection[0]])
     axes.set_ylim([min_projection[1], max_projection[1]])
     axes.set_zlim([min_projection[2], max_projection[2]])
-    axes.set_title('LR', fontsize = 12)
+    axes.set_title('Object position LR', fontsize = 15)
 
     axes = fig1.add_subplot(3, 2, 4, projection='3d')
     axes.scatter(components_list[3][0, :, :], components_list[3][1, :, :], components_list[3][2, :, :], c=color[3], cmap=cmap)
@@ -564,7 +651,7 @@ def plot_pca_behavioral_representation(components_list = None, color = None, tit
     axes.set_xlim([min_projection[0], max_projection[0]])
     axes.set_ylim([min_projection[1], max_projection[1]])
     axes.set_zlim([min_projection[2], max_projection[2]])
-    axes.set_title('LL', fontsize = 12)
+    axes.set_title('Object position LL', fontsize = 15)
 
     axes = fig1.add_subplot(3, 2, 5, projection='3d')
     axes.scatter(components_list[4][0, :, :], components_list[4][1, :, :], components_list[4][2, :, :], c=color[4], cmap=cmap)
@@ -574,7 +661,7 @@ def plot_pca_behavioral_representation(components_list = None, color = None, tit
     axes.set_xlim([min_projection[0], max_projection[0]])
     axes.set_ylim([min_projection[1], max_projection[1]])
     axes.set_zlim([min_projection[2], max_projection[2]])
-    axes.set_title('UR', fontsize = 12)
+    axes.set_title('Object position UR', fontsize = 15)
 
     axes = fig1.add_subplot(3, 2, 6, projection='3d')
     axes.scatter(components_list[5][0, :, :], components_list[5][1, :, :], components_list[5][2, :, :], c=color[5], cmap=cmap)
@@ -584,10 +671,10 @@ def plot_pca_behavioral_representation(components_list = None, color = None, tit
     axes.set_xlim([min_projection[0], max_projection[0]])
     axes.set_ylim([min_projection[1], max_projection[1]])
     axes.set_zlim([min_projection[2], max_projection[2]])
-    axes.set_title('UL', fontsize = 12)
+    axes.set_title('Object position UL', fontsize = 15)
 
     fig1.set_size_inches(15, 9)
-    fig1.suptitle('Behavioural Projections: ' + title)
+    fig1.suptitle('Behavioural Projections: ' + title, fontsize = 20)
     fig1.savefig(path_save)
 
     return
@@ -607,8 +694,59 @@ def plot_pca_spectrum_behaviour(eigenvalues = None, n_components = None , title 
 
     ax1.set_xlabel('Order', fontsize=12)
     fig.suptitle('Eigenvalue Spectrum: ' + title, fontsize = 15)
-    fig.set_size_inches(5, 8)
+    fig.set_size_inches(5, 10)
     fig.savefig(path_save)
+
+    return
+
+
+def plot_pca_EV_behaviour_dimension(eigenvalues = None, ev = None, task = None, path_save = None):
+
+    dimension = np.ones((len(eigenvalues),len(ev)))
+    for i in range(len(eigenvalues)):
+        counter = 0
+        ev_total = abs(np.sum(eigenvalues[i]))
+        for x in ev:
+            flag = False
+            ev_sum = 0
+            for j in range(eigenvalues[i].shape[0]):
+                if flag == False:
+                    ev_sum = ev_sum + eigenvalues[i][j]
+                    ev_frac = ev_sum/ev_total
+                    if ev_frac > x:
+                        flag = True
+                        dimension[i,counter] = j+1
+                        counter = counter + 1
+
+    figure , axes = plt.subplots()
+    # set width of bar
+    barWidth = 0.125
+    bars = dimension[0,:]
+    r = np.arange(len(ev))
+    #color = ['b', 'r', 'g', 'm', 'c', 'y']
+    axes.bar(r, bars, width=barWidth)
+    behaviour = ['Resting',
+                     'Non exploring',
+                     'LR',
+                     'LL',
+                     'UR',
+                     'UL'
+                     ]
+    for i in range(1,len(eigenvalues)):
+        bar = dimension[i,:]
+        r = [x + barWidth for x in r]
+        axes.bar(r, bar, width=barWidth, edgecolor='white', label=behaviour[i])
+
+    # Add xticks on the middle of the group bars
+    axes.set_xlabel('Explained Variance', fontsize = 15)#, fontweight='bold')
+    axes.set_xticks(np.arange(len(ev)))
+    axes.set_ylabel('Number of componets', fontsize = 15)#, fontweight='bold')
+    axes.set_xticklabels(ev)
+    axes.legend(behaviour)
+
+    figure.suptitle('Dimensionality for different behaviours: ' + task, fontsize = 15)
+    figure.set_size_inches(7,4)
+    figure.savefig(path_save)
 
     return
 
@@ -667,7 +805,6 @@ def plot_pca_eigenvector_distance_behaviour(eigenvectors = None, n_components = 
     fig.savefig(path_save)
 
     return
-
 
 def plot_pca_eigenvector_distance_distribution_behaviour(eigenvectors = None, n_components = None , title = None, path_save = None):
 
@@ -731,6 +868,60 @@ def plot_eigenvalues_spectrum_learning(eigenvalues = None, n_components = None ,
     fig.set_size_inches(15, 6)
     fig.suptitle('Eigenvalue Spectrum in days: ' + title, fontsize=15)
     fig.savefig(path_save)
+
+    return
+
+def plot_pca_EV_dimension_learning(eigenvalues = None, ev = None , task = None, path_save = None):
+
+    dimension = np.ones((len(eigenvalues),len(ev)))
+    for i in range(len(eigenvalues)):
+        counter = 0
+        ev_total = abs(np.sum(eigenvalues[i]))
+        for x in ev:
+            flag = False
+            ev_sum = 0
+            for j in range(eigenvalues[i].shape[0]):
+                if flag == False:
+                    ev_sum = ev_sum + eigenvalues[i][j]
+                    ev_frac = ev_sum/ev_total
+                    if ev_frac > x:
+                        flag = True
+                        dimension[i,counter] = j+1
+                        counter = counter + 1
+
+    figure , axes = plt.subplots()
+    # set width of bar
+    barWidth = 0.09
+    bars = dimension[0,:]
+    r = np.arange(len(ev))
+    #color = ['b', 'r', 'g', 'm', 'c', 'y']
+    axes.bar(r, bars, width=barWidth)
+    days = ['Day1',
+            'Day2',
+            'Day3',
+             'Day4',
+             'Test',
+            'Day1_rest',
+            'Day2_rest',
+            'Day3_rest',
+            'Day4_rest',
+            'Test_rest',
+            ]
+    for i in range(1,len(eigenvalues)):
+        bar = dimension[i,:]
+        r = [x + barWidth for x in r]
+        axes.bar(r, bar, width=barWidth, edgecolor='white', label=days[i])
+
+    # Add xticks on the middle of the group bars
+    axes.set_xlabel('Explained Variance', fontsize = 15)#, fontweight='bold')
+    axes.set_xticks(np.arange(len(ev)))
+    axes.set_ylabel('Number of componets', fontsize = 15)#, fontweight='bold')
+    axes.set_xticklabels(ev)
+    axes.legend(days)
+
+    figure.suptitle('Dimensionality for different days: ' + task, fontsize = 15)
+    figure.set_size_inches(10,6)
+    figure.savefig(path_save)
 
     return
 
@@ -824,6 +1015,48 @@ def plot_pca_EV_learning(eigenvalues1= None, eigenvalues2 = None, n_components =
 
     return
 
+def plot_pca_EV_dimension_learning_trials(eigenvalues = None, ev = None , task = None, path_save = None):
+
+    dimension = np.ones((len(eigenvalues),len(ev)))
+    for i in range(len(eigenvalues)):
+        counter = 0
+        ev_total = abs(np.sum(eigenvalues[i]))
+        for x in ev:
+            flag = False
+            ev_sum = 0
+            for j in range(eigenvalues[i].shape[0]):
+                if flag == False:
+                    ev_sum = ev_sum + eigenvalues[i][j]
+                    ev_frac = ev_sum/ev_total
+                    if ev_frac > x:
+                        flag = True
+                        dimension[i,counter] = j+1
+                        counter = counter + 1
+
+    figure , axes = plt.subplots()
+    # set width of bar
+    barWidth = 0.045
+    bars = dimension[0,:]
+    r = np.arange(len(ev))
+    #color = ['b', 'r', 'g', 'm', 'c', 'y']
+    axes.bar(r, bars, width=barWidth)
+    for i in range(1,len(eigenvalues)):
+        bar = dimension[i,:]
+        r = [x + barWidth for x in r]
+        axes.bar(r, bar, width=barWidth, edgecolor='white')
+
+    # Add xticks on the middle of the group bars
+    axes.set_xlabel('Explained Variance', fontsize = 15)#, fontweight='bold')
+    axes.set_xticks(np.arange(len(ev)))
+    axes.set_ylabel('Number of componets', fontsize = 15)#, fontweight='bold')
+    axes.set_xticklabels(ev)
+
+    figure.suptitle('Dimensionality for different days: ' + task, fontsize = 15)
+    figure.set_size_inches(10,6)
+    figure.savefig(path_save)
+
+    return
+
 
 def plot_MDS_multisessions(neural_activity_msd = [], sessions = [], task = [], path_save=None):
     '''
@@ -902,6 +1135,272 @@ def plot_MDS_multisession_behaviour(neural_activity_msd = None, resample_timelin
         axes.set_ylim([-2, 2])
         axes.set_zlim([-2, 2])
         fig1.suptitle('Behavioural Conditions: ' + task[session])
-        fig1.savefig(save_path + task[session] + '.png')
+        fig1.savefig(save_path + 'training_' + task[session] + '.png')
+
+        fig2 = plt.figure()
+        axes = fig2.add_subplot(1, 2, 1, projection='3d')
+        for i in range(0, 2):
+            axes.scatter(mds_testing[i][0, :, 0], mds_testing[i][0, :, 1], mds_testing[i][0, :, 2], c=color[i])
+        axes.set_xlabel('MDS1')
+        axes.set_ylabel('MDS2')
+        axes.set_zlabel('MDS3')
+        axes.legend(['Resting', 'Non Exploring'])
+        axes = fig2.add_subplot(1, 2, 2, projection='3d')
+        for i in range(2, 6):
+            axes.scatter(mds_testing[i][0, :, 0], mds_testing[i][0, :, 1], mds_testing[i][0, :, 2], c=color[i])
+        axes.set_xlabel('MDS1')
+        axes.set_ylabel('MDS2')
+        axes.set_zlabel('MDS3')
+        axes.legend(['LR','LL', 'UR','UL'])
+        axes.set_xlim([-2, 2])
+        axes.set_ylim([-2, 2])
+        axes.set_zlim([-2, 2])
+        fig2.suptitle('Behavioural Conditions TEST: ' + task[session])
+        fig2.savefig(save_path + 'testing_' + task[session] + '.png')
+
+    return
+
+
+def plot_MDS_multisession_behaviour_distance(neural_activity_msd = None,timeline = None, resample_beh = None, task = None,save_path=None):
+
+    color = ['b', 'r', 'g', 'm', 'c', 'y']
+    behaviour = [ 'Resting',
+                 'Non exploring',
+                 'LR',
+                 'LL',
+                 'UR',
+                 'UL'
+                 ]
+
+    for session in range(len(task)):
+
+        distance_matrix = scipy.spatial.distance.cdist(neural_activity_msd[session][:int(timeline[session][40])],
+                                                       neural_activity_msd[session][:int(timeline[session][40])],
+                                                       metric='euclidean')
+
+        distance_1 = []
+        mean_distance = np.zeros((6, 6))
+        std_distance = np.zeros((6, 6))
+        number_events = np.zeros((6,1))
+        for i in range(6):
+            distance_2 = []
+            number_events[i] = np.where(resample_beh[session][:int(timeline[session][40])] == i)[0].shape
+            for j in range(6):
+                X = distance_matrix[np.where(resample_beh[session][:int(timeline[session][40])] == i), :]
+                Y = X[0, :, np.where(resample_beh[session][:int(timeline[session][40])] == j)]
+                distance_2.append(Y[0, :, :])
+                mean_distance[i - 1, j - 1] = np.mean(Y[0, :, :].flatten())
+                std_distance[i - 1, j - 1] = np.std(Y[0, :, :].flatten())
+            distance_1.append(distance_2)
+
+        fig1 = plt.figure(constrained_layout=True)
+        # fig2 = plt.figure(constrained_layout=True)
+        # gs = plt.GridSpec(3, 2)
+        gs = plt.GridSpec(3, 3)
+        for i in range(6):
+            # fig2 = plt.figure(constrained_layout=True)
+            axes1 = fig1.add_subplot(gs[int(i/2), i%2+1])
+            for j in range(6):
+                [hist_val, bins] = np.histogram(distance_1[i][j].flatten(), bins=np.arange(0, 3, 3 / 25))
+                if i == j:
+                    axes1.scatter(bins[:-1], hist_val / np.sum(hist_val), marker='*', c='k')
+                axes1.plot(bins[:-1], hist_val / np.sum(hist_val), c=color[j])
+                # axes1.set_title('Condition '+ conditions_name[i])
+                axes1.set_ylim([0, 0.25])
+                axes1.set_ylabel('#')
+                axes1.set_xlabel('Distance [a.u.]')
+            axes1.set_title(behaviour[i] + ' Events:' + f'{number_events[i]}')
+
+        axes = fig1.add_subplot(gs[0, 0])
+        x = axes.imshow(mean_distance)
+        # We want to show all ticks...
+        axes.set_xticks(np.arange(len(behaviour)))
+        axes.set_yticks(np.arange(len(behaviour)))
+        # ... and label them with the respective list entries
+        axes.set_yticklabels(behaviour)
+        axes.set_xticklabels(behaviour)
+        # Rotate the tick labels and set their alignment.
+        plt.setp(axes.get_xticklabels(), rotation=45, ha="right",
+                 rotation_mode="anchor")
+        axes.set_title('Mean distance')
+        fig1.colorbar(x, ax=axes)#, orientation='vertical', fraction=0.9)
+
+        fig1.suptitle('MDS ' + task[session])
+        fig1.set_size_inches(10, 9)
+        mds_figure = save_path + task[session] +  '.png'
+        fig1.savefig(mds_figure)
+        # fig1.show()
+
+    return
+
+
+def plot_MDS_multiplesession_configuration(neural_activity_msd = None,resample_timeline = None, condition_vector = None, task = None,save_path=None):
+
+    color = ['k', 'b', 'r', 'g', 'm', 'c']
+    conditions_name = [
+        'LR, LL',
+        'LR, UR',
+        'LR, UL',
+        'LL, UR',
+        'LL, UL',
+        'UR, UL'
+    ]
+    for session in range(len(task)):
+        neural_activity_days = []
+        time_length = np.diff(resample_timeline[session])
+        for i in range(0, 42, 2):
+            trial_matrix = neural_activity_msd[session][
+                           int(resample_timeline[session][i]):int(resample_timeline[session][i]) + int(time_length[i]),
+                           :]
+            neural_activity_days.append(trial_matrix)
+
+        neural_activity_resting_days = []
+        for i in range(1, 43, 2):
+            trial_matrix = neural_activity_msd[session][
+                           int(resample_timeline[session][i]):int(resample_timeline[session][i]) + int(time_length[i]),
+                           :]
+            neural_activity_resting_days.append(trial_matrix)
+
+        mds_condifguration = []
+        mds_condifguration_rest = []
+        for i in range(6):
+            mds_condifguration.append([])
+            mds_condifguration_rest.append([])
+
+        for i in range(1, 7):
+            trials = np.where(condition_vector[session] == i)[0]
+            for trial in trials:
+                mds_condifguration[i - 1].append(neural_activity_days[trial])
+                mds_condifguration_rest[i - 1].append(neural_activity_resting_days[trial])
+
+        fig1 = plt.figure()
+        fig2 = plt.figure()
+        gs = plt.GridSpec(3, 3)
+        axes1 = fig1.add_subplot(gs[0:3, 0], projection='3d')
+        axes2 = fig2.add_subplot(gs[0:3, 0], projection='3d')
+        for i in range(6):
+            for j in range(len(mds_condifguration[i])):
+                axes1.scatter(mds_condifguration[i][j][:, 0], mds_condifguration[i][j][:, 1],
+                              mds_condifguration[i][j][:, 2], c=color[i])
+                axes1.set_xlim([-2, 2])
+                axes1.set_ylim([-2, 2])
+                axes1.set_zlim([-2, 2])
+                axes1.set_xlabel('MDS1')
+                axes1.set_ylabel('MDS2')
+                axes1.set_zlabel('MDS3')
+                axes1.set_title('Trials')
+
+                axes2.scatter(mds_condifguration_rest[i][j][:, 0], mds_condifguration_rest[i][j][:, 1],
+                              mds_condifguration_rest[i][j][:, 2], c=color[i])
+                axes2.set_xlabel('MDS1')
+                axes2.set_ylabel('MDS2')
+                axes2.set_zlabel('MDS3')
+                axes2.set_xlim([-2, 2])
+                axes2.set_ylim([-2, 2])
+                axes2.set_zlim([-2, 2])
+                axes2.set_title('Resting')
+
+                axes3 = fig1.add_subplot(gs[int(i / 2), i % 2 + 1], projection='3d')
+                axes3.scatter(mds_condifguration[i][j][:, 0], mds_condifguration[i][j][:, 1],
+                              mds_condifguration[i][j][:, 2], c=color[i])
+                axes3.set_xlim([-2, 2])
+                axes3.set_ylim([-2, 2])
+                axes3.set_zlim([-2, 2])
+                axes3.set_title(conditions_name[i])
+                axes3.set_xlabel('MDS1')
+                axes3.set_ylabel('MDS2')
+                axes3.set_zlabel('MDS3')
+
+                axes4 = fig2.add_subplot(gs[int(i/2), i%2+1], projection='3d')
+                axes4.scatter(mds_condifguration_rest[i][j][:, 0], mds_condifguration_rest[i][j][:, 1],
+                              mds_condifguration_rest[i][j][:, 2], c=color[i])
+                axes4.set_xlim([-2, 2])
+                axes4.set_ylim([-2, 2])
+                axes4.set_zlim([-2, 2])
+                axes4.set_xlabel('MDS1')
+                axes4.set_ylabel('MDS2')
+                axes4.set_zlabel('MDS3')
+                axes4.set_title(conditions_name[i])
+
+
+        fig1.suptitle('MDS Configuration: ' + task[session])
+        fig1.set_size_inches(10, 9)
+        fig2.suptitle('MDS Configuration Rest: ' + task[session])
+        fig2.set_size_inches(10, 9)
+
+        mds_figure = save_path + task[session] + '.png'
+        fig1.savefig(mds_figure)
+        mds_figure_rest = save_path + task[session] + '_rest.png'
+        fig2.savefig(mds_figure_rest)
+
+    return
+
+
+def plot_MDS_multisession_distance_configuration(neural_activity_msd = None, condition_vector_trials = None, task = None, save_path = None):
+
+    conditions_name = [
+        'LR, LL',
+        'LR, UR',
+        'LR, UL',
+        'LL, UR',
+        'LL, UL',
+        'UR, UL'
+    ]
+    color = ['b', 'r', 'g', 'm', 'c', 'y']
+
+    for session in range(len(task)):
+
+        distance_matrix = scipy.spatial.distance.cdist(neural_activity_msd[session], neural_activity_msd[session],
+                                                       metric='euclidean')
+        distance_1 = []
+        mean_distance = np.zeros((6, 6))
+        std_distance = np.zeros((6, 6))
+        for i in range(1, 7):
+            distance_2 = []
+            for j in range(1, 7):
+                X = distance_matrix[np.where(condition_vector_trials[session] == i), :]
+                Y = X[0, :, np.where(condition_vector_trials[session] == j)]
+                distance_2.append(Y[0, :, :])
+                mean_distance[i - 1, j - 1] = np.mean(Y[0, :, :])
+                std_distance[i - 1, j - 1] = np.std(Y[0, :, :])
+            distance_1.append(distance_2)
+
+        fig1 = plt.figure(constrained_layout=True)
+        # fig2 = plt.figure(constrained_layout=True)
+        gs = plt.GridSpec(3, 3)
+        axes = fig1.add_subplot(gs[0, 0])
+        x = axes.imshow(mean_distance)
+        # We want to show all ticks...
+        axes.set_xticks(np.arange(len(conditions_name)))
+        axes.set_yticks(np.arange(len(conditions_name)))
+        # ... and label them with the respective list entries
+        axes.set_yticklabels(conditions_name)
+        axes.set_xticklabels(conditions_name)
+        # Rotate the tick labels and set their alignment.
+        plt.setp(axes.get_xticklabels(), rotation=45, ha="right",
+                 rotation_mode="anchor")
+        axes.set_title('Mean distance')
+        fig1.colorbar(x, ax=axes)#, orientation='vertical', fraction=0.9)
+
+
+        for i in range(6):
+            # fig2 = plt.figure(constrained_layout=True)
+            axes1 = fig1.add_subplot(gs[int(i / 2), i % 2 + 1])
+            for j in range(6):
+                [hist_val, bins] = np.histogram(distance_1[i][j].flatten(), bins=np.arange(0, 3, 3 / 50))
+                if i == j:
+                    axes1.scatter(bins[:-1], hist_val / np.sum(hist_val), marker='*', c='k')
+                axes1.plot(bins[:-1], hist_val / np.sum(hist_val), c=color[j])
+
+                axes1.set_title('Condition '+ conditions_name[i])
+                axes1.set_ylim([0, 0.08])
+                axes1.set_ylabel('#')
+                axes1.set_xlabel('Distance [a.u.]')
+
+
+        fig1.suptitle('MDS ' + task[session])
+        figure_path = save_path + task[session] + '.png'
+        fig1.set_size_inches(9, 7)
+        fig1.savefig(figure_path)
 
     return

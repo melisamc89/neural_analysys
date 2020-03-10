@@ -150,4 +150,16 @@ pca_learning_days_distance_path =  figures_path + 'pca_eigenvector_distance_lear
 figs.plot_pca_eigenvector_distance_learning(eigenvectors = eigenvectors_list, n_components = n_components ,
                                         title = task, path_save = pca_learning_days_distance_path )
 
-#%%
+#%%#%%
+eigenvectors_list = []
+eigenvalues_list = []
+for i in range(len(neural_activity_resting_days)):
+    cov_matrix = stats.cov_matrix(neural_activity=neural_activity_days[i])  ## compute covariance matrix
+    eigVal, eigVec = stats.compute_PCA(corr_matrix=cov_matrix)  ## run eigenvalues and eigenvectors analysis
+    eigenvectors_list.append(eigVec)
+    eigenvalues_list.append(eigVal)
+for i in range(len(neural_activity_days)):
+    cov_matrix = stats.cov_matrix(neural_activity=neural_activity_resting_days[i])  ## compute covariance matrix
+    eigVal, eigVec = stats.compute_PCA(corr_matrix=cov_matrix)  ## run eigenvalues and eigenvectors analysis
+    eigenvectors_list.append(eigVec)
+    eigenvalues_list.append(eigVal)

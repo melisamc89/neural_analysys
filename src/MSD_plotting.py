@@ -99,192 +99,35 @@ for session in sessions:
 
 #%%
 ##plotting
-mds_figure = figures_path + 'msd_mouse_'+f'{mouse}' +'_binsize_'+f'{re_sf}'+'.png'
+mds_figure = figures_path + 'mds_mouse_'+f'{mouse}' +'_binsize_'+f'{re_sf}'+'.png'
 figs.plot_MDS_multisessions(neural_activity_msd = neural_activity_msd, sessions = sessions, task = task, path_save=mds_figure)
 
 
 #%% separate conditions with behavioural conditions
-figure_mds_behaviour =  figures_path + 'msd_mouse_'+f'{mouse}' +'_binsize_'+f'{re_sf}'+'_'
+figure_mds_behaviour =  figures_path + 'mds_behaviour_mouse_'+f'{mouse}' +'_binsize_'+f'{re_sf}'+'_'
 figs.plot_MDS_multisession_behaviour(neural_activity_msd = neural_activity_msd , resample_timeline= resample_timeline,
                                     resample_beh=resample_beh, task = task,  save_path = figure_mds_behaviour)
 
 
+#%% Compute the distance between representations of objects
+
+figure_mds_behaviour_dist =  figures_path + 'mds_behaviour_distance_mouse_'+f'{mouse}' +'_binsize_'+f'{re_sf}'+'_'
+figs.plot_MDS_multisession_behaviour_distance(neural_activity_msd=neural_activity_msd, resample_beh=resample_beh,
+                                             timeline=resample_timeline,task=task, save_path=figure_mds_behaviour_dist)
+
 #%% separate conditions with objects configurations by separating trials
-color = ['k', 'b', 'r', 'g', 'm', 'c']
 
-for session in [0,1,2]:
-    neural_activity_days = []
-    time_length = np.diff(resample_timeline[session])
-    for i in range(0,42,2):
-        trial_matrix = neural_activity_msd[session][int(resample_timeline[session][i]):int(resample_timeline[session][i]) + int(time_length[i]),:]
-        neural_activity_days.append(trial_matrix)
+figure_mds_configuration =  figures_path + 'mds_configuration_mouse_'+f'{mouse}' +'_binsize_'+f'{re_sf}'+'_'
+figs.plot_MDS_multiplesession_configuration(neural_activity_msd=neural_activity_msd, condition_vector=condition_vector,
+                                            task=task, resample_timeline = resample_timeline,
+                                            save_path=figure_mds_configuration)
 
-    neural_activity_resting_days = []
-    for i in range(1,43,2):
-        trial_matrix = neural_activity_msd[session][int(resample_timeline[session][i]):int(resample_timeline[session][i]) + int(time_length[i]),:]
-        neural_activity_resting_days.append(trial_matrix)
+#%% compute distance between neural representations of different envirionmental configurations
 
-    mds_condifguration = []
-    mds_condifguration_rest = []
-    for i in range(6):
-        mds_condifguration.append([])
-        mds_condifguration_rest.append([])
-
-    for i in range(1,7):
-        trials = np.where(condition_vector[session]==i)[0]
-        for trial in trials:
-            mds_condifguration[i-1].append(neural_activity_days[trial])
-            mds_condifguration_rest[i-1].append(neural_activity_resting_days[trial])
-
-    fig1 = plt.figure()
-    axes1 = fig1.add_subplot(1, 2, 1, projection='3d')
-    axes2 = fig1.add_subplot(1, 2, 2, projection='3d')
-    for i in range(6):
-        for j in range(len(mds_condifguration[i])):
-            axes1.scatter(mds_condifguration[i][j][:,2], mds_condifguration[i][j][:,0], mds_condifguration[i][j][:, 1], c=color[i])
-            axes2.scatter(mds_condifguration_rest[i][j][:,2], mds_condifguration_rest[i][j][:,0], mds_condifguration_rest[i][j][:, 1], c=color[i])
-    fig1.show()
-
-    fig1 = plt.figure()
-    fig2 = plt.figure()
-    for i in range(6):
-        for j in range(len(mds_condifguration[i])):
-            axes1 = fig1.add_subplot(3, 2, i + 1, projection='3d')
-            axes1.scatter(mds_condifguration[i][j][:, 0], mds_condifguration[i][j][:, 1],
-                          mds_condifguration[i][j][:, 2], c=color[i])
-            axes1.set_xlim([-1, 1])
-            axes1.set_ylim([-1, 1])
-            axes1.set_zlim([-1, 1])
-
-            axes2 = fig2.add_subplot(3, 2, i + 1, projection='3d')
-            axes2.scatter(mds_condifguration_rest[i][j][:, 0], mds_condifguration_rest[i][j][:, 1],
-                          mds_condifguration_rest[i][j][:, 2], c=color[i])
-            axes2.set_xlim([-1, 1])
-            axes2.set_ylim([-1, 1])
-            axes2.set_zlim([-1, 1])
-
-    fig1.show()
-    fig2.show()
-
-# %% separate conditions with objects configurations by separating trials
-color = ['k', 'b', 'r', 'g', 'm', 'c']
-
-for session in [0, 1, 2]:
-    neural_activity_days = []
-    time_length = np.diff(resample_timeline[session])
-    for i in range(0, 42, 2):
-        trial_matrix = neural_activity_msd[session][
-                       int(resample_timeline[session][i]):int(resample_timeline[session][i]) + int(time_length[i]), :]
-        neural_activity_days.append(trial_matrix)
-
-    neural_activity_resting_days = []
-    for i in range(1, 43, 2):
-        trial_matrix = neural_activity_msd[session][
-                       int(resample_timeline[session][i]):int(resample_timeline[session][i]) + int(time_length[i]), :]
-        neural_activity_resting_days.append(trial_matrix)
-
-    mds_condifguration = []
-    mds_condifguration_rest = []
-    for i in range(6):
-        mds_condifguration.append([])
-        mds_condifguration_rest.append([])
-
-    for i in range(1, 7):
-        trials = np.where(condition_vector[session] == i)[0]
-        for trial in trials:
-            if trial != 20:
-                mds_condifguration[i - 1].append(neural_activity_days[trial])
-                mds_condifguration_rest[i - 1].append(neural_activity_resting_days[trial])
-
-    fig1 = plt.figure(constrained_layout=True)
-    #fig2 = plt.figure(constrained_layout=True)
-    gs = plt.GridSpec(3, 3)
-    axes1 = fig1.add_subplot(gs[0:3, 0], projection='3d')
-    #axes2 = fig2.add_subplot(gs[0:3, 0], projection='3d')
-    for i in range(6):
-        for j in range(len(mds_condifguration[i])):
-            axes1.scatter(mds_condifguration[i][j][:, 0], mds_condifguration[i][j][:, 1],
-                          mds_condifguration[i][j][:, 2], c=color[i])
-            axes1.set_xlim([-2, 2])
-            axes1.set_ylim([-2, 2])
-            axes1.set_zlim([-2, 2])
-            #axes2.scatter(mds_condifguration_rest[i][j][:, 0], mds_condifguration_rest[i][j][:, 1],
-            #              mds_condifguration_rest[i][j][:, 2], c=color[i])
-
-            axes3 = fig1.add_subplot(gs[int(i/2), i%2+1] , projection='3d')
-            axes3.scatter(mds_condifguration[i][j][:, 0], mds_condifguration[i][j][:, 1],
-                          mds_condifguration[i][j][:, 2], c=color[i])
-            axes3.set_xlim([-2, 2])
-            axes3.set_ylim([-2, 2])
-            axes3.set_zlim([-2, 2])
-            axes3.set_title('Configuration:' + f'{i+1}')
-
-            #axes4 = fig2.add_subplot(gs[int(i/2), i%2+1], projection='3d')
-            #axes4.scatter(mds_condifguration_rest[i][j][:, 0], mds_condifguration_rest[i][j][:, 1],
-            #              mds_condifguration_rest[i][j][:, 2], c=color[i])
-            #axes4.set_xlim([-1, 1])
-            #axes4.set_ylim([-1, 1])
-            #axes4.set_zlim([-1, 1])
-
-    fig1.set_size_inches(10, 10)
-    fig1.show()
-    #fig2.show()
-
-#%%
-conditions_name = [
-    'LR, LL',
-    'LR, UR',
-    'LR, UL',
-    'LL, UR',
-    'LL, UL',
-    'UR, UL'
-]
-color = ['b', 'r', 'g', 'm', 'c','y']
-
-for session in [0, 1, 2]:
-
-    distance_matrix = scipy.spatial.distance.cdist(neural_activity_msd[session], neural_activity_msd[session], metric='euclidean')
-
-    distance_1 = []
-    mean_distance = np.zeros((6,6))
-    std_distance = np.zeros((6,6))
-    for i in range(1,7):
-        distance_2=[]
-        for j in range(1,7):
-            X = distance_matrix[np.where(condition_vector_trials[session]==i),:]
-            Y = X[0,:,np.where(condition_vector_trials[session]==j)]
-            distance_2.append(Y[0,:,:])
-            mean_distance[i-1,j-1] = np.mean(Y[0,:,:])
-            std_distance[i-1,j-1] = np.std(Y[0,:,:])
-        distance_1.append(distance_2)
-
-    fig1 = plt.figure(constrained_layout=True)
-    #fig2 = plt.figure(constrained_layout=True)
-    #gs = plt.GridSpec(3, 2)
-    for i in range(6):
-        # fig2 = plt.figure(constrained_layout=True)
-        gs = plt.GridSpec(3, 3)
-        axes1 = fig1.add_subplot(3, 2, i + 1)
-        for j in range(6):
-            [hist_val, bins] = np.histogram(distance_1[i][j].flatten(), bins = np.arange(0,3,2/50))
-            if i == j :
-                axes1.scatter(bins[:-1], hist_val / np.sum(hist_val), marker = '*', c= 'k')
-            axes1.plot(bins[:-1], hist_val/np.sum(hist_val), c = color[j])
-            axes1.set_title('Condition '+ conditions_name[i])
-            axes1.set_ylim([0,0.05])
-            axes1.set_ylabel('#')
-            axes1.set_xlabel('Distance [a.u.]')
-
-    fig1.suptitle('MDS ' + task[session])
-    #fig1.set_size_inches(12, 10)
-    mds_figure = figures_path + 'mds_distance_configuration_mouse_' + f'{mouse}'+'_session_' +f'{session}'+ '_binsize_' + f'{re_sf}' + '.png'
-    fig1.savefig(mds_figure)
-    #fig1.show()
-
-
-
-
-
+figure_mds_configuration_distance =  figures_path + 'mds_configuration_distance_mouse_'+f'{mouse}' +'_binsize_'+f'{re_sf}'+'_'
+figs.plot_MDS_multisession_distance_configuration(neural_activity_msd = neural_activity_msd,
+                                                  condition_vector_trials = condition_vector_trials,
+                                                  task = task, save_path = figure_mds_configuration_distance)
 
 #%%
 fig1 = plt.figure()
