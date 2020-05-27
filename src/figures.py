@@ -63,13 +63,13 @@ def plot_correlation_matrix_conditions(matrix_list = None, save_path = None, tit
     for i in range(size):
         for j in range(size):
             if counter < len(matrix_list):
-                images.append(axes[i, j].imshow(np.log10(matrix_list[counter]), cmap='viridis'))
+                images.append(axes[i, j].imshow(matrix_list[counter], cmap='viridis'))
                 counter = counter+1
                 axes[i, j].label_outer()
 
 
-    vmin = min(image.get_array().min() for image in images)
-    vmax = max(image.get_array().max() for image in images)
+    vmin = -1
+    vmax = 1
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
     for im in images:
         im.set_norm(norm)
@@ -91,17 +91,16 @@ def plot_correlation_matrix_conditions(matrix_list = None, save_path = None, tit
 
 def plot_correlation_matrix_behaviour(corr_matrix_list = None , path_save = None, title = None):
 
-
     figure, axes = plt.subplots(3, 2)
     images = []
     for i in range(3):
         for j in range(2):
-            images.append(axes[i, j].imshow(np.log10(corr_matrix_list[i * 2 + j]), cmap='viridis'))
+            images.append(axes[i, j].imshow(corr_matrix_list[i * 2 + j], cmap='viridis'))
             axes[i, j].label_outer()
             figure.colorbar(images[i], ax=axes[i, j])
 
-    vmin = min(image.get_array().min() for image in images)
-    vmax = 0
+    vmin = -1
+    vmax = 1
     # vmax = max(image.get_array().max() for image in images)
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
     for im in images:
@@ -131,49 +130,49 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_
     corr_error = np.zeros(len(corr_matrix))
     max_corr = 0
     for i in range(len(corr_matrix)):
-        corr_mean[i] = np.mean(corr_matrix[i].flatten())
-        corr_error[i] = np.std(corr_matrix[i].flatten())/math.sqrt(corr_matrix[i].flatten().shape[0])
+        corr_mean[i] = np.mean(np.abs(corr_matrix[i].flatten()))
+        corr_error[i] = np.std(np.mean(corr_matrix[i].flatten()))/math.sqrt(corr_matrix[i].flatten().shape[0])
         max_value = np.max(corr_matrix[i].flatten())
         if max_value > max_corr:
             max_corr = max_value
 
-    min_corr= 0.0001
-    max_corr = 0.002
+    min_corr= -1
+    max_corr = 1
     fig = plt.figure(constrained_layout=True)
     gs = plt.GridSpec(3, 12)
     ax1 = fig.add_subplot(gs[0, 0:2])
     ax1.set_title('Resting', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[0].flatten(),bins=np.arange(0.0, max_corr, max_corr / 20))
+    [counter,bin_num] = np.histogram(corr_matrix[0].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
     ax1.fill_between(bin_num[:-1],counter / np.sum(counter))
     ax1.set_ylim(0,1)
 
     ax2 = fig.add_subplot(gs[0, 2:4])
     ax2.set_title('Not exploring', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[1].flatten(),bins=np.arange(0.0, max_corr, max_corr / 20))
+    [counter,bin_num] = np.histogram(corr_matrix[1].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
     ax2.fill_between(bin_num[:-1],counter / np.sum(counter))
     ax2.set_ylim(0,1)
 
     ax3 = fig.add_subplot(gs[0, 4:6])
     ax3.set_title('LR', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[2].flatten(),bins=np.arange(0.0, max_corr, max_corr / 20))
+    [counter,bin_num] = np.histogram(corr_matrix[2].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
     ax3.fill_between(bin_num[:-1],counter / np.sum(counter))
     ax3.set_ylim(0,1)
 
     ax4 = fig.add_subplot(gs[0,6:8])
     ax4.set_title('LL', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[3].flatten(),bins=np.arange(0.0, max_corr, max_corr / 20))
+    [counter,bin_num] = np.histogram(corr_matrix[3].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
     ax4.fill_between(bin_num[:-1],counter / np.sum(counter))
     ax4.set_ylim(0,1)
 
     ax5 = fig.add_subplot(gs[0,8:10])
     ax5.set_title('UR', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[4].flatten(),bins=np.arange(0.0, max_corr, max_corr / 20))
+    [counter,bin_num] = np.histogram(corr_matrix[4].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
     ax5.fill_between(bin_num[:-1],counter / np.sum(counter))
     ax5.set_ylim(0,1)
 
     ax6 = fig.add_subplot(gs[0,10:12])
     ax6.set_title('UL', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[5].flatten(),bins=np.arange(0.0, max_corr, max_corr / 20))
+    [counter,bin_num] = np.histogram(corr_matrix[5].flatten(),bins=np.arange(min_corr, max_corr,(max_corr-min_corr) / 50))
     ax6.fill_between(bin_num[:-1],counter / np.sum(counter))
     ax6.set_ylim(0,1)
 
@@ -188,7 +187,7 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_
     ax7.set_xticklabels(conditions)
     ax7.set_title('Correlation Statistics', fontsize = 15)
     ax7.yaxis.grid(True)
-    ax7.set_ylim(0,np.max(corr_mean)+5*np.max(corr_error))
+    #ax7.set_ylim(0,np.max(corr_mean)+5*np.max(corr_error))
     fig.tight_layout()
 
 
@@ -217,10 +216,10 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_
     dkl_matrix = np.zeros((len(corr_matrix), len(corr_matrix)))
     for i in range(len(corr_matrix)):
         [x1, bin_num1] = np.histogram(corr_matrix[i].flatten(),
-                                          bins=np.arange(0.0, max_corr, max_corr / 20))
+                                          bins=np.arange(-1, max_corr, 2 / 50))
         for j in range(len(corr_matrix)):
             [y1, bin_num2] = np.histogram(corr_matrix[j].flatten(),
-                                                bins=np.arange(0.0, max_corr, max_corr / 20))
+                                                bins=np.arange(-1, max_corr, 2 / 50))
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
     x = ax9.imshow(dkl_matrix,cmap = 'viridis')
@@ -249,8 +248,8 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     corr_error1 = np.zeros(len(corr_matrix1))
     max_corr = 0
     for i in range(len(corr_matrix1)):
-        corr_mean1[i] = np.mean(corr_matrix1[i].flatten())
-        corr_error1[i] = np.std(corr_matrix1[i].flatten())/math.sqrt(corr_matrix1[i].flatten().shape[0])
+        corr_mean1[i] = np.mean(np.abs(corr_matrix1[i].flatten()))
+        corr_error1[i] = np.std(np.abs(corr_matrix1[i].flatten()))/math.sqrt(corr_matrix1[i].flatten().shape[0])
         max_value = np.max(corr_matrix1[i].flatten())
         if max_value > max_corr:
             max_corr = max_value
@@ -259,8 +258,8 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     corr_error2 = np.zeros(len(corr_matrix2))
     max_corr = 0
     for i in range(len(corr_matrix2)):
-        corr_mean2[i] = np.mean(corr_matrix2[i].flatten())
-        corr_error2[i] = np.std(corr_matrix2[i].flatten())/math.sqrt(corr_matrix2[i].flatten().shape[0])
+        corr_mean2[i] = np.mean(np.abs(corr_matrix2[i].flatten()))
+        corr_error2[i] = np.std(np.abs(corr_matrix2[i].flatten()))/math.sqrt(corr_matrix2[i].flatten().shape[0])
         max_value = np.max(corr_matrix2[i].flatten())
         if max_value > max_corr:
             max_corr = max_value
@@ -338,10 +337,10 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     dkl_matrix = np.zeros((len(corr_matrix1), len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
         [x1, bin_num1] = np.histogram(corr_matrix1[i].flatten(),
-                                          bins=np.arange(0.0, max_corr, max_corr / 20))
+                                          bins=np.arange(-1, 1, 2 / 50))
         for j in range(len(corr_matrix1)):
             [y1, bin_num2] = np.histogram(corr_matrix1[j].flatten(),
-                                                bins=np.arange(0.0, max_corr, max_corr / 20))
+                                                bins=np.arange(-1, 1, 2 / 50))
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
     x = ax5.imshow(dkl_matrix,cmap = 'viridis')
@@ -362,10 +361,10 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     dkl_matrix = np.zeros((len(corr_matrix2), len(corr_matrix2)))
     for i in range(len(corr_matrix2)):
         [x1, bin_num1] = np.histogram(corr_matrix2[i].flatten(),
-                                          bins=np.arange(0.0, max_corr, max_corr / 20))
+                                          bins=np.arange(-1, 1, 2 / 50))
         for j in range(len(corr_matrix2)):
             [y1, bin_num2] = np.histogram(corr_matrix2[j].flatten(),
-                                                bins=np.arange(0.0, max_corr, max_corr / 20))
+                                                bins=np.arange(-1, 1, 2 / 50))
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
     x = ax6.imshow(dkl_matrix,cmap = 'viridis')

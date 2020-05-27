@@ -16,10 +16,10 @@ def normalize_neural_activity(activity = None, timeline = None):
     :return: the new normalized matrix and a nd-array with the timeline information
     '''
 
-    timeline_vector = np.zeros(42 + 1)
-    for i in range(42):
+    timeline_vector = np.zeros(len(timeline) + 1)
+    for i in range(len(timeline)):
         timeline_vector[i] = timeline[i][1]
-    timeline_vector[42] = activity.shape[1]
+    timeline_vector[len(timeline)] = activity.shape[1]
     ### do analysis corr, PCA
     ## normalize activity within trial and for each neuron
     activity_normalized = np.zeros((activity.shape))

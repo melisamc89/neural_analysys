@@ -17,7 +17,8 @@ import matplotlib.cm as cm
 from scipy import signal
 cmap = cm.jet
 
-mouse = 56165
+mouse = 56166
+sessions = [1,2]
 
 ## load source extracted calcium traces condition SESSION 1
 file_directory = os.environ['PROJECT_DIR'] + 'neural_analysis/data/calcium_activity/'
@@ -38,11 +39,11 @@ sf = 10
 figure, axes = plt.subplots(3,1)
 ## session 1 files
 plotting = 0
-for session in [1,2,4]:
+for session in sessions:
     file_name_session_1 = 'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.4.'+f'{100}'+\
                           '.'+f'{alignment_v}'+'.'+ f'{equalization_v}' +'.' + f'{source_extraction_v}'+'.' + \
                           f'{component_evaluation_v}' +'.'+ f'{registration_v}' + '.npy'
-    time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.1.'+f'{1}'+\
+    time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_1_v'+ f'{decoding_v}'+'.4.'+f'{1}'+\
                           '.'+f'{0}'+ '.pkl'
     beh_file_name_1 = 'mouse_'+f'{mouse}'+'_session_'+f'{session}'+'.npy'
 
@@ -77,6 +78,9 @@ for session in [1,2,4]:
         resample_neural_activity = np.mean(reshape_neural_activity,axis= 2)
         denominator = np.mean(np.multiply(resample_neural_activity,resample_neural_activity),axis=1)
         nominator = np.multiply(np.mean(resample_neural_activity,axis=1),np.mean(resample_neural_activity,axis=1))
+        x = np.where(denominator)
+        denominator = denominator[x]
+        nominator = nominator[x]
         sparceness = np.divide(nominator,denominator)
         sparceness_mean.append(np.mean(sparceness))
         sparceness_std.append(np.std(sparceness))
@@ -95,4 +99,4 @@ axes[1].set_ylabel(' <f>^2  /  <f^2>  ')
 axes[2].set_ylabel('  <f>^2 / < <f^2>   ')
 
 figure.show()
-figure.savefig('/home/sebastian/Documents/Melisa/neural_analysis/data/process/figures/sparcity_mouse_'+f'{mouse}'+'.png')
+figure.savefig('/home/melisa/Documents/neural_analysis/data/process/figures/sparcity_mouse_'+f'{mouse}'+'.png')
