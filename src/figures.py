@@ -241,6 +241,32 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_
 
     return
 
+def plot_correlation_histograms_learning(corr_matrix1 = None, corr_matrix2=None, path_save = None,title = None, nbins = 20):
+
+    min_corr= -1
+    max_corr = 1
+    fig = plt.figure(constrained_layout=True)
+    gs = plt.GridSpec(2, 5)
+    ax_title = ['Day1', 'Day2', 'Day3', 'Day4', 'Test']
+    for i in range(5):
+        ax1 = fig.add_subplot(gs[0, i])
+        ax1.set_title(ax_title[i], fontsize = 15)
+        [counter,bin_num] = np.histogram(corr_matrix1[i].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / nbins))
+        ax1.fill_between(bin_num[:-1],counter / np.sum(counter))
+        ax1.set_ylim(0,1)
+
+        ax2 = fig.add_subplot(gs[1, i])
+        ax2.set_title(ax_title[i], fontsize = 15)
+        [counter,bin_num] = np.histogram(corr_matrix2[i].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / nbins))
+        ax2.fill_between(bin_num[:-1],counter / np.sum(counter), color = 'r')
+        ax2.set_ylim(0,1)
+
+    fig.suptitle('Correlation Matrix histograms over days:' + title, fontsize = 20)
+    fig.set_size_inches(20, 9)
+    fig.savefig(path_save)
+
+    return
+
 
 def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None, path_save = None,title = None):
 
@@ -419,15 +445,14 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
     dkl_matrix2= np.zeros((len(corr_matrix1),len(corr_matrix2)))
     for i in range(len(corr_matrix1)):
         x1 = np.histogram(corr_matrix1[i].flatten()[np.where(corr_matrix1[i].flatten() > 0.01)],
-                          bins=np.arange(0.01, 0.05, 0.04 / 15))
+                          bins=np.arange(-1, 1, 2 / 20))
         x2 = np.histogram(corr_matrix2[i].flatten()[np.where(corr_matrix2[i].flatten() > 0.01)],
-                          bins=np.arange(0.01, 0.05, 0.04 / 15))
+                          bins=np.arange(-1, 1, 2 / 20))
         for j in range(len(corr_matrix1)):
             y1 = np.histogram(corr_matrix1[j].flatten()[np.where(corr_matrix1[j].flatten() > 0.01)],
-                              bins=np.arange(0.01, 0.05, 0.04 / 15))
-            y2 = np.histogram(
-                corr_matrix2[j].flatten()[np.where(corr_matrix2[j].flatten() > 0.01)],
-                bins=np.arange(0.01, 0.05, 0.04 / 15))
+                              bins=np.arange(-1, 1, 2 / 20))
+            y2 = np.histogram(corr_matrix2[j].flatten()[np.where(corr_matrix2[j].flatten() > 0.01)],
+                              bins=np.arange(-1, 1, 2 / 20))
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix1[i, j] = stats.compute_DKL(x1[0] / np.sum(x1[0]), y1[0] / np.sum(y1[0]))
             dkl_matrix2[i, j] = stats.compute_DKL(x2[0] / np.sum(x2[0]), y2[0] / np.sum(y2[0]))
