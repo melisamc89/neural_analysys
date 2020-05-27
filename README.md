@@ -1,4 +1,4 @@
-# neural_analysys
+# neural_analysys on calcium traces
 This is the repository for rutines particularly built to analysis of calcium traces
 
 Analysis is build up in multiple jupiter notebooks for different type of analysis: correlation matrix between temporal traces
