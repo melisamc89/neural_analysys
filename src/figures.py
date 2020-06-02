@@ -325,7 +325,7 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
         for j in range(len(corr_matrix1)):
             correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
             corr_of_corr[i,j] = correlation[0,1]
-    x = ax3.imshow(np.log10(corr_of_corr),cmap = 'gray')
+    x = ax3.imshow(corr_of_corr,cmap = 'gray')
     ax3.set_xticks(np.arange(len(conditions)))
     ax3.set_yticks(np.arange(len(conditions)))
     # ... and label them with the respective list entries
@@ -345,7 +345,7 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
         for j in range(len(corr_matrix2)):
             correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
             corr_of_corr[i,j] = correlation[0,1]
-    x = ax4.imshow(np.log10(corr_of_corr),cmap = 'gray')
+    x = ax4.imshow(corr_of_corr,cmap = 'gray')
     fig.colorbar(x, ax=ax4)
     ax4.set_xticks(np.arange(len(conditions)))
     ax4.set_yticks(np.arange(len(conditions)))
@@ -426,7 +426,7 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
             corr_of_corr[i,j] = correlation[0,1]
     ax1.set_xlabel('Trial number', fontsize=12)
     ax1.set_ylabel('Trial number', fontsize=12)
-    x = ax1.imshow(np.log10(corr_of_corr),cmap = 'gray')
+    x = ax1.imshow(corr_of_corr,cmap = 'gray')
     fig.colorbar(x, ax=ax1)
 
     ax2 = fig.add_subplot(gs[0, 1])
@@ -436,7 +436,7 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
         for j in range(len(corr_matrix2)):
             correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
             corr_of_corr[i,j] = correlation[0,1]
-    x = ax2.imshow(np.log10(corr_of_corr),cmap = 'gray')
+    x = ax2.imshow(corr_of_corr,cmap = 'gray')
     ax2.set_xlabel('Trial number', fontsize=12)
     ax2.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax2)
@@ -489,7 +489,7 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
         for j in range(len(corr_matrix1)):
             correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
             corr_of_corr1[i, j] = correlation[0, 1]
-    x = ax1.imshow(np.log10(corr_of_corr1), cmap='gray')
+    x = ax1.imshow(corr_of_corr1, cmap='gray')
     ax1.set_xlabel('Trial number', fontsize=12)
     ax1.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax1)
@@ -501,7 +501,7 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
         for j in range(len(corr_matrix2)):
             correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
             corr_of_corr2[i, j] = correlation[0, 1]
-    x = ax2.imshow(np.log10(corr_of_corr2), cmap='gray')
+    x = ax2.imshow(corr_of_corr2, cmap='gray')
     ax2.set_xlabel('Trial number', fontsize=12)
     ax2.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax2)
