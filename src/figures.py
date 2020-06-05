@@ -56,16 +56,12 @@ def plot_correlation_matrix_conditions(matrix_list = None, save_path = None, tit
     :return:
     '''
 
-    size = int(math.sqrt((len(matrix_list))))+1
-    figure, axes = plt.subplots(size, size)
+    size = int(len(matrix_list))
+    figure, axes = plt.subplots(1,size)
     images = []
-    counter = 0
     for i in range(size):
-        for j in range(size):
-            if counter < len(matrix_list):
-                images.append(axes[i, j].imshow(matrix_list[counter], cmap='viridis'))
-                counter = counter+1
-                axes[i, j].label_outer()
+        images.append(axes[i].imshow(matrix_list[i], cmap='viridis'))
+        axes[i].label_outer()
 
 
     vmin = -1
@@ -73,18 +69,14 @@ def plot_correlation_matrix_conditions(matrix_list = None, save_path = None, tit
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
     for im in images:
         im.set_norm(norm)
-    counter = 0
     for i in range(size):
-        for j in range(size):
-            if counter < len(matrix_list):
-                axes[i, j].set_title(conditions[counter])
-                axes[i, j].set_xlabel('Neuron')
-                axes[i, j].set_ylabel('Neuron')
-                counter = counter +1
+        axes[i].set_title(conditions[i])
+        axes[i].set_xlabel('Neuron')
+        axes[i].set_ylabel('Neuron')
 
-    figure.colorbar(images[0], ax=axes[1, 1], orientation='vertical', fraction=0.1)
+    figure.colorbar(images[0], ax=axes[i], orientation='vertical', fraction = 0.05)
     figure.suptitle(title , fontsize = 15)
-    figure.set_size_inches(9, 6)
+    figure.set_size_inches(20, 7)
     figure.savefig(save_path)
 
     return
