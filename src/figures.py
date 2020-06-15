@@ -16,6 +16,7 @@ import general_statistics as stats
 import matplotlib.cm as cm
 from matplotlib import colors
 import general_statistics as gstats
+from scipy.stats import pearsonr
 from scipy import signal
 import scipy
 from mpl_toolkits.mplot3d import axes3d
@@ -122,54 +123,31 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_
     corr_error = np.zeros(len(corr_matrix))
     max_corr = 0
     for i in range(len(corr_matrix)):
-        corr_mean[i] = np.mean(np.abs(corr_matrix[i].flatten()))
-        corr_error[i] = np.std(np.mean(corr_matrix[i].flatten()))/math.sqrt(corr_matrix[i].flatten().shape[0])
-        max_value = np.max(corr_matrix[i].flatten())
-        if max_value > max_corr:
-            max_corr = max_value
-
-    min_corr= -1
+        corr_valid_values = corr_matrix[i].flatten()[np.where(corr_matrix[i].flatten())[0]]
+        corr_mean[i] = np.mean(np.abs(corr_valid_values))
+        corr_error[i] = np.std(np.mean(corr_valid_values))/math.sqrt(corr_matrix[i].flatten().shape[0])
+        if len(corr_valid_values):
+            max_value = np.max(corr_valid_values)
+            if max_value > max_corr:
+                max_corr = max_value
+    min_corr = -1
     max_corr = 1
     fig = plt.figure(constrained_layout=True)
     gs = plt.GridSpec(3, 12)
-    ax1 = fig.add_subplot(gs[0, 0:2])
-    ax1.set_title('Resting', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[0].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
-    ax1.fill_between(bin_num[:-1],counter / np.sum(counter))
-    ax1.set_ylim(0,1)
+    conditions = ['Rest', 'NotE', 'LR', 'LL', 'UR', 'UL']
 
-    ax2 = fig.add_subplot(gs[0, 2:4])
-    ax2.set_title('Not exploring', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[1].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
-    ax2.fill_between(bin_num[:-1],counter / np.sum(counter))
-    ax2.set_ylim(0,1)
+    for i in range(6):
+        ax = fig.add_subplot(gs[0, i * 2:(i + 1) * 2])
+        ax.set_title(conditions[i], fontsize=15)
+        corr_valid_values = corr_matrix[i].flatten()[np.where(corr_matrix[i].flatten())[0]]
+        if len(corr_valid_values):
+            [counter, bin_num] = np.histogram(corr_valid_values,
+                                              bins=np.arange(min_corr, max_corr, (max_corr - min_corr) / 50))
+            ax.fill_between(bin_num[:-1], counter / np.sum(counter))
+            ax.set_ylim(0, 0.5)
 
-    ax3 = fig.add_subplot(gs[0, 4:6])
-    ax3.set_title('LR', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[2].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
-    ax3.fill_between(bin_num[:-1],counter / np.sum(counter))
-    ax3.set_ylim(0,1)
-
-    ax4 = fig.add_subplot(gs[0,6:8])
-    ax4.set_title('LL', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[3].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
-    ax4.fill_between(bin_num[:-1],counter / np.sum(counter))
-    ax4.set_ylim(0,1)
-
-    ax5 = fig.add_subplot(gs[0,8:10])
-    ax5.set_title('UR', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[4].flatten(),bins=np.arange(min_corr, max_corr, (max_corr-min_corr) / 50))
-    ax5.fill_between(bin_num[:-1],counter / np.sum(counter))
-    ax5.set_ylim(0,1)
-
-    ax6 = fig.add_subplot(gs[0,10:12])
-    ax6.set_title('UL', fontsize = 15)
-    [counter,bin_num] = np.histogram(corr_matrix[5].flatten(),bins=np.arange(min_corr, max_corr,(max_corr-min_corr) / 50))
-    ax6.fill_between(bin_num[:-1],counter / np.sum(counter))
-    ax6.set_ylim(0,1)
 
     ax7 = fig.add_subplot(gs[1:3, 0:4])
-    conditions= ['Rest', 'NotE', 'LR','LL','UR','UL']
 
     x_pos = np.arange(len(conditions))
     ax7.bar(x_pos, corr_mean, yerr=corr_error, align='center', alpha=0.5, ecolor='black', capsize=10)
@@ -182,14 +160,19 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_
     #ax7.set_ylim(0,np.max(corr_mean)+5*np.max(corr_error))
     fig.tight_layout()
 
-
     ax8 = fig.add_subplot(gs[1:3, 4:8])
     ax8.set_title('Pearson Correlation', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix),len(corr_matrix)))
     for i in range(len(corr_matrix)):
-        for j in range(len(corr_matrix)):
-            correlation = np.corrcoef(corr_matrix[i].flatten(), corr_matrix[j].flatten())
-            corr_of_corr[i,j] = correlation[0,1]
+        valid_positions1 = np.where(corr_matrix[i].flatten())[0]
+        if len(valid_positions1):
+            for j in range(len(corr_matrix)):
+                valid_positions2 = np.where(corr_matrix[j].flatten()[valid_positions1])[0]
+                if len(valid_positions2):
+                    correlation = pearsonr(corr_matrix[i].flatten()[valid_positions2], corr_matrix[j].flatten()[valid_positions2])
+                    corr_of_corr[i,j] = correlation[0]
+
+    print(corr_of_corr)
     x = ax8.imshow(corr_of_corr,cmap = 'gray')
     ax8.set_xticks(np.arange(len(conditions)))
     ax8.set_yticks(np.arange(len(conditions)))
@@ -207,10 +190,13 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_
     ax9.set_title('Kullback-Leiber Divergence', fontsize = 15)
     dkl_matrix = np.zeros((len(corr_matrix), len(corr_matrix)))
     for i in range(len(corr_matrix)):
-        [x1, bin_num1] = np.histogram(corr_matrix[i].flatten(),
+        corr_valid_values1 = corr_matrix[i].flatten()[np.where(corr_matrix[i].flatten())[0]]
+
+        [x1, bin_num1] = np.histogram(corr_valid_values1 ,
                                           bins=np.arange(-1, max_corr, 2 / 50))
         for j in range(len(corr_matrix)):
-            [y1, bin_num2] = np.histogram(corr_matrix[j].flatten(),
+            corr_valid_values2 = corr_matrix[j].flatten()[np.where(corr_matrix[j].flatten())[0]]
+            [y1, bin_num2] = np.histogram(corr_valid_values2,
                                                 bins=np.arange(-1, max_corr, 2 / 50))
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
@@ -228,7 +214,7 @@ def plot_correlation_statistics_behaviour(corr_matrix = None, task = None, path_
     fig.colorbar(x, ax=ax9)
 
     fig.suptitle('Correlation Matrix Statistics over behaviour:' + task, fontsize = 20)
-    fig.set_size_inches(20, 9)
+    fig.set_size_inches(25, 10)
     fig.savefig(path_save)
 
     return
@@ -266,21 +252,26 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     corr_error1 = np.zeros(len(corr_matrix1))
     max_corr = 0
     for i in range(len(corr_matrix1)):
-        corr_mean1[i] = np.mean(np.abs(corr_matrix1[i].flatten()))
-        corr_error1[i] = np.std(np.abs(corr_matrix1[i].flatten()))/math.sqrt(corr_matrix1[i].flatten().shape[0])
-        max_value = np.max(corr_matrix1[i].flatten())
-        if max_value > max_corr:
-            max_corr = max_value
+        corr_valid_values = corr_matrix1[i].flatten()[np.where(corr_matrix1[i].flatten())[0]]
+        if len(corr_valid_values):
+            corr_mean1[i] = np.mean(np.abs(corr_valid_values))
+            corr_error1[i] = np.std(np.abs(corr_valid_values))/math.sqrt(corr_matrix1[i].flatten().shape[0])
+            max_value = np.max(corr_valid_values)
+            if max_value > max_corr:
+                max_corr = max_value
 
     corr_mean2 = np.zeros(len(corr_matrix2))
     corr_error2 = np.zeros(len(corr_matrix2))
     max_corr = 0
     for i in range(len(corr_matrix2)):
-        corr_mean2[i] = np.mean(np.abs(corr_matrix2[i].flatten()))
-        corr_error2[i] = np.std(np.abs(corr_matrix2[i].flatten()))/math.sqrt(corr_matrix2[i].flatten().shape[0])
-        max_value = np.max(corr_matrix2[i].flatten())
-        if max_value > max_corr:
-            max_corr = max_value
+        corr_valid_values = corr_matrix2[i].flatten()[np.where(corr_matrix2[i].flatten())[0]]
+        if len(corr_valid_values):
+            corr_mean2[i] = np.mean(np.abs(corr_valid_values))
+            corr_error2[i] = np.std(np.abs(corr_valid_values))/math.sqrt(corr_matrix2[i].flatten().shape[0])
+            max_value = np.max(corr_valid_values)
+            if max_value > max_corr:
+                max_corr = max_value
+
 
     fig = plt.figure(constrained_layout=True)
     gs = plt.GridSpec(2, 3)
@@ -314,9 +305,13 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     ax3.set_title('Pearson Correlation', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix1),len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
-        for j in range(len(corr_matrix1)):
-            correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
-            corr_of_corr[i,j] = correlation[0,1]
+        valid_positions1 = np.where(corr_matrix1[i].flatten())[0]
+        if len(valid_positions1):
+            for j in range(len(corr_matrix1)):
+                valid_positions2 = np.where(corr_matrix1[j].flatten()[valid_positions1])[0]
+                if len(valid_positions2):
+                    correlation = pearsonr(corr_matrix1[i].flatten()[valid_positions2], corr_matrix1[j].flatten()[valid_positions2])
+                    corr_of_corr[i,j] = correlation[0]
     x = ax3.imshow(corr_of_corr,cmap = 'gray')
     ax3.set_xticks(np.arange(len(conditions)))
     ax3.set_yticks(np.arange(len(conditions)))
@@ -334,9 +329,13 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     ax4.set_title('Pearson Correlation', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix2),len(corr_matrix2)))
     for i in range(len(corr_matrix2)):
-        for j in range(len(corr_matrix2)):
-            correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
-            corr_of_corr[i,j] = correlation[0,1]
+        valid_positions1 = np.where(corr_matrix2[i].flatten())[0]
+        if len(valid_positions1):
+            for j in range(len(corr_matrix2)):
+                valid_positions2 = np.where(corr_matrix2[j].flatten()[valid_positions1])[0]
+                if len(valid_positions2):
+                    correlation = pearsonr(corr_matrix2[i].flatten()[valid_positions2], corr_matrix2[j].flatten()[valid_positions2])
+                    corr_of_corr[i,j] = correlation[0]
     x = ax4.imshow(corr_of_corr,cmap = 'gray')
     fig.colorbar(x, ax=ax4)
     ax4.set_xticks(np.arange(len(conditions)))
@@ -354,10 +353,12 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     ax5.set_title('Kullback-Leiber Divergence', fontsize = 15)
     dkl_matrix = np.zeros((len(corr_matrix1), len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
-        [x1, bin_num1] = np.histogram(corr_matrix1[i].flatten(),
+        valid_positions1 = np.where(corr_matrix1[i].flatten())[0]
+        [x1, bin_num1] = np.histogram(corr_matrix1[i].flatten()[valid_positions1],
                                           bins=np.arange(-1, 1, 2 / 50))
         for j in range(len(corr_matrix1)):
-            [y1, bin_num2] = np.histogram(corr_matrix1[j].flatten(),
+            valid_positions2 = np.where(corr_matrix1[j].flatten())[0]
+            [y1, bin_num2] = np.histogram(corr_matrix1[j].flatten()[valid_positions2],
                                                 bins=np.arange(-1, 1, 2 / 50))
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
@@ -378,10 +379,12 @@ def plot_correlation_statistics_learning(corr_matrix1 = None, corr_matrix2=None,
     ax6.set_title('Kullback-Leiber Divergence', fontsize = 15)
     dkl_matrix = np.zeros((len(corr_matrix2), len(corr_matrix2)))
     for i in range(len(corr_matrix2)):
-        [x1, bin_num1] = np.histogram(corr_matrix2[i].flatten(),
+        valid_positions1 = np.where(corr_matrix2[i].flatten())[0]
+        [x1, bin_num1] = np.histogram(corr_matrix2[i].flatten()[valid_positions1],
                                           bins=np.arange(-1, 1, 2 / 50))
         for j in range(len(corr_matrix2)):
-            [y1, bin_num2] = np.histogram(corr_matrix2[j].flatten(),
+            valid_positions2 = np.where(corr_matrix2[j].flatten())[0]
+            [y1, bin_num2] = np.histogram(corr_matrix2[j].flatten()[valid_positions2],
                                                 bins=np.arange(-1, 1, 2 / 50))
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix[i, j] = gstats.compute_DKL(x1 / np.sum(x1), y1 / np.sum(y1))
@@ -413,9 +416,11 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
     ax1.set_title('Pearson Correlation (trial)', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix1),len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
+        valid_positions1 = np.where(corr_matrix1[i].flatten())[0]
         for j in range(len(corr_matrix1)):
-            correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
-            corr_of_corr[i,j] = correlation[0,1]
+            valid_positions2 = np.where(corr_matrix1[j].flatten()[valid_positions1])[0]
+            correlation = pearsonr(corr_matrix1[i].flatten()[valid_positions2], corr_matrix1[j].flatten()[valid_positions2])
+            corr_of_corr[i,j] = correlation[0]
     ax1.set_xlabel('Trial number', fontsize=12)
     ax1.set_ylabel('Trial number', fontsize=12)
     x = ax1.imshow(corr_of_corr,cmap = 'gray')
@@ -425,9 +430,11 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
     ax2.set_title('Pearson Correlation (rest)', fontsize = 15)
     corr_of_corr = np.zeros((len(corr_matrix2),len(corr_matrix2)))
     for i in range(len(corr_matrix1)):
+        valid_positions1 = np.where(corr_matrix2[i].flatten())[0]
         for j in range(len(corr_matrix2)):
-            correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
-            corr_of_corr[i,j] = correlation[0,1]
+            valid_positions2 = np.where(corr_matrix2[j].flatten()[valid_positions1])[0]
+            correlation = pearsonr(corr_matrix2[i].flatten()[valid_positions2], corr_matrix2[j].flatten()[valid_positions2])
+            corr_of_corr[i,j] = correlation[0]
     x = ax2.imshow(corr_of_corr,cmap = 'gray')
     ax2.set_xlabel('Trial number', fontsize=12)
     ax2.set_ylabel('Trial number', fontsize=12)
@@ -436,14 +443,14 @@ def plot_correlation_statistics_trials(corr_matrix1 = None, corr_matrix2 = None,
     dkl_matrix1 = np.zeros((len(corr_matrix1),len(corr_matrix2)))
     dkl_matrix2= np.zeros((len(corr_matrix1),len(corr_matrix2)))
     for i in range(len(corr_matrix1)):
-        x1 = np.histogram(corr_matrix1[i].flatten()[np.where(corr_matrix1[i].flatten() > 0.01)],
+        x1 = np.histogram(corr_matrix1[i].flatten()[np.where(corr_matrix1[i].flatten())[0]],
                           bins=np.arange(-1, 1, 2 / 20))
-        x2 = np.histogram(corr_matrix2[i].flatten()[np.where(corr_matrix2[i].flatten() > 0.01)],
+        x2 = np.histogram(corr_matrix2[i].flatten()[np.where(corr_matrix2[i].flatten())[0]],
                           bins=np.arange(-1, 1, 2 / 20))
         for j in range(len(corr_matrix1)):
-            y1 = np.histogram(corr_matrix1[j].flatten()[np.where(corr_matrix1[j].flatten() > 0.01)],
+            y1 = np.histogram(corr_matrix1[j].flatten()[np.where(corr_matrix1[j].flatten())[0]],
                               bins=np.arange(-1, 1, 2 / 20))
-            y2 = np.histogram(corr_matrix2[j].flatten()[np.where(corr_matrix2[j].flatten() > 0.01)],
+            y2 = np.histogram(corr_matrix2[j].flatten()[np.where(corr_matrix2[j].flatten())[0]],
                               bins=np.arange(-1, 1, 2 / 20))
             # figures.colorbar(x, ax=axes[0, i])
             dkl_matrix1[i, j] = stats.compute_DKL(x1[0] / np.sum(x1[0]), y1[0] / np.sum(y1[0]))
@@ -478,9 +485,11 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
     ax1.set_title('Pearson Correlation (trials)', fontsize=15)
     corr_of_corr1 = np.zeros((len(corr_matrix1), len(corr_matrix1)))
     for i in range(len(corr_matrix1)):
+        valid_position1 = np.where(corr_matrix1[i].flatten())[0]
         for j in range(len(corr_matrix1)):
-            correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix1[j].flatten())
-            corr_of_corr1[i, j] = correlation[0, 1]
+            valid_position2 = np.where(corr_matrix1[j].flatten()[valid_position1])
+            correlation = pearsonr(corr_matrix1[i].flatten()[valid_position2], corr_matrix1[j].flatten()[valid_position2])
+            corr_of_corr1[i, j] = correlation[0]
     x = ax1.imshow(corr_of_corr1, cmap='gray')
     ax1.set_xlabel('Trial number', fontsize=12)
     ax1.set_ylabel('Trial number', fontsize=12)
@@ -490,9 +499,11 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
     ax2.set_title('Pearson Correlation (rest)', fontsize=15)
     corr_of_corr2 = np.zeros((len(corr_matrix2), len(corr_matrix2)))
     for i in range(len(corr_matrix1)):
+        valid_position1 = np.where(corr_matrix2[i].flatten())[0]
         for j in range(len(corr_matrix2)):
-            correlation = np.corrcoef(corr_matrix2[i].flatten(), corr_matrix2[j].flatten())
-            corr_of_corr2[i, j] = correlation[0, 1]
+            valid_position2 = np.where(corr_matrix2[j].flatten()[valid_position1])
+            correlation = pearsonr(corr_matrix2[i].flatten()[valid_position2], corr_matrix2[j].flatten()[valid_position2])
+            corr_of_corr2[i, j] = correlation[0]
     x = ax2.imshow(corr_of_corr2, cmap='gray')
     ax2.set_xlabel('Trial number', fontsize=12)
     ax2.set_ylabel('Trial number', fontsize=12)
@@ -522,7 +533,7 @@ def plot_correlation_statistics_objects(corr_matrix1 = None, corr_matrix2 = None
     ax3.set_ylabel('Trial number', fontsize=12)
     fig.colorbar(x, ax=ax3)
 
-    fig.set_size_inches(10, 10)
+    fig.set_size_inches(20, 10)
     fig.suptitle('Activity correlation over trials in a session and objects position overlapping: '+ title, fontsize = 20)
     fig.savefig(path_save)
 
@@ -536,8 +547,12 @@ def plot_correlation_with_resting_evolution(corr_matrix1 = None, corr_matrix2 = 
     ax1.set_title('Correlation with post resting activity', fontsize=15)
     corr_evolution = np.zeros((len(corr_matrix1),1))
     for i in range(len(corr_matrix1)):
-        correlation = np.corrcoef(corr_matrix1[i].flatten(), corr_matrix2[i].flatten())
-        corr_evolution[i] = correlation[0, 1]
+        valid_positions1 = np.where(corr_matrix1[i].flatten())[0]
+        valid_positions2 = np.where(corr_matrix2[i].flatten()[valid_positions1])[0]
+        print('pos1=' + f'{len(valid_positions1)}')
+        print('pos2=' + f'{len(valid_positions2)}')
+        correlation = pearsonr(corr_matrix1[i].flatten()[valid_positions2], corr_matrix2[i].flatten()[valid_positions2])
+        corr_evolution[i] = correlation[0]
 
     ax1.plot(np.arange(1,len(corr_matrix1)+1), corr_evolution)
     ax1.set_ylabel('Correlation')
@@ -548,8 +563,10 @@ def plot_correlation_with_resting_evolution(corr_matrix1 = None, corr_matrix2 = 
     ax2.set_title('Correlation with pre resting activity', fontsize=15)
     corr_evolution = np.zeros((len(corr_matrix1),1))
     for i in range(1,len(corr_matrix1)-1):
-        correlation = np.corrcoef(corr_matrix1[i+1].flatten(), corr_matrix2[i].flatten())
-        corr_evolution[i] = correlation[0, 1]
+        valid_positions1 = np.where(corr_matrix1[i+1].flatten())[0]
+        valid_positions2 = np.where(corr_matrix2[i].flatten()[valid_positions1])[0]
+        correlation = pearsonr(corr_matrix1[i+1].flatten()[valid_positions2], corr_matrix2[i].flatten()[valid_positions2])
+        corr_evolution[i] = correlation[0]
 
     ax2.plot(np.arange(1,len(corr_matrix1)+1), corr_evolution)
     ax2.set_ylabel('Correlation')
