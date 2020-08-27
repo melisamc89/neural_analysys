@@ -30,6 +30,7 @@ component_evaluation_version = 1
 
 file_directory1 = os.environ['PROJECT_DIR'] + 'neural_analysis/data/correlation/'
 file_directory2 = os.environ['PROJECT_DIR'] + 'neural_analysis/data/sources/'
+file_directory3 = os.environ['PROJECT_DIR'] + 'neural_analysis/data/registration/'
 figure_path = os.environ['PROJECT_DIR'] +'neural_analysis/data/process/figures/corr_images/'
 
 
@@ -45,6 +46,13 @@ for session in [1,2]:
                 file_name_components = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_'+f'{trial}'+'_R_v' + f'{decoding_v}' + \
                                   '.'+f'{cropping_v}' + '.'+ f'{100}' + '.1.0.1.1.hdf5'
                 cnm = load_CNMF(file_directory2 + file_name_components)
+
+                file_registration_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_' + f'{1}' + '_R_v' + f'{decoding_v}' + \
+                                         '.' + f'{cropping_v}' + '.' + f'{100}' + '.1.0.1.1.1.pkl'
+
+                registration_file = open(file_directory3 + file_registration_name, 'rb')
+                registration_info = pickle.load(registration_file)
+
                 axes[i,j].imshow(corr_image)
                 coordinates = cm.utils.visualization.get_contours(cnm.estimates.A, np.shape(corr_image), 0.2, 'max')
                 for c in coordinates:
