@@ -17,11 +17,11 @@ import matplotlib.cm as cm
 from scipy import signal
 cmap = cm.jet
 
-mouse = 32364
+mouse = 401714
 re_sf = 20
 
 ## load source extracted calcium traces condition SESSION 1
-file_directory = os.environ['PROJECT_DIR'] + 'neural_analysis/data/calcium_activity_normed/'
+file_directory = os.environ['PROJECT_DIR'] + 'neural_analysis/data/calcium_activity_day_wise/'
 timeline_file_dir = os.environ['PROJECT_DIR'] + 'neural_analysis/data/timeline/'
 behaviour_dir = os.environ['PROJECT_DIR'] + 'calcium_imaging_behaviour/data/scoring_time_vector/'
 objects_dir= os.environ['PROJECT_DIR'] + 'calcium_imaging_behaviour/data/object_positions/'
@@ -29,39 +29,39 @@ figure_path = os.environ['PROJECT_DIR'] +'neural_analysis/data/process/figures/t
 
 
 decoding_v = 1
-motion_correction_v = 100 ### means everything was aligned
-alignment_v = 1
+motion_correction_v = 20 ### means everything was aligned
+alignment_v = 3
 equalization_v = 0
 source_extraction_v = 1
-component_evaluation_v = 1
-registration_v = 2
+component_evaluation_v = 0
+registration_v = 0
 
 ## session 1 files
-session = 3
-file_name_session_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_1_v' + f'{decoding_v}' + '.4.' + f'{100}' + \
+session = 1
+file_name_session_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_6_v' + f'{decoding_v}' + '.4.' + f'{20}' + \
                       '.' + f'{alignment_v}' + '.' + f'{equalization_v}' + '.' + f'{source_extraction_v}' + '.' + \
                       f'{component_evaluation_v}' + '.' + f'{registration_v}' + '.npy'
-time_file_session_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_1_v' + f'{decoding_v}' + '.4.' + f'{1}' + \
+time_file_session_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_6_v' + f'{decoding_v}' + '.4.' + f'{1}' + \
                       '.' + f'{0}' + '.pkl'
 beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_event_' + f'{re_sf}' + '.npy'
 
 
 ## load activity matrix and time inforamtion
 activity = np.load(file_directory + file_name_session_1)
-timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
-timeline_info = pickle.load(timeline_file)
+#timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
+#timeline_info = pickle.load(timeline_file)
 
 figure, axes = plt.subplots(1)
 C_0 = activity.copy()
 C_0[1] += C_0[1].min()
-for i in range(2, len(activity)):
+for i in range(2, 50):
     C_0[i] += C_0[i].min() + C_0[:i].max()
     axes.plot(C_0[i])
 axes.set_xlabel('t [frames]')
 axes.set_yticks([])
 axes.set_ylabel('activity')
-figure.set_size_inches([50., .5 * len(C_0)])
-figure.savefig(figure_path + 'mouse_32364_session_3_1.png')
+figure.set_size_inches([100., .2 * len(C_0)])
+figure.savefig(figure_path + 'mouse_401714_session_1_day_2.png')
 
 
 
