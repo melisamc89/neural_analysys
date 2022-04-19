@@ -198,7 +198,11 @@ def load_data(mouse = None, session = None, decoding_v = None, motion_correction
 
         beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_' + f'{day+1}' + '_likelihood_0.75_ethogram_parameters.npy'
         ## LOAD PARAMETRS FOR BEHAVIOUR CLASSIFICATION
-        parameters = np.load(behaviour_dir_parameters + beh_file_name_1)
+        if os.path.isfile(behaviour_dir_parameters + beh_file_name_1):
+            parameters = np.load(behaviour_dir_parameters + beh_file_name_1)
+        else:
+            return activity_list,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list
+
 
         params0 = []
         params = []
@@ -325,7 +329,10 @@ def load_data_trial(mouse = None, session = None, decoding_v = None, motion_corr
 
         beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_' + f'{day+1}' + '_likelihood_0.75_ethogram_parameters.npy'
         ## LOAD PARAMETRS FOR BEHAVIOUR CLASSIFICATION
-        parameters = np.load(behaviour_dir_parameters + beh_file_name_1)
+        if os.path.isfile(behaviour_dir_parameters + beh_file_name_1):
+            parameters = np.load(behaviour_dir_parameters + beh_file_name_1)
+        else:
+            return activity_list,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list
 
         params0 = []
         params = []
@@ -473,7 +480,7 @@ def transform_neural_data(activity_list, behaviour_list,parameters_time,paramete
     return data_transformation(activity_list_pca,variance_ratio_list,activity_list_cca0,activity_list_cca,activity_list_cca2,activity_list_lda)
 
     
-def create_task_behaviour(behaviour_list,colapse_behaviour,object_fixed):
+def create_task_behaviour(behaviour_list,colapse_behaviour,object_fixed,timeline_list):
     
     # define targets of behaviour according to protocol (random, overlapping and stable)
     id_target = [0,1,2,3,4] # 0: unlabeled, 1:resting, 2:Navigation, 3: Obj1, 4:Obj2, 5:Run1, 6:Run2
@@ -484,23 +491,24 @@ def create_task_behaviour(behaviour_list,colapse_behaviour,object_fixed):
             for trial in range(5):
                 behaviour_trial = behaviour_list[day][int(timeline_list[day][2*trial]):int(timeline_list[day][2*trial+1])]
                 objects = np.unique(behaviour_trial)
-                selected_object = np.random.randint(len(objects)-4,len(objects)-2,1)
-                index0 = np.where(behaviour_trial==objects[selected_object])[0]
-                index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-4], behaviour_trial!=objects[selected_object]))[0]
-                index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-3], behaviour_trial!=objects[selected_object]))[0]
-                behaviour_trial[index0] = 3
-                behaviour_trial[index1] = 4
+                if len(objects)>4:
+                    selected_object = np.random.randint(len(objects)-4,len(objects)-2,1)
+                    index0 = np.where(behaviour_trial==objects[selected_object])[0]
+                    index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-4], behaviour_trial!=objects[selected_object]))[0]
+                    index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-3], behaviour_trial!=objects[selected_object]))[0]
+                    behaviour_trial[index0] = 3
+                    behaviour_trial[index1] = 4
 
-                behaviour_trial[index2] = 4            
+                    behaviour_trial[index2] = 4            
 
-                index0 = np.where(behaviour_trial==objects[selected_object]+4)[0]
-                index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-2], behaviour_trial!=objects[selected_object]+4))[0]
-                index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-1], behaviour_trial!=objects[selected_object]+4))[0]
-                behaviour_trial[index0] = 0
-                behaviour_trial[index1] = 0
-                behaviour_trial[index2] = 0 
+                    index0 = np.where(behaviour_trial==objects[selected_object]+4)[0]
+                    index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-2], behaviour_trial!=objects[selected_object]+4))[0]
+                    index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-1], behaviour_trial!=objects[selected_object]+4))[0]
+                    behaviour_trial[index0] = 0
+                    behaviour_trial[index1] = 0
+                    behaviour_trial[index2] = 0 
 
-                behaviour_list[day][int(timeline_list[day][2*trial]):int(timeline_list[day][2*trial+1])] = behaviour_trial
+                    behaviour_list[day][int(timeline_list[day][2*trial]):int(timeline_list[day][2*trial+1])] = behaviour_trial
 
 
     if colapse_behaviour == 1 : #OVERLAPPING
@@ -516,21 +524,80 @@ def create_task_behaviour(behaviour_list,colapse_behaviour,object_fixed):
     if colapse_behaviour == 2: #STABLE
         for day in range(len(behaviour_list)):
             objects = np.unique(behaviour_list[day])
-            selected_object = np.random.randint(len(objects)-4,len(objects)-2,1)
-            index0 = np.where(behaviour_list[day]==objects[selected_object])[0]
-            index1 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-4], behaviour_list[day]!=objects[selected_object]))
-            index2 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-3], behaviour_list[day]!=objects[selected_object]))
-            behaviour_list[day][index0] = 3
-            behaviour_list[day][index1] = 4
-            behaviour_list[day][index2] = 4      
+            if len(objects)>4:
+                selected_object = np.random.randint(len(objects)-4,len(objects)-2,1)
+                index0 = np.where(behaviour_list[day]==objects[selected_object])[0]
+                index1 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-4], behaviour_list[day]!=objects[selected_object]))
+                index2 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-3], behaviour_list[day]!=objects[selected_object]))
+                behaviour_list[day][index0] = 3
+                behaviour_list[day][index1] = 4
+                behaviour_list[day][index2] = 4      
 
-            index0 = np.where(behaviour_list[day]==objects[selected_object]+4)[0]
-            index1 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-2], behaviour_list[day]!=objects[selected_object]+4))
-            index2 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-1], behaviour_list[day]!=objects[selected_object]+4))
-            behaviour_list[day][index0] = 0
-            behaviour_list[day][index1] = 0
-            behaviour_list[day][index2] = 0  
-            
+                index0 = np.where(behaviour_list[day]==objects[selected_object]+4)[0]
+                index1 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-2], behaviour_list[day]!=objects[selected_object]+4))
+                index2 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-1], behaviour_list[day]!=objects[selected_object]+4))
+                behaviour_list[day][index0] = 0
+                behaviour_list[day][index1] = 0
+                behaviour_list[day][index2] = 0  
+
+    return
+
+def create_task_behaviour_trial(behaviour_list,colapse_behaviour,object_fixed,timeline_list):
+    
+    # define targets of behaviour according to protocol (random, overlapping and stable)
+    id_target = [0,1,2,3,4] # 0: unlabeled, 1:resting, 2:Navigation, 3: Obj1, 4:Obj2, 5:Run1, 6:Run2
+    
+    if colapse_behaviour == 0 : # RANDOM
+        for trial in range(len(behaviour_list)):
+            behaviour_trial = behaviour_list[trial]
+            objects = np.unique(behaviour_trial)
+            selected_object = np.random.randint(len(objects)-4,len(objects)-2,1)
+            index0 = np.where(behaviour_trial==objects[selected_object])[0]
+            index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-4], behaviour_trial!=objects[selected_object]))[0]
+            index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-3], behaviour_trial!=objects[selected_object]))[0]
+            behaviour_trial[index0] = 3
+            behaviour_trial[index1] = 4
+
+            behaviour_trial[index2] = 4            
+
+            index0 = np.where(behaviour_trial==objects[selected_object]+4)[0]
+            index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-2], behaviour_trial!=objects[selected_object]+4))[0]
+            index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-1], behaviour_trial!=objects[selected_object]+4))[0]
+            behaviour_trial[index0] = 0
+            behaviour_trial[index1] = 0
+            behaviour_trial[index2] = 0 
+
+            behaviour_list[trial] = behaviour_trial
+
+    if colapse_behaviour == 1 : #OVERLAPPING
+        for day in range(len(behaviour_list)):
+            behaviour_list[day][np.where(behaviour_list[day] == object_fixed)[0]] = 100
+            behaviour_list[day][np.where(np.logical_and(behaviour_list[day]>=3, behaviour_list[day]<=6))[0]] = 4
+            behaviour_list[day][np.where(behaviour_list[day] == 100)[0]] = 3        
+            behaviour_list[day][np.where(behaviour_list[day] == object_fixed +4)[0]] = 0        
+            behaviour_list[day][np.where(np.logical_and(behaviour_list[day]>=7, behaviour_list[day]<=10))[0]] = 0
+            behaviour_list[day][np.where(behaviour_list[day] == 200)[0]] = 0
+
+
+    if colapse_behaviour == 2: #STABLE
+        for day in range(len(behaviour_list)):
+            objects = np.unique(behaviour_list[day])
+            if len(objects)>4:
+                selected_object = np.random.randint(len(objects)-4,len(objects)-2,1)
+                index0 = np.where(behaviour_list[day]==objects[selected_object])[0]
+                index1 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-4], behaviour_list[day]!=objects[selected_object]))
+                index2 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-3], behaviour_list[day]!=objects[selected_object]))
+                behaviour_list[day][index0] = 3
+                behaviour_list[day][index1] = 4
+                behaviour_list[day][index2] = 4      
+
+                index0 = np.where(behaviour_list[day]==objects[selected_object]+4)[0]
+                index1 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-2], behaviour_list[day]!=objects[selected_object]+4))
+                index2 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-1], behaviour_list[day]!=objects[selected_object]+4))
+                behaviour_list[day][index0] = 0
+                behaviour_list[day][index1] = 0
+                behaviour_list[day][index2] = 0  
+
     return
 
 
@@ -639,9 +706,11 @@ def balancing_visits(number_of_events_list,events_duration_list,events_id):
     events_number_list = []
     events_day_list_shuffle = []
     for day in range(len(number_of_events_list)):
-
-        arg_min_target_time = np.argmin(number_of_events_list[day])
-        n_events = number_of_events_list[day][arg_min_target_time]
+        if len(number_of_events_list[day]):
+            arg_min_target_time = np.argmin(number_of_events_list[day])
+            n_events = number_of_events_list[day][arg_min_target_time]
+        else:
+            n_events = 0
         events_number_list.append(n_events)
         events_list = []
         events_list_copy = []
@@ -669,8 +738,11 @@ def create_shuffling(events_day_list_1,events_day_list_shuffle_1,events_counter_
         events = np.array(events_day_list_1[day])
         events_counter = np.array(events_counter_day_list[day])
         events_time = np.array(events_time_starts_day[day])
-        arg_min_target_time = np.argmin(number_of_events_list[day])
-        n_events = number_of_events_list[day][arg_min_target_time]
+        if len(number_of_events_list[day]):
+            arg_min_target_time = np.argmin(number_of_events_list[day])
+            n_events = number_of_events_list[day][arg_min_target_time]
+        else:
+            n_events = 0 
         #print(n_events)
 
         for target in range(len(events_id[day])):
@@ -741,8 +813,6 @@ def create_activity_events(activity_list,period,events_day_list_1,events_counter
     return events_activity_pre_norm, events_duration_list
 
 
-
-
 def create_activity_events_shuffle(activity_list,period,events_day_list_shuffle_1,events_counter_day_list,events_time_starts_day,events_id,events_day_list_shuffle, N_SHUFFLINGS):
 
     events_activity_pre_norm_shuffle= []
@@ -794,10 +864,9 @@ def create_activity_events_shuffle(activity_list,period,events_day_list_shuffle_
 def create_visits_matrix(events_activity,events_id):
     
     trial_activity_vectors_list = []
-    print(len(events_id))
     for day in range(len(events_id)): 
         #print('Computing Trial matrices for DAY = ' + str(day) )
-
+        print(len(events_id))
         trial_activity_vectors = np.zeros((len(events_id[day]),events_activity[day][0][0].shape[0],events_activity[day][0][0].shape[1]))
         j= 0    
         for target in range(len(events_id[day])):
@@ -875,6 +944,34 @@ def compute_representational_distance(trial_activity_vectors, trial_activity_vec
                         counter = counter +1
                         #print(distance_neural_shuffle[shuffle,time])
                 distance_neural_shuffle[shuffle,time] = distance_neural_shuffle[shuffle,time]/counter
+
+        #print(distance_neural_shuffle)
+        distance_mean = np.nanmean(distance_neural_shuffle,axis=0)
+        distance_std = np.nanstd(distance_neural_shuffle,axis=0)
+        z_scored_distance = (distance_neural - distance_mean)/distance_std
+        distance.append(distance_neural)
+        distance_zs.append(z_scored_distance)
+
+    return distance, distance_zs
+
+
+def compute_representational_distance_all_to_all(trial_activity_vectors, trial_activity_vectors_shuffle, n_components, N_SHUFFLINGS):
+
+    distance = []
+    distance_zs = []
+    for day in range(len(trial_activity_vectors)):
+        distance_neural = np.zeros((trial_activity_vectors[day].shape[0],trial_activity_vectors[day].shape[0],trial_activity_vectors[day].shape[2]))
+        for time in range(trial_activity_vectors[day].shape[2]):
+            for i in range(trial_activity_vectors[day].shape[0]):
+                for j in range(i+1,trial_activity_vectors[day].shape[0]):
+                    distance_neural[i,j,time] = np.linalg.norm(trial_activity_vectors[day][i,0:n_components[day],time] - trial_activity_vectors[day][j,0:n_components[day],time])
+
+        distance_neural_shuffle = np.zeros((N_SHUFFLINGS,trial_activity_vectors[day].shape[0],trial_activity_vectors[day].shape[0],trial_activity_vectors[day].shape[2]))
+        for shuffle in range(N_SHUFFLINGS):
+            for time in range(trial_activity_vectors[day].shape[2]):
+                for i in range(trial_activity_vectors_shuffle[day].shape[1]):
+                    for j in range(i+1,trial_activity_vectors_shuffle[day].shape[1]):
+                        distance_neural_shuffle[shuffle,i,j,time] = np.linalg.norm(trial_activity_vectors_shuffle[day][shuffle][i,0:n_components[day],time] - trial_activity_vectors_shuffle[day][shuffle][j,0:n_components[day],time])
 
         #print(distance_neural_shuffle)
         distance_mean = np.nanmean(distance_neural_shuffle,axis=0)
@@ -964,7 +1061,7 @@ def compute_distance_list(trial_activity, trial_activity_shuffle, data_transform
     return distance(z_scored_neural, z_scored_pca, z_scored_cca_time, z_scored_cca_allo, z_scored_cca_ego, z_scored_cca_lda)
 
 
-def compute_representational_distance_measures(activity_list,data_transfomation,period,behaviour_list,id_target,N_SHUFFLINGS):
+def compute_representational_distance_measures(activity_list,data_transformation,period,behaviour_list,id_target,N_SHUFFLINGS):
     
     print('CREATE LIST THAT SAVES ALL THE EVENTS IN A DAY AND CONTAINS ONSET OF VISITS')
     events_etho, events_shuffle_etho,events_counter_etho,events_onset_etho = create_events_list(behaviour_list, N_SHUFFLINGS)
@@ -1000,12 +1097,12 @@ def save_distance(mouse,session,distance,task,day_flag = True):
         print('Saving')
         if day_flag:
             output_path =  os.environ['PROJECT_DIR'] +'neural_analysis/data/mean_representational_distance/'
-            file_name = output_path + task +'_distance_day_mouse_'+f'{mouse}'+'_session_'+f'{session_now}'+ '_day_'+f'{day}'
+            file_name = output_path + task +'_distance_day_mouse_'+f'{mouse}'+'_session_'+f'{session}'+ '_day_'+f'{day}'
             np.save(file_name, final_distance)
 
         else:
             output_path =  os.environ['PROJECT_DIR'] +'neural_analysis/data/mean_representational_distance/'
-            file_name = output_path+ task +'_distance_trial_mouse_'+f'{mouse}'+'_session_'+f'{session_now}'+ '_trial_'+f'{day}'
+            file_name = output_path+ task +'_distance_trial_mouse_'+f'{mouse}'+'_session_'+f'{session}'+ '_trial_'+f'{day}'
             np.save(file_name, final_distance)           
 
     return
