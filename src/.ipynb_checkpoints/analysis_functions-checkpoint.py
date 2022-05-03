@@ -459,38 +459,55 @@ def transform_neural_data(activity_list, behaviour_list,parameters_time,paramete
 
     #embedding = MDS(n_components=3)
     trial_list_new = np.zeros_like(trial_list)
-    for day in range(len(behaviour_list)):
-        if activity_list[day].shape[1] == behaviour_list[day].shape[0]:
-            trial_list_new[day] = trial_list[day]
-            ### run pca on the entire dataset
-            pca.fit(activity_list[day].T)
-            transformed_activity = pca.fit(activity_list[day].T).transform(activity_list[day].T)
-            #X_pc_transformed = embedding.fit_transform(transformed_activity.T)
-            activity_list_pca.append(transformed_activity.T)
-            variance_list.append(pca.explained_variance_/(1+np.sqrt(activity_list[day].shape[0]/activity_list[day].shape[1]))**2)
-            normalized_variance = pca.explained_variance_/(1+np.sqrt(activity_list[day].shape[0]/activity_list[day].shape[1]))**2
-            variance_ratio_list.append(np.cumsum(normalized_variance/sum(normalized_variance)))
+    for day in range(len(trial_list)):
+        if trial_list[day]:
+            if activity_list[day].shape[1] == behaviour_list[day].shape[0]:
+                trial_list_new[day] = trial_list[day]
+                ### run pca on the entire dataset
+                pca.fit(activity_list[day].T)
+                transformed_activity = pca.fit(activity_list[day].T).transform(activity_list[day].T)
+                #X_pc_transformed = embedding.fit_transform(transformed_activity.T)
+                activity_list_pca.append(transformed_activity.T)
+                variance_list.append(pca.explained_variance_/(1+np.sqrt(activity_list[day].shape[0]/activity_list[day].shape[1]))**2)
+                normalized_variance = pca.explained_variance_/(1+np.sqrt(activity_list[day].shape[0]/activity_list[day].shape[1]))**2
+                variance_ratio_list.append(np.cumsum(normalized_variance/sum(normalized_variance)))
 
-            X = activity_list[day].T
-            y = behaviour_list[day]
-            X_transformed = clf.fit(X, y).transform(X)
-            #X_lda_transformed = embedding.fit_transform(X_transformed.T)
-            activity_list_lda.append(X_transformed.T)
+                X = activity_list[day].T
+                y = behaviour_list[day]
+                X_transformed = clf.fit(X, y).transform(X)
+                #X_lda_transformed = embedding.fit_transform(X_transformed.T)
+                activity_list_lda.append(X_transformed.T)
 
-            cca_transformed = cca0.fit(activity_list[day].T, parameters_time[day].T).transform(activity_list[day].T)
-            #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
-            activity_list_cca0.append(cca_transformed.T)
+                cca_transformed = cca0.fit(activity_list[day].T, parameters_time[day].T).transform(activity_list[day].T)
+                #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+                activity_list_cca0.append(cca_transformed.T)
 
-            cca_transformed = cca.fit(activity_list[day].T, parameters_list[day].T).transform(activity_list[day].T)
-            #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
-            activity_list_cca.append(cca_transformed.T)
+                cca_transformed = cca.fit(activity_list[day].T, parameters_list[day].T).transform(activity_list[day].T)
+                #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+                activity_list_cca.append(cca_transformed.T)
 
 
-            cca_transformed = cca2.fit(activity_list[day].T, parameters_list2[day].T).transform(activity_list[day].T)
-            #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
-            activity_list_cca2.append(cca_transformed.T)
+                cca_transformed = cca2.fit(activity_list[day].T, parameters_list2[day].T).transform(activity_list[day].T)
+                #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+                activity_list_cca2.append(cca_transformed.T)
+            else:
+                trial_list_new[day] = 0
+                activity_list_pca.append([])
+                variance_list.append([])
+                variance_ratio_list.append([])
+                activity_list_lda.append([])
+                activity_list_cca0.append([])
+                activity_list_cca.append([])
+                activity_list_cca2.append([])   
         else:
             trial_list_new[day] = 0
+            activity_list_pca.append([])
+            variance_list.append([])
+            variance_ratio_list.append([])
+            activity_list_lda.append([])
+            activity_list_cca0.append([])
+            activity_list_cca.append([])
+            activity_list_cca2.append([])
             continue
     
     data_transformation = namedtuple('data_transformation', ['pca','variance_ratio','cca_time','cca_allo','cca_ego','lda','trials'])    
@@ -857,6 +874,10 @@ def create_activity_events(activity_list,period,events_day_list_1,events_counter
             events_activity_pre_norm.append(target_activity)
             events_duration_list.append(events_duration_day)
             day = day +1
+        else:
+            events_activity_pre_norm.append([])
+            events_duration_list.append([])
+            day = day +1
 
     return events_activity_pre_norm, events_duration_list
 
@@ -869,7 +890,6 @@ def create_activity_events_shuffle(activity_list,period,events_day_list_shuffle_
 
         if trial_list[all_counter]:
             shufflings = []
-
             for j in range(N_SHUFFLINGS):
                 target_activity_shuffle = []
 
@@ -907,6 +927,10 @@ def create_activity_events_shuffle(activity_list,period,events_day_list_shuffle_
 
             events_activity_pre_norm_shuffle.append(shufflings)
             day = day +1
+        else:
+            events_activity_pre_norm_shuffle.append([])
+            day = day +1
+            
     return events_activity_pre_norm_shuffle
 
 
@@ -914,60 +938,62 @@ def create_visits_matrix(events_activity,events_id,trials_list):
     
     trial_activity_vectors_list = []
     day = 0
+    new_trial_list = np.zeros_like(trials_list)
     for all_counter in range(len(trials_list)): 
-        if trials_list[all_counter]:   
-            if events_activity[day][0] != []:
-
-                trial_activity_vectors = np.zeros((len(events_id[day]),events_activity[day][0][0].shape[0],events_activity[day][0][0].shape[1]))
-                j= 0    
-                for target in range(len(events_activity[day])):
-                    # real data! 
-                    #print('Target:' + str(target))
-                    #print('NUMBER OF VISITS:' + str(len(events_activity[day][target])))
-                    if events_activity[day][target] != []:
-                        trial_activity = np.zeros((events_activity[day][target][0].shape[0],events_activity[day][target][0].shape[1]))
-                        ### generate matrix with mean activity and entire trial repetitions activity
-                        for neuron in range(events_activity[day][target][0].shape[0]):
-                            neuron_trial_activity = np.zeros((events_activity[day][target][0].shape[1],))
-                            for trial in range(len(events_activity[day][target])):
-                                if len(events_activity[day][target][trial][neuron,:]):
-                                    neuron_trial_activity += events_activity[day][target][trial][neuron,:]#/(np.max(events_activity[day][target][trial][neuron,:])-np.min(events_activity[day][target][trial][neuron,:]))   
-                            neuron_trial_activity = neuron_trial_activity / len(events_activity[day][target])
-                            trial_activity[neuron,:] = neuron_trial_activity
-                    trial_activity_vectors[j,:,:] = trial_activity
-                    j= j+1
-                trial_activity_vectors_list.append(trial_activity_vectors)
+        if trials_list[all_counter] and events_activity[day][0] != []:
+            new_trial_list[all_counter] = trials_list[all_counter]
+            trial_activity_vectors = np.zeros((len(events_id[day]),events_activity[day][0][0].shape[0],events_activity[day][0][0].shape[1]))
+            j= 0    
+            for target in range(len(events_activity[day])):
+                if events_activity[day][target] != []:
+                    trial_activity = np.zeros((events_activity[day][target][0].shape[0],events_activity[day][target][0].shape[1]))
+                    ### generate matrix with mean activity and entire trial repetitions activity
+                    for neuron in range(events_activity[day][target][0].shape[0]):
+                        neuron_trial_activity = np.zeros((events_activity[day][target][0].shape[1],))
+                        for trial in range(len(events_activity[day][target])):
+                            if len(events_activity[day][target][trial][neuron,:]):
+                                neuron_trial_activity += events_activity[day][target][trial][neuron,:]#/(np.max(events_activity[day][target][trial][neuron,:])-np.min(events_activity[day][target][trial][neuron,:]))   
+                        neuron_trial_activity = neuron_trial_activity / len(events_activity[day][target])
+                        trial_activity[neuron,:] = neuron_trial_activity
+                trial_activity_vectors[j,:,:] = trial_activity
+                j= j+1
+            trial_activity_vectors_list.append(trial_activity_vectors)
             day = day +1
+            
+        else:
+            trial_activity_vectors_list.append([])
+            day = day+1
 
-    return trial_activity_vectors_list
+    return trial_activity_vectors_list, new_trial_list
 
 def create_visits_matrix_shufflings(events_activity_pre_norm_shuffle,events_id,N_SHUFFLINGS,trials_list):
     
     trial_activity_vectors_shuffle_list = []
     day = 0
     for all_counter in range(len(trials_list)): 
-        if trials_list[all_counter]:
-            if events_activity_pre_norm_shuffle[day][0][0] != []:
+        if trials_list[all_counter] and events_activity_pre_norm_shuffle[day][0][0] != []:
+            #print('Computing Trial matrices in SHUFFLINGS')                
+            trial_activity_vectors_shuffle = np.zeros((N_SHUFFLINGS,len(events_id[day]),events_activity_pre_norm_shuffle[day][0][0][0].shape[0],events_activity_pre_norm_shuffle[day][0][0][0].shape[1]))
+            for shuffle in range(N_SHUFFLINGS):
+                j=0
+                for target in range(len(events_activity_pre_norm_shuffle[day][shuffle])):
+                    if events_activity_pre_norm_shuffle[day][shuffle][target] != []:
+                        trial_activity = np.zeros((events_activity_pre_norm_shuffle[day][shuffle][target][0].shape[0],events_activity_pre_norm_shuffle[day][shuffle][target][0].shape[1]))
+                        ### generate matrix with mean activity and entire trial repetitions activity
+                        for neuron in range(events_activity_pre_norm_shuffle[day][shuffle][target][0].shape[0]):
+                            neuron_trial_activity = np.zeros((events_activity_pre_norm_shuffle[day][shuffle][target][0].shape[1],))
+                            for trial in range(len(events_activity_pre_norm_shuffle[day][shuffle][target])):
+                                if len(events_activity_pre_norm_shuffle[day][shuffle][target][trial][neuron,:]):
+                                    neuron_trial_activity += events_activity_pre_norm_shuffle[day][shuffle][target][trial][neuron,:]#/(np.max(events_activity[day][target][trial][neuron,:])-np.min(events_activity[day][target][trial][neuron,:]))
+                            trial_activity[neuron,:] = neuron_trial_activity / len(events_activity_pre_norm_shuffle[day][shuffle][target])
+                    trial_activity_vectors_shuffle[shuffle,j,:,:] = trial_activity
+                    j=j+1
 
-                #print('Computing Trial matrices in SHUFFLINGS')                
-                trial_activity_vectors_shuffle = np.zeros((N_SHUFFLINGS,len(events_id[day]),events_activity_pre_norm_shuffle[day][0][0][0].shape[0],events_activity_pre_norm_shuffle[day][0][0][0].shape[1]))
-                for shuffle in range(N_SHUFFLINGS):
-                    j=0
-                    for target in range(len(events_activity_pre_norm_shuffle[day][shuffle])):
-                        if events_activity_pre_norm_shuffle[day][shuffle][target] != []:
-                            trial_activity = np.zeros((events_activity_pre_norm_shuffle[day][shuffle][target][0].shape[0],events_activity_pre_norm_shuffle[day][shuffle][target][0].shape[1]))
-                            ### generate matrix with mean activity and entire trial repetitions activity
-                            for neuron in range(events_activity_pre_norm_shuffle[day][shuffle][target][0].shape[0]):
-                                neuron_trial_activity = np.zeros((events_activity_pre_norm_shuffle[day][shuffle][target][0].shape[1],))
-                                for trial in range(len(events_activity_pre_norm_shuffle[day][shuffle][target])):
-                                    if len(events_activity_pre_norm_shuffle[day][shuffle][target][trial][neuron,:]):
-                                        neuron_trial_activity += events_activity_pre_norm_shuffle[day][shuffle][target][trial][neuron,:]#/(np.max(events_activity[day][target][trial][neuron,:])-np.min(events_activity[day][target][trial][neuron,:]))
-                                trial_activity[neuron,:] = neuron_trial_activity / len(events_activity_pre_norm_shuffle[day][shuffle][target])
-                        trial_activity_vectors_shuffle[shuffle,j,:,:] = trial_activity
-                        j=j+1
-
-                trial_activity_vectors_shuffle_list.append(trial_activity_vectors_shuffle)
+            trial_activity_vectors_shuffle_list.append(trial_activity_vectors_shuffle)
             day = day+1
+        else:
+            trial_activity_vectors_shuffle_list.append([])
+            day=day+1
     return trial_activity_vectors_shuffle_list
 
     
@@ -1037,15 +1063,15 @@ def create_events_activity_data_transformation_shuffling(activity_list,data_tran
 
 def create_trial_activity_list(activity_events,events_id,trial_list):
     
-    trial_activity_vectors = create_visits_matrix(activity_events.neural,events_id,trial_list)
-    trial_activity_pca = create_visits_matrix(activity_events.pca,events_id,trial_list)
-    trial_activity_cca_time = create_visits_matrix(activity_events.cca_time,events_id,trial_list)
-    trial_activity_cca_allo = create_visits_matrix(activity_events.cca_allo,events_id,trial_list)
-    trial_activity_cca_ego = create_visits_matrix(activity_events.cca_ego,events_id,trial_list)
-    trial_activity_lda = create_visits_matrix(activity_events.lda,events_id,trial_list)
+    trial_activity_vectors,new_list = create_visits_matrix(activity_events.neural,events_id,trial_list)
+    trial_activity_pca,new_list = create_visits_matrix(activity_events.pca,events_id,trial_list)
+    trial_activity_cca_time,new_list = create_visits_matrix(activity_events.cca_time,events_id,trial_list)
+    trial_activity_cca_allo,new_list = create_visits_matrix(activity_events.cca_allo,events_id,trial_list)
+    trial_activity_cca_ego,new_list = create_visits_matrix(activity_events.cca_ego,events_id,trial_list)
+    trial_activity_lda,new_list = create_visits_matrix(activity_events.lda,events_id,trial_list)
 
-    trial_activity = namedtuple('trial_activity', ['neural','pca','cca_time','cca_allo','cca_ego','lda'])    
-    return trial_activity(trial_activity_vectors,trial_activity_pca, trial_activity_cca_time,trial_activity_cca_allo,trial_activity_cca_ego,trial_activity_lda)
+    trial_activity = namedtuple('trial_activity', ['neural','pca','cca_time','cca_allo','cca_ego','lda','trials'])    
+    return trial_activity(trial_activity_vectors,trial_activity_pca, trial_activity_cca_time,trial_activity_cca_allo,trial_activity_cca_ego,trial_activity_lda,new_list)
 
 def create_trial_activity_list_shuffle(activity_events_shuffle,events_id, N_SHUFFLINGS,trial_list):
     
@@ -1176,7 +1202,7 @@ def compute_representational_distance_all_to_all(trial_activity_vectors, trial_a
 
             distance_neural_shuffle = np.zeros((N_SHUFFLINGS,day_conditions,day_conditions,trial_activity_vectors[day1].shape[2]))
             for shuffle in range(N_SHUFFLINGS):
-                if trial_activity_vectors[day1][shuffle].shape[0] == day_conditions:            
+                if trial_activity_vectors_shuffle[day1][shuffle].shape[0] == day_conditions:            
                     for time in range(trial_activity_vectors_shuffle[day1][shuffle].shape[2]):
                         for i in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
                             for j in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
@@ -1187,7 +1213,7 @@ def compute_representational_distance_all_to_all(trial_activity_vectors, trial_a
             for count2 in range(count1+1,len(trial_list)):
                 if trial_list[count2]:
                     for shuffle in range(N_SHUFFLINGS):
-                        if trial_activity_vectors[day1][shuffle].shape[0] == day_conditions and trial_activity_vectors[day2][shuffle].shape[0] == day_conditions :
+                        if trial_activity_vectors_shuffle[day1][shuffle].shape[0] == day_conditions and trial_activity_vectors_shuffle[day2][shuffle].shape[0] == day_conditions :
                             if trial_vector[count1] == trial_vector[count2]:
                                 for time in range(trial_activity_vectors_shuffle[day1][shuffle].shape[2]):
                                     for i in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
@@ -1278,8 +1304,7 @@ def compute_representational_distance_measures_all_to_all(activity_list,data_tra
     trial_activity_shuffle_etho = create_trial_activity_list_shuffle(activity_events_etho_shuffling,events_id_etho, N_SHUFFLINGS,trial_list)
     print('CREATING DISTANCE tuple')
     
-    #distance = compute_distance_list_all_to_all(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS, trial_list, trial_flag)
-    distance = 0
+    distance = compute_distance_list_all_to_all(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS, trial_list, trial_flag)
     return trial_activity_etho, trial_activity_shuffle_etho, distance
 
 
