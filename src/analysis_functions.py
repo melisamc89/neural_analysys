@@ -198,7 +198,7 @@ def load_data(mouse = None, session = None, decoding_v = None, motion_correction
         beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_ethogram.npy'
         beh_file_name_2 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_object_corners.npy'
         speed_file_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_speed.npy'
-        beh_file_name_3= 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_ethogram_parameters.npy'
+        beh_file_name_3= 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_' + f'{day+1}' + '_likelihood_0.75_ethogram_parameters.npy'
         tracking_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75.npy'
         time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_'+ f'{trial}'+'_v1.3.1.0_10.pkl'
         calcium_file_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_'+ f'{trial}'+'_v' + f'{decoding_v}' + '.4.' + f'{motion_correction_v}' + '.' + f'{alignment_v}' + '.' + f'{equalization_v}' + '.' + f'{source_extraction_v}' + '.' + f'{component_evaluation_v}' +  '.0.npy'
@@ -335,7 +335,7 @@ def load_data_trial(mouse = None, session = None, decoding_v = None, motion_corr
         beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_ethogram.npy'
         beh_file_name_2 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_object_corners.npy'
         speed_file_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_speed.npy'
-        beh_file_name_3= 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_ethogram_parameters.npy'
+        beh_file_name_3= 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_' + f'{day+1}' + '_likelihood_0.75_ethogram_parameters.npy'
         tracking_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75.npy'
         time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_'+ f'{trial}'+'_v1.3.1.0_10.pkl'
   
@@ -1175,58 +1175,62 @@ def compute_representational_distance_all_to_all(trial_activity_vectors, trial_a
         day_conditions = 4
         trial_vector = [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4]
     
-    day1= 0
-    for count1 in range(len( trial_list)):
-        if trial_list[count1]:
-            ### compute distances within trial
-            distance_neural = np.zeros((day_conditions,day_conditions,trial_activity_vectors[day1].shape[2]))
-            if trial_activity_vectors[day1].shape[0] == day_conditions:
-                for time in range(trial_activity_vectors[day1].shape[2]):
-                    for i in range(trial_activity_vectors[day1].shape[0]):
-                        for j in range(trial_activity_vectors[day1].shape[0]):
-                            distance_neural[i,j,time] = np.linalg.norm(trial_activity_vectors[day1][i,0:n_components[day1],time] - trial_activity_vectors[day1][j,0:n_components[day1],time])
-            distance_matrix[count1*day_conditions:(count1+1)*day_conditions,count1*day_conditions:(count1+1)*day_conditions,:] = distance_neural
+    for day1 in range(len(trial_list)):
+        
+        # if trial_list[day1]:
+            # ### compute distances within trial
+            # distance_neural = np.zeros((day_conditions,day_conditions,trial_activity_vectors[day1].shape[2]))
+            # if trial_activity_vectors[day1].shape[0] == day_conditions:
+            #     for time in range(trial_activity_vectors[day1].shape[2]):
+            #         for i in range(trial_activity_vectors[day1].shape[0]):
+            #             for j in range(trial_activity_vectors[day1].shape[0]):
+            #                 distance_neural[i,j,time] = np.linalg.norm(trial_activity_vectors[day1][i,0:n_components[day1],time] - trial_activity_vectors[day1][j,0:n_components[day1],time])
+            # distance_matrix[day1*day_conditions:(day1+1)*day_conditions,day1*day_conditions:(day1+1)*day_conditions,:] = distance_neural
 
-            day2 = 0
-            for count2 in range(count1+1,len( trial_list)):
-                if trial_list[count2]:
-                    print('day2',day2)
-                    if trial_activity_vectors[day1].shape[0] == day_conditions and trial_activity_vectors[day2].shape[0] == day_conditions :
-                        if trial_vector[count1] == trial_vector[count2]:
-                            for time in range(trial_activity_vectors[day1].shape[2]):
-                                for i in range(trial_activity_vectors[day2].shape[0]):
-                                    for j in range(trial_activity_vectors[day2].shape[0]):
-                                        distance_matrix[count1*day_conditions+i,count2*day_conditions+j,time] = np.linalg.norm(trial_activity_vectors[day1][i,0:n_components[day1],time] - trial_activity_vectors[day2][j,0:n_components[day2],time])
-                    day2 = day2+1
+        for day2 in range(day1,len(trial_list)):
+            if trial_list[day1] and trial_list[day2]:
+                if trial_activity_vectors[day1].shape[0] == day_conditions and trial_activity_vectors[day2].shape[0] == day_conditions:
+                    if trial_vector[day1] == trial_vector[day2]:
+                        for time in range(trial_activity_vectors[day1].shape[2]):
+                            for i in range(trial_activity_vectors[day1].shape[0]):
+                                for j in range(trial_activity_vectors[day2].shape[0]):
+                                    x1 = trial_activity_vectors[day1][i,0:n_components[day1],time]
+                                    x2 =  trial_activity_vectors[day2][j,0:n_components[day2],time]
+                                    x = np.linalg.norm(x1 - x2)
+                                    distance_matrix[day1*day_conditions+i,day2*day_conditions+j,time] = x
+                                    for shuffle in range(N_SHUFFLINGS):
+                                        x1 = trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time]
+                                        x2 = trial_activity_vectors_shuffle[day2][shuffle][j,0:n_components[day2],time]
+                                        x = np.linalg.norm(x1-x2)
+                                        distance_matrix_shuffle[shuffle,day1*day_conditions+i,day2*day_conditions+j,time] = x
 
+            # distance_neural_shuffle = np.zeros((N_SHUFFLINGS,day_conditions,day_conditions,trial_activity_vectors[day1].shape[2]))
+            # for shuffle in range(N_SHUFFLINGS):
+            #     if trial_activity_vectors_shuffle[day1][shuffle].shape[0] == day_conditions:            
+            #         for time in range(trial_activity_vectors_shuffle[day1][shuffle].shape[2]):
+            #             for i in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
+            #                 for j in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
+            #                     distance_neural_shuffle[shuffle,i,j,time] = np.linalg.norm(trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time] - trial_activity_vectors_shuffle[day1][shuffle][j,0:n_components[day1],time])
+            # distance_matrix_shuffle[:,day1*day_conditions:(day1+1)*day_conditions,day1*day_conditions:(day1+1)*day_conditions,:] = distance_neural_shuffle
 
-            distance_neural_shuffle = np.zeros((N_SHUFFLINGS,day_conditions,day_conditions,trial_activity_vectors[day1].shape[2]))
-            for shuffle in range(N_SHUFFLINGS):
-                if trial_activity_vectors_shuffle[day1][shuffle].shape[0] == day_conditions:            
-                    for time in range(trial_activity_vectors_shuffle[day1][shuffle].shape[2]):
-                        for i in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
-                            for j in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
-                                distance_neural_shuffle[shuffle,i,j,time] = np.linalg.norm(trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time] - trial_activity_vectors_shuffle[day1][shuffle][j,0:n_components[day1],time])
-            distance_matrix_shuffle[:,count1*day_conditions:(count1+1)*day_conditions,count1*day_conditions:(count1+1)*day_conditions,:] = distance_neural_shuffle
-
-            day2 = 0
-            for count2 in range(count1+1,len(trial_list)):
-                if trial_list[count2]:
-                    for shuffle in range(N_SHUFFLINGS):
-                        if trial_activity_vectors_shuffle[day1][shuffle].shape[0] == day_conditions and trial_activity_vectors_shuffle[day2][shuffle].shape[0] == day_conditions :
-                            if trial_vector[count1] == trial_vector[count2]:
-                                for time in range(trial_activity_vectors_shuffle[day1][shuffle].shape[2]):
-                                    for i in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
-                                        for j in range(trial_activity_vectors_shuffle[day2][shuffle].shape[0]):
-                                            # print(distance_matrix_shuffle[shuffle,day1*day_conditions+i,day2*day_conditions+j,time])
-                                            # print(trial_activity_vectors_shuffle[day1][i,0:n_components[day1],time].shape)
-                                            # print(trial_activity_vectors_shuffle[day2][j,0:n_components[day2],time].shape)
-                                            # print(np.linalg.norm(trial_activity_vectors_shuffle[day1][i,0:n_components[day1],time] - trial_activity_vectors_shuffle[day2][j,0:n_components[day2],time]).shape)
-                                            distance_matrix_shuffle[shuffle,count1*day_conditions+i,count2*day_conditions+j,time] = np.linalg.norm(trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time] - trial_activity_vectors_shuffle[day2][shuffle][j,0:n_components[day2],time])
-                    day2 = day2+1
+#             #for day2 in range(day1,len(trial_list)):
+#                 # if trial_list[day2]:
+#                     for shuffle in range(N_SHUFFLINGS):
+#                         if trial_activity_vectors_shuffle[day1][shuffle].shape[0] == day_conditions and trial_activity_vectors_shuffle[day2][shuffle].shape[0] == day_conditions :
+#                             if trial_vector[day1] == trial_vector[day2]:
+#                                 for time in range(trial_activity_vectors_shuffle[day1][shuffle].shape[2]):
+#                                     for i in range(trial_activity_vectors_shuffle[day1][shuffle].shape[0]):
+#                                         for j in range(trial_activity_vectors_shuffle[day2][shuffle].shape[0]):
+#                                             # print(distance_matrix_shuffle[shuffle,day1*day_conditions+i,day2*day_conditions+j,time])
+#                                             # print(trial_activity_vectors_shuffle[day1][i,0:n_components[day1],time].shape)
+#                                             # print(trial_activity_vectors_shuffle[day2][j,0:n_components[day2],time].shape)
+#                                             # print(np.linalg.norm(trial_activity_vectors_shuffle[day1][i,0:n_components[day1],time] - trial_activity_vectors_shuffle[day2][j,0:n_components[day2],time]).shape)
+#                                             x1 = trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time]
+#                                             x2 = trial_activity_vectors_shuffle[day2][shuffle][j,0:n_components[day2],time]
+#                                             x = np.linalg.norm()
             
-            day1 = day1+1
-
+#                                             distance_matrix_shuffle[shuffle,day1*day_conditions+i,day2*day_conditions+j,time] = x
+            
     #print(distance_neural_shuffle)
     #distance_mean = np.nanmean(distance_matrix_shuffle,axis=0)
     #distance_std = np.nanstd(distance_matrix_shuffle,axis=0)
@@ -1243,6 +1247,7 @@ def compute_representational_distance_all_to_all(trial_activity_vectors, trial_a
     print(mean_distance.shape)
 
     return mean_distance,  mean_distance_zs
+
 
 
 def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, data_transformation, N_SHUFFLINGS,trial_list,trial_flag = False):
@@ -1262,8 +1267,14 @@ def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, dat
             cca_allo_components.append(trial_activity.cca_allo[day].shape[1])
             cca_ego_components.append(trial_activity.cca_ego[day].shape[1])
             lda_components.append(trial_activity.lda[day].shape[1])
-            
-    print(len(trial_activity.neural))                     
+        else:
+            neural_components.append([])
+            pca_components.append([])
+            cca_time_components.append([])
+            cca_allo_components.append([])
+            cca_ego_components.append([])
+            lda_components.append([])
+
     distance_neural, z_scored_neural = compute_representational_distance_all_to_all(trial_activity.neural,trial_activity_shuffle.neural,neural_components, N_SHUFFLINGS,trial_list,trial_flag)
     distance_pca, z_scored_pca = compute_representational_distance_all_to_all(trial_activity.pca,trial_activity_shuffle.pca,pca_components, N_SHUFFLINGS,trial_list,trial_flag)
     distance_cca_time, z_scored_cca_time = compute_representational_distance_all_to_all(trial_activity.cca_time,trial_activity_shuffle.cca_time,cca_time_components, N_SHUFFLINGS,trial_list,trial_flag)
@@ -1272,15 +1283,16 @@ def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, dat
     distance_lda, z_scored_lda = compute_representational_distance_all_to_all(trial_activity.lda,trial_activity_shuffle.lda,lda_components, N_SHUFFLINGS,trial_list, trial_flag)
 
     
-    non_nan_z_scored_neural = np.nansum([z_scored_neural,z_scored_neural.T],axis = 0)
-    non_nan_z_scored_pca = np.nansum([z_scored_pca,z_scored_pca.T],axis = 0)
-    non_nan_z_scored_cca_time = np.nansum([z_scored_cca_time,z_scored_cca_time.T],axis = 0)
-    non_nan_z_scored_cca_allo = np.nansum([z_scored_cca_allo,z_scored_cca_allo.T],axis = 0)
-    non_nan_z_scored_cca_ego = np.nansum([z_scored_cca_ego,z_scored_cca_ego.T],axis = 0)
-    non_nan_z_scored_lda = np.nansum([z_scored_lda,z_scored_lda.T],axis = 0)
+    non_nan_z_scored_neural = np.nan_to_num( np.nansum([z_scored_neural,z_scored_neural.T],axis = 0),neginf=0)
+    non_nan_z_scored_pca = np.nan_to_num( np.nansum([z_scored_pca,z_scored_pca.T],axis = 0),neginf=0)
+    non_nan_z_scored_cca_time = np.nan_to_num( np.nansum([z_scored_cca_time,z_scored_cca_time.T],axis = 0),neginf=0)
+    non_nan_z_scored_cca_allo = np.nan_to_num( np.nansum([z_scored_cca_allo,z_scored_cca_allo.T],axis = 0),neginf=0)
+    non_nan_z_scored_cca_ego = np.nan_to_num( np.nansum([z_scored_cca_ego,z_scored_cca_ego.T],axis = 0),neginf=0)
+    non_nan_z_scored_lda = np.nan_to_num( np.nansum([z_scored_lda,z_scored_lda.T],axis = 0),neginf=0)
     
     distance = namedtuple('distance', ['neural','pca','cca_time','cca_allo','cca_ego','lda'])
     return distance(non_nan_z_scored_neural, non_nan_z_scored_pca, non_nan_z_scored_cca_time, non_nan_z_scored_cca_allo, non_nan_z_scored_cca_ego, non_nan_z_scored_lda)
+
 
 
 
@@ -1303,9 +1315,9 @@ def compute_representational_distance_measures_all_to_all(activity_list,data_tra
     trial_activity_etho = create_trial_activity_list(activity_events_etho,events_id_etho,trial_list)
     trial_activity_shuffle_etho = create_trial_activity_list_shuffle(activity_events_etho_shuffling,events_id_etho, N_SHUFFLINGS,trial_list)
     print('CREATING DISTANCE tuple')
-    
     distance = compute_distance_list_all_to_all(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS, trial_list, trial_flag)
     return trial_activity_etho, trial_activity_shuffle_etho, distance
+
 
 
 
