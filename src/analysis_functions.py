@@ -300,7 +300,7 @@ def load_data(mouse = None, session = None, decoding_v = None, motion_correction
 
 
     
-    return activity_list,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list,trial_list
+    return activity_list,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list,trial_list,tracking_list
 
 
 
@@ -423,6 +423,8 @@ def load_data_trial(mouse = None, session = None, decoding_v = None, motion_corr
                 corners_list.append(corners[time1:time2])
                 parameters_list2.append(resample_params2[:,time1:time2])
                 parameters_time.append(resample_params0[:,time1:time2])
+                tracking_list.append(resample_position[:,time1:time2])
+                
                 print('neural shape =  ' +  str(resample_neural_activity_mean.shape) + ' beh shape' + str(resample_beh1.shape))
                 trial_list[day*5+i] = day*5+i+1
             day = day + 1
@@ -432,7 +434,137 @@ def load_data_trial(mouse = None, session = None, decoding_v = None, motion_corr
             day = day+1
             continue
             
-    return activity_list,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list,trial_list
+    return activity_list,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list,trial_list,tracking_list
+
+
+def load_data_trial_rest(mouse = None, session = None, decoding_v = None, motion_correction_v = None, alignment_v = None, equalization_v = None, source_extraction_v = None, component_evaluation_v = None, re_sf = None,file_directory = None, timeline_file_dir = None, behaviour_dir = None, behaviour_dir_parameters=None, tracking_dir = None, objects_dir = None):
+
+
+    behaviour_list_unsup = []
+    parameters_list = []
+    parameters_list2 = []
+    parameters_time = []
+    tracking_list = []
+    total_time = 0
+    day = 0
+    activity_list = []
+    activity_list_rest = []
+    timeline_list = []
+    behaviour_list = []
+    corners_list = []
+    speed_list = []
+    
+    trial_list = np.zeros((20,))
+
+
+    print('LOADING TRIALS ACTIVITY AND CREATING LIST OF ACTIVITY, TRACKING AND BEHAVIOUR')
+    for trial in [1,6,11,16]:
+
+        beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_ethogram.npy'
+        beh_file_name_2 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_object_corners.npy'
+        speed_file_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_speed.npy'
+        beh_file_name_3= 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_' + f'{day+1}' + '_likelihood_0.75_ethogram_parameters.npy'
+        tracking_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75.npy'
+        time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_'+ f'{trial}'+'_v1.3.1.0_10.pkl'
+  
+        calcium_file_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_trial_'+ f'{trial}'+'_v' + f'{decoding_v}' + '.4.' + f'{motion_correction_v}' + '.' + f'{alignment_v}' + '.' + f'{equalization_v}' + '.' + f'{source_extraction_v}' + '.' + f'{component_evaluation_v}' +  '.0.npy'
+    
+        if os.path.isfile(behaviour_dir + beh_file_name_1) and os.path.isfile(behaviour_dir + beh_file_name_2) and os.path.isfile(behaviour_dir + speed_file_name) and os.path.isfile(behaviour_dir_parameters + beh_file_name_3) and os.path.isfile(tracking_dir + tracking_file_name_1) and os.path.isfile(timeline_file_dir + time_file_session_1) and os.path.isfile(file_directory + calcium_file_name):
+           
+            ## LOAD BEHAVIOUR
+            behaviour = np.load(behaviour_dir + beh_file_name_1)
+            reshape_behaviour = np.reshape(behaviour[:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+            resample_beh1 = np.reshape(scipy.stats.mode(reshape_behaviour,axis=1)[0],reshape_behaviour.shape[0])
+            ## LOAD CORNERS EXPLORATION
+            behaviour = np.load(behaviour_dir + beh_file_name_2)
+            reshape_behaviour = np.reshape(behaviour[:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+            corners = np.reshape(scipy.stats.mode(reshape_behaviour,axis=1)[0],reshape_behaviour.shape[0])
+            ## LOAD INSTANTANEOUS SPEED
+            speed = np.load(behaviour_dir + speed_file_name)
+            reshape_speed = np.reshape(speed[:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+            resample_speed = np.reshape(scipy.stats.mode(reshape_speed,axis=1)[0],reshape_speed.shape[0])
+
+            parameters = np.load(behaviour_dir_parameters + beh_file_name_3)
+
+            params0 = []
+            params = []
+            for param in range(0,2): ## take only ALLOCENTRIC REPRESENTATION
+                r1_params = np.reshape(parameters[param,:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+                r2_params = np.reshape(scipy.stats.mode(r1_params,axis=1)[0],reshape_behaviour.shape[0])
+                r_params = parameters[param,:resample_speed.shape[0]]
+                r_params[:r2_params.shape[0]] = r2_params
+                params.append(r_params)
+            resample_params0 = np.array(params)
+
+            params = []
+            for param in range(2,7): ## take only ALLOCENTRIC REPRESENTATION
+                r1_params = np.reshape(parameters[param,:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+                r2_params = np.reshape(scipy.stats.mode(r1_params,axis=1)[0],reshape_behaviour.shape[0])
+                r_params = parameters[param,:resample_speed.shape[0]]
+                r_params[:r2_params.shape[0]] = r2_params
+                params.append(r_params)
+            resample_params = np.array(params)
+
+            params2 = []
+            for param in range(7,11): ## take only ALLOCENTRIC REPRESENTATION
+                r1_params = np.reshape(parameters[param,:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+                r2_params = np.reshape(scipy.stats.mode(r1_params,axis=1)[0],reshape_behaviour.shape[0])
+                r_params = parameters[param,:resample_speed.shape[0]]
+                r_params[:r2_params.shape[0]] = r2_params
+                params.append(r_params)
+            resample_params2 = np.array(params)
+            ## LOAD TRACKING
+            position = np.load(tracking_dir + tracking_file_name_1)
+            resample_position, resample_position_stc = stats.resample_matrix(neural_activity=position.T,
+                                                                                                    re_sf=re_sf)    
+            
+            ## LOAD TIMELINE
+            timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
+            timeline_info = pickle.load(timeline_file)
+            timeline_1 = np.zeros(len(timeline_info) + 1)
+            for i in range(len(timeline_info)):
+                timeline_1[i] = timeline_info[i][1]
+            timeline_1[len(timeline_info)] = behaviour.shape[0]
+            timeline = timeline_1/re_sf
+            time_lenght = 10
+            resample_timeline = timeline_1/re_sf
+            timeline_list.append(resample_timeline)
+            
+            
+            activity = np.load(file_directory + calcium_file_name)
+            neural_activity1 = activity[1:,:]
+            ## z-score neural activity
+            neural_activity = neural_activity1[:,:int(int(behaviour.shape[0]/re_sf)*re_sf)]
+            ##downsample neural activity
+            resample_neural_activity_mean, resample_neural_activity_std = stats.resample_matrix(neural_activity=neural_activity,
+                                                                                                    re_sf=re_sf)
+            
+
+            #activity_list.append(resample_neural_activity_mean)
+            for i in range(5):
+                time1 = int(resample_timeline[2*i])
+                time2 = int(resample_timeline[2*i+1])
+                time3 = int(resample_timeline[2*(i+1)])
+                activity_list.append(resample_neural_activity_mean[:,time1:time2])
+                activity_list_rest.append(resample_neural_activity_mean[:,time2:time3])
+                behaviour_list.append(resample_beh1[time1:time2])
+                speed_list.append(resample_speed[time1:time2])
+                parameters_list.append(resample_params[:,time1:time2])
+                corners_list.append(corners[time1:time2])
+                parameters_list2.append(resample_params2[:,time1:time2])
+                parameters_time.append(resample_params0[:,time1:time2])
+                tracking_list.append(resample_position[:,time1:time2])
+                
+                print('neural shape =  ' +  str(resample_neural_activity_mean.shape) + ' beh shape' + str(resample_beh1.shape))
+                trial_list[day*5+i] = day*5+i+1
+            day = day + 1
+        else:
+            #return activity_list,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list
+            trial_list[day*5 : day*5+5] = np.zeros((5,))
+            day = day+1
+            continue
+            
+    return activity_list,activity_list_rest,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list,trial_list,tracking_list
 
 
 def transform_neural_data(activity_list, behaviour_list,parameters_time,parameters_list,parameters_list2,trial_list):
@@ -514,6 +646,84 @@ def transform_neural_data(activity_list, behaviour_list,parameters_time,paramete
     return data_transformation(activity_list_pca,variance_ratio_list,activity_list_cca0,activity_list_cca,activity_list_cca2,activity_list_lda,trial_list_new)
     
 
+def transform_neural_data_rest(activity_list, activity_list_rest,behaviour_list,parameters_time,parameters_list,parameters_list2,trial_list):
+    
+    day = 0
+    pca = PCA()
+    activity_list_pca = []
+    variance_list = []
+    variance_ratio_list = []
+
+    cca_components = min(5,activity_list[day].shape[0])
+    cca = CCA(n_components=cca_components)
+    cca_components2 = 4
+    cca2 = CCA(n_components=cca_components2)
+    cca_components0 = 2
+    cca0 = CCA(n_components=cca_components0)
+
+    activity_list_cca = []
+    activity_list_cca2 = []
+    activity_list_cca0 = []
+
+    clf = LDA()
+    activity_list_lda = []
+
+    #embedding = MDS(n_components=3)
+    trial_list_new = np.zeros_like(trial_list)
+    for day in range(len(trial_list)):
+        if trial_list[day]:
+            if activity_list[day].shape[1] == behaviour_list[day].shape[0]:
+                trial_list_new[day] = trial_list[day]
+                ### run pca on the entire dataset
+                pca.fit(activity_list[day].T)
+                transformed_activity = pca.fit(activity_list[day].T).transform(activity_list_rest[day].T)
+                #X_pc_transformed = embedding.fit_transform(transformed_activity.T)
+                activity_list_pca.append(transformed_activity.T)
+                variance_list.append(pca.explained_variance_/(1+np.sqrt(activity_list_rest[day].shape[0]/activity_list_rest[day].shape[1]))**2)
+                normalized_variance = pca.explained_variance_/(1+np.sqrt(activity_list_rest[day].shape[0]/activity_list_rest[day].shape[1]))**2
+                variance_ratio_list.append(np.cumsum(normalized_variance/sum(normalized_variance)))
+
+                X = activity_list[day].T
+                y = behaviour_list[day]
+                X_transformed = clf.fit(X, y).transform(activity_list_rest[day].T)
+                #X_lda_transformed = embedding.fit_transform(X_transformed.T)
+                activity_list_lda.append(X_transformed.T)
+
+                cca_transformed = cca0.fit(activity_list[day].T, parameters_time[day].T).transform(activity_list_rest[day].T)
+                #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+                activity_list_cca0.append(cca_transformed.T)
+
+                cca_transformed = cca.fit(activity_list[day].T, parameters_list[day].T).transform(activity_list_rest[day].T)
+                #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+                activity_list_cca.append(cca_transformed.T)
+
+
+                cca_transformed = cca2.fit(activity_list[day].T, parameters_list2[day].T).transform(activity_list_rest[day].T)
+                #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+                activity_list_cca2.append(cca_transformed.T)
+            else:
+                trial_list_new[day] = 0
+                activity_list_pca.append([])
+                variance_list.append([])
+                variance_ratio_list.append([])
+                activity_list_lda.append([])
+                activity_list_cca0.append([])
+                activity_list_cca.append([])
+                activity_list_cca2.append([])   
+        else:
+            trial_list_new[day] = 0
+            activity_list_pca.append([])
+            variance_list.append([])
+            variance_ratio_list.append([])
+            activity_list_lda.append([])
+            activity_list_cca0.append([])
+            activity_list_cca.append([])
+            activity_list_cca2.append([])
+            continue
+    
+    data_transformation = namedtuple('data_transformation', ['pca','variance_ratio','cca_time','cca_allo','cca_ego','lda','trials'])    
+    return data_transformation(activity_list_pca,variance_ratio_list,activity_list_cca0,activity_list_cca,activity_list_cca2,activity_list_lda,trial_list_new)
+    
     
 def create_task_behaviour(behaviour_list,colapse_behaviour,object_fixed,timeline_list):
     
