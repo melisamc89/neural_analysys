@@ -305,7 +305,6 @@ def load_data(mouse = None, session = None, decoding_v = None, motion_correction
             timeline_list.append([])
             
             day = day+1
-            print(day)
             trial_list.append(0)
             continue
 
@@ -684,12 +683,8 @@ def transform_neural_data(activity_list, behaviour_list,parameters_time,paramete
         
     #embedding = MDS(n_components=3)
     trial_list_new = np.zeros_like(trial_list)
-    for day_control in range(len(trial_list)):
-        day = day_control
-        if trial_flag:
-            day = int(day_control/5)
+    for day in range(len(trial_list)):
         if trial_list[day]:
-            print(day)
             if activity_list[day].shape[1] == behaviour_list[day].shape[0]:
                 trial_list_new[day] = trial_list[day]
                 ### run pca on the entire dataset
@@ -877,15 +872,14 @@ def create_task_behaviour(behaviour_list,colapse_behaviour,object_fixed,timeline
                         index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-3], behaviour_trial!=objects[selected_object]))[0]
                         behaviour_trial[index0] = 3
                         behaviour_trial[index1] = 4
-
                         behaviour_trial[index2] = 4            
 
                         index0 = np.where(behaviour_trial==objects[selected_object]+4)[0]
                         index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-2], behaviour_trial!=objects[selected_object]+4))[0]
                         index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-1], behaviour_trial!=objects[selected_object]+4))[0]
-                        behaviour_trial[index0] = 0
-                        behaviour_trial[index1] = 0
-                        behaviour_trial[index2] = 0 
+                        behaviour_trial[index0] = 3
+                        behaviour_trial[index1] = 4
+                        behaviour_trial[index2] = 4 
 
                         behaviour_list[day][int(timeline_list[day][2*trial]):int(timeline_list[day][2*trial+1])] = behaviour_trial
 
@@ -896,9 +890,9 @@ def create_task_behaviour(behaviour_list,colapse_behaviour,object_fixed,timeline
                 behaviour_list[day][np.where(behaviour_list[day] == object_fixed)[0]] = 100
                 behaviour_list[day][np.where(np.logical_and(behaviour_list[day]>=3, behaviour_list[day]<=6))[0]] = 4
                 behaviour_list[day][np.where(behaviour_list[day] == 100)[0]] = 3        
-                behaviour_list[day][np.where(behaviour_list[day] == object_fixed +4)[0]] = 0        
-                behaviour_list[day][np.where(np.logical_and(behaviour_list[day]>=7, behaviour_list[day]<=10))[0]] = 0
-                behaviour_list[day][np.where(behaviour_list[day] == 200)[0]] = 0
+                behaviour_list[day][np.where(behaviour_list[day] == object_fixed +4)[0]] = 200      
+                behaviour_list[day][np.where(np.logical_and(behaviour_list[day]>=7, behaviour_list[day]<=10))[0]] = 4
+                behaviour_list[day][np.where(behaviour_list[day] == 200)[0]] = 3
 
 
     if colapse_behaviour == 2: #STABLE
@@ -917,9 +911,9 @@ def create_task_behaviour(behaviour_list,colapse_behaviour,object_fixed,timeline
                     index0 = np.where(behaviour_list[day]==objects[selected_object]+4)[0]
                     index1 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-2], behaviour_list[day]!=objects[selected_object]+4))
                     index2 = np.where(np.logical_and(behaviour_list[day]==objects[len(objects)-1], behaviour_list[day]!=objects[selected_object]+4))
-                    behaviour_list[day][index0] = 0
-                    behaviour_list[day][index1] = 0
-                    behaviour_list[day][index2] = 0  
+                    behaviour_list[day][index0] = 3
+                    behaviour_list[day][index1] = 4
+                    behaviour_list[day][index2] = 4  
 
     return
 
@@ -1034,7 +1028,6 @@ def create_corners_occupation(behaviour_list, corners_list, speed_list,trial_lis
         else:
             navigation_list.append([])
             exploration_list.append([])
-            
         
     return navigation_list, exploration_list
 
@@ -1070,8 +1063,7 @@ def create_events_list(behaviour, N_SHUFFLINGS,trial_list):
             events_day_list_shuffle_1.append(shufflings)
             events_counter_day_list.append(events_counter_list)
             events_time_starts_day.append(events_time_starts)
-        else:
-            
+        else: 
             events_day_list_1.append([])
             shufflings = []
             for j in range(N_SHUFFLINGS):
@@ -1089,7 +1081,7 @@ def create_id_events(events_day_list_1, events_counter_day_list,events_time_star
     number_of_events_list = []
     events_id = []
 
-    for day in range(len(events_day_list_1)):
+    for day in range(len(trial_list)):
         if trial_list[day]:
             events_duration_day = []
             total_duration_day = []
@@ -1113,7 +1105,6 @@ def create_id_events(events_day_list_1, events_counter_day_list,events_time_star
                     total_duration_day.append(100000000)
                     number_of_events_day.append(1000000)
                     events_id_day.append(0)
-
             events_duration_list.append(events_duration_day)
             total_duration_list.append(total_duration_day)
             number_of_events_list.append(number_of_events_day)
@@ -1129,6 +1120,7 @@ def create_id_events(events_day_list_1, events_counter_day_list,events_time_star
 def balancing_visits(number_of_events_list,events_duration_list,events_id,trial_list, balance_flag = False):
 
     if balance_flag == True:
+        ###### THIS NEED TO BE CHECKED AFTER MODIFICATIONS THAT DONT ASK FOR BALANCING DATA
         ### Balancing the number of events for selected targets 
         events_day_list= []         # create a list with the selected index of the ID-list to make a balanced selection
         events_number_list = []
@@ -1165,17 +1157,10 @@ def balancing_visits(number_of_events_list,events_duration_list,events_id,trial_
 
     else: 
         events_day_list= []         # create a list with the selected index of the ID-list to make a balanced selection
-        events_number_list = []
         events_day_list_shuffle = []
-        for day in range(len(number_of_events_list)):
+        events_number_list = number_of_events_list
+        for day in range(len(trial_list)):
             if trial_list[day]:
-                if len(number_of_events_list[day]):
-
-                    arg_min_target_time = np.argmin(number_of_events_list[day])
-                    n_events = number_of_events_list[day][arg_min_target_time]
-                else:
-                    n_events = 0
-                events_number_list.append(n_events)
                 events_list = []
                 events_list_copy = []
                 #print('Number of events per day after balancing: ',n_events)
@@ -1196,7 +1181,6 @@ def balancing_visits(number_of_events_list,events_duration_list,events_id,trial_
             else:
                 events_day_list.append([])   
                 events_day_list_shuffle.append([])
-                events_number_list = number_of_events_list
         
     return events_number_list,events_day_list, events_day_list_shuffle
 
@@ -1366,9 +1350,6 @@ def create_visits_matrix(events_activity,events_id,trials_list):
     trial_activity_vectors_list = []
     day = 0
     new_trial_list = np.zeros_like(trials_list)
-    
-    
-    
     for all_counter in range(len(trials_list)): 
         if trials_list[all_counter]:
             non_zero = np.where(events_id[all_counter])[0][0]
@@ -1432,38 +1413,43 @@ def create_visits_matrix_shufflings(events_activity_pre_norm_shuffle,events_id,N
     return trial_activity_vectors_shuffle_list
 
     
-def compute_representational_distance(trial_activity_vectors, trial_activity_vectors_shuffle, n_components, N_SHUFFLINGS):
+def compute_representational_distance(trial_activity_vectors, trial_activity_vectors_shuffle, n_components, N_SHUFFLINGS,trial_list):
 
     distance = []
     distance_zs = []
+    
     for day in range(len(trial_activity_vectors)):
-        distance_neural = np.zeros((trial_activity_vectors[day].shape[2],))
-
-        for time in range(trial_activity_vectors[day].shape[2]):
-            counter = 0
-            for i in range(trial_activity_vectors[day].shape[0]):
-                for j in range(i+1,trial_activity_vectors[day].shape[0]):
-                    distance_neural[time] += np.linalg.norm(trial_activity_vectors[day][i,0:n_components[day],time] - trial_activity_vectors[day][j,0:n_components[day],time])
-                    counter+=1
-            distance_neural[time] = distance_neural[time]/counter
-
-        distance_neural_shuffle = np.zeros((N_SHUFFLINGS,trial_activity_vectors[day].shape[2],))
-        for shuffle in range(N_SHUFFLINGS):
+        if trial_list[day]:
+            
+            distance_neural = np.zeros((trial_activity_vectors[day].shape[2],))
             for time in range(trial_activity_vectors[day].shape[2]):
                 counter = 0
-                for i in range(trial_activity_vectors_shuffle[day].shape[1]):
-                    for j in range(i+1,trial_activity_vectors_shuffle[day].shape[1]):
-                        distance_neural_shuffle[shuffle,time] += np.linalg.norm(trial_activity_vectors_shuffle[day][shuffle][i,0:n_components[day],time] - trial_activity_vectors_shuffle[day][shuffle][j,0:n_components[day],time])
-                        counter = counter +1
-                        #print(distance_neural_shuffle[shuffle,time])
-                distance_neural_shuffle[shuffle,time] = distance_neural_shuffle[shuffle,time]/counter
+                for i in range(trial_activity_vectors[day].shape[0]):
+                    for j in range(i+1,trial_activity_vectors[day].shape[0]):
+                        distance_neural[time] += np.linalg.norm(trial_activity_vectors[day][i,0:n_components[day],time] - trial_activity_vectors[day][j,0:n_components[day],time])
+                        counter+=1
+                distance_neural[time] = distance_neural[time]/counter
 
-        #print(distance_neural_shuffle)
-        distance_mean = np.nanmean(distance_neural_shuffle,axis=0)
-        distance_std = np.nanstd(distance_neural_shuffle,axis=0)
-        z_scored_distance = (distance_neural - distance_mean)/distance_std
-        distance.append(distance_neural)
-        distance_zs.append(z_scored_distance)
+            distance_neural_shuffle = np.zeros((N_SHUFFLINGS,trial_activity_vectors[day].shape[2],))
+            for shuffle in range(N_SHUFFLINGS):
+                for time in range(trial_activity_vectors[day].shape[2]):
+                    counter = 0
+                    for i in range(trial_activity_vectors_shuffle[day].shape[1]):
+                        for j in range(i+1,trial_activity_vectors_shuffle[day].shape[1]):
+                            distance_neural_shuffle[shuffle,time] += np.linalg.norm(trial_activity_vectors_shuffle[day][shuffle][i,0:n_components[day],time] - trial_activity_vectors_shuffle[day][shuffle][j,0:n_components[day],time])
+                            counter = counter +1
+                            #print(distance_neural_shuffle[shuffle,time])
+                    distance_neural_shuffle[shuffle,time] = distance_neural_shuffle[shuffle,time]/counter
+
+            #print(distance_neural_shuffle)
+            distance_mean = np.nanmean(distance_neural_shuffle,axis=0)
+            distance_std = np.nanstd(distance_neural_shuffle,axis=0)
+            z_scored_distance = (distance_neural - distance_mean)/distance_std
+            distance.append(distance_neural)
+            distance_zs.append(z_scored_distance)
+        else:
+            distance.append([])
+            distance_zs.append([])
 
     return distance, distance_zs
 
@@ -1521,7 +1507,7 @@ def create_trial_activity_list_shuffle(activity_events_shuffle,events_id, N_SHUF
     return trial_activity_shuffle(trial_activity_vectors,trial_activity_pca, trial_activity_cca_time,trial_activity_cca_allo,trial_activity_cca_ego,trial_activity_lda)
 
 
-def compute_distance_list(trial_activity, trial_activity_shuffle, data_transformation, N_SHUFFLINGS):
+def compute_distance_list(trial_activity, trial_activity_shuffle, data_transformation, N_SHUFFLINGS,trial_list):
     
     neural_components = []
     pca_components = []
@@ -1529,14 +1515,31 @@ def compute_distance_list(trial_activity, trial_activity_shuffle, data_transform
     cca_allo_components = []
     cca_ego_components = []
     lda_components = []
+    
     for day in range(len(trial_activity.neural)):
-        neural_components.append(trial_activity.neural[day].shape[1])
-        pca_components.append(np.where(data_transformation.variance_ratio[0]>0.7)[0][0])
-        cca_time_components.append(trial_activity.cca_time[day].shape[1])
-        cca_allo_components.append(trial_activity.cca_allo[day].shape[1])
-        cca_ego_components.append(trial_activity.cca_ego[day].shape[1])
-        lda_components.append(trial_activity.lda[day].shape[1])
-                         
+        if trial_list[day]:
+            neural_components.append(trial_activity.neural[day].shape[1])
+            if trial_flag:
+                pca_components.append(np.where(data_transformation.variance_ratio[int(day/5)]>0.7)[0][0])
+            else:
+                pca_components.append(np.where(data_transformation.variance_ratio[day]>0.7)[0][0])
+                
+            cca_time_components.append(trial_activity.cca_time[day].shape[1])
+            cca_allo_components.append(trial_activity.cca_allo[day].shape[1])
+            cca_ego_components.append(trial_activity.cca_ego[day].shape[1])
+            lda_components.append(trial_activity.lda[day].shape[1])
+        else:
+            neural_components.append([])
+            pca_components.append([])
+            cca_time_components.append([])
+            cca_allo_components.append([])
+            cca_ego_components.append([])
+            lda_components.append([])
+
+    lda_min = 4
+    for i in range(len(lda_components)):
+        lda_components[i] = lda_min
+        
     distance_neural, z_scored_neural = compute_representational_distance(trial_activity.neural,trial_activity_shuffle.neural,neural_components, N_SHUFFLINGS)
     distance_pca, z_scored_pca = compute_representational_distance(trial_activity.pca,trial_activity_shuffle.pca,pca_components, N_SHUFFLINGS)
     distance_cca_time, z_scored_cca_time = compute_representational_distance(trial_activity.cca_time,trial_activity_shuffle.cca_time,cca_time_components, N_SHUFFLINGS)
@@ -1548,7 +1551,7 @@ def compute_distance_list(trial_activity, trial_activity_shuffle, data_transform
     return distance(z_scored_neural, z_scored_pca, z_scored_cca_time, z_scored_cca_allo, z_scored_cca_ego, z_scored_cca_lda)
 
 
-def compute_representational_distance_measures(activity_list,data_transformation,period,behaviour_list,id_target,N_SHUFFLINGS,trials_list):
+def compute_representational_distance_measures(activity_list,data_transformation,period,behaviour_list,id_target,N_SHUFFLINGS,trial_list):
     
     print('CREATE LIST THAT SAVES ALL THE EVENTS IN A DAY AND CONTAINS ONSET OF VISITS')
     events_etho, events_shuffle_etho,events_counter_etho,events_onset_etho = create_events_list(behaviour_list, N_SHUFFLINGS,trial_list)
@@ -1560,13 +1563,13 @@ def compute_representational_distance_measures(activity_list,data_transformation
     events_etho_shuffle_b = create_shuffling(events_etho,events_shuffle_etho,events_counter_etho,events_onset_etho,number_of_events_etho,events_id_etho,events_etho_b,N_SHUFFLINGS)
     
     print('TAKING NEURAL OR TRANSFORMED ACTIVITY FOR EACH EVENT ... and create list with that')
-    activity_events_etho = create_events_activity_data_transformation(activity_list,data_transformation,period,events_etho,events_counter_etho,events_onset_etho,events_id_etho,events_etho_b,trials_list)
-    activity_events_etho_shuffling = create_events_activity_data_transformation_shuffling(activity_list,data_transformation,period,events_etho_shuffle_b,events_counter_etho,events_onset_etho,events_id_etho,events_etho_s_b, N_SHUFFLINGS,trials_list)
+    activity_events_etho = create_events_activity_data_transformation(activity_list,data_transformation,period,events_etho,events_counter_etho,events_onset_etho,events_id_etho,events_etho_b,trial_list)
+    activity_events_etho_shuffling = create_events_activity_data_transformation_shuffling(activity_list,data_transformation,period,events_etho_shuffle_b,events_counter_etho,events_onset_etho,events_id_etho,events_etho_s_b, N_SHUFFLINGS,trial_list)
     print('CREATING VISITIS ACTIVITY MATRICES')
-    trial_activity_etho = create_trial_activity_list(activity_events_etho,events_id_etho,trials_list)
-    trial_activity_shuffle_etho = create_trial_activity_list_shuffle(activity_events_etho_shuffling,events_id_etho, N_SHUFFLINGS,trials_list)
+    trial_activity_etho = create_trial_activity_list(activity_events_etho,events_id_etho,trial_list)
+    trial_activity_shuffle_etho = create_trial_activity_list_shuffle(activity_events_etho_shuffling,events_id_etho, N_SHUFFLINGS,trial_list)
     print('CREATING DISTANCE tuple')
-    distance = compute_distance_list(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS)
+    distance = compute_distance_list(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS,trial_list)
 
     return distance
 
@@ -1596,7 +1599,6 @@ def save_distance(mouse,session,distance,task,day_flag = True):
 
     return
 
-
 def compute_representational_distance_all_to_all(trial_activity_vectors, trial_activity_vectors_shuffle, n_components, N_SHUFFLINGS, trial_list, events_id,trial_flag = False):
 
     distance = []
@@ -1623,7 +1625,6 @@ def compute_representational_distance_all_to_all(trial_activity_vectors, trial_a
                 if trial_activity_vectors[day1].shape[0] == trial_activity_vectors[day2].shape[0]:
                     if trial_vector[day1] == trial_vector[day2]:
                         for time in range(trial_activity_vectors[day1].shape[2]):
-                            
                             for i in range(trial_activity_vectors[day1].shape[0]):
                                 for j in range(trial_activity_vectors[day2].shape[0]):
                                     if events_id[day1][i] and events_id[day2][j]:
@@ -1674,6 +1675,10 @@ def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, dat
             cca_ego_components.append([])
             lda_components.append([])
 
+    lda_min = 4
+    for i in range(len(lda_components)):
+        lda_components[i] = lda_min
+            
     distance_neural, z_scored_neural = compute_representational_distance_all_to_all(trial_activity.neural,trial_activity_shuffle.neural,neural_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
     distance_pca, z_scored_pca = compute_representational_distance_all_to_all(trial_activity.pca,trial_activity_shuffle.pca,pca_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
     distance_cca_time, z_scored_cca_time = compute_representational_distance_all_to_all(trial_activity.cca_time,trial_activity_shuffle.cca_time,cca_time_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
@@ -1698,6 +1703,7 @@ def compute_representational_distance_measures_all_to_all(activity_list,data_tra
     events_etho, events_shuffle_etho,events_counter_etho,events_onset_etho = create_events_list(behaviour_list, N_SHUFFLINGS,trial_list)
     print('NOW WE SEPARATE EVENTS TYPES ACCORDING TO CORNER/OBJECT VISIT')
     events_duration_etho, total_duration_etho,number_of_events_etho,events_id_etho = create_id_events(events_etho, events_counter_etho,events_onset_etho,id_target,trial_list)
+    print(number_of_events_etho)
     print('BALANCING TO THE LOWER NUMBER OF VISITS')
     events_number_etho, events_etho_b, events_etho_s_b = balancing_visits(number_of_events_etho,events_duration_etho,events_id_etho,trial_list)
     print('CREATE SHUFFLE LABELS THAT PRESERVE BALANCE')
@@ -1714,7 +1720,7 @@ def compute_representational_distance_measures_all_to_all(activity_list,data_tra
     print('CREATING DISTANCE tuple')
     #distance  = 0
     distance = compute_distance_list_all_to_all(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS,trial_activity_etho.trials, events_id_etho, trial_flag)
-    return trial_activity_etho, trial_activity_shuffle_etho , distance
+    return trial_activity_etho, trial_activity_shuffle_etho , events_id_etho, distance
 
 
 
