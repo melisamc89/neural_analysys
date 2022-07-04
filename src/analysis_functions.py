@@ -1413,14 +1413,22 @@ def create_visits_matrix_shufflings(events_activity_pre_norm_shuffle,events_id,N
     return trial_activity_vectors_shuffle_list
 
     
+    
 def compute_representational_distance(trial_activity_vectors, trial_activity_vectors_shuffle, n_components, N_SHUFFLINGS,trial_list):
+
 
     distance = []
     distance_zs = []
     
-    for day in range(len(trial_activity_vectors)):
+#     print('function')
+#     print(len(trial_activity_vectors_shuffle))
+#     print(trial_activity_vectors_shuffle[0].shape)
+    for day in range(len(trial_list)):
         if trial_list[day]:
-            
+            # print(day)
+            # print(len(trial_activity_vectors_shuffle[day]))
+            # print(type(trial_activity_vectors_shuffle[day]))
+
             distance_neural = np.zeros((trial_activity_vectors[day].shape[2],))
             for time in range(trial_activity_vectors[day].shape[2]):
                 counter = 0
@@ -1452,6 +1460,7 @@ def compute_representational_distance(trial_activity_vectors, trial_activity_vec
             distance_zs.append([])
 
     return distance, distance_zs
+
 
 
 def create_events_activity_data_transformation(activity_list,data_transformation,period,events,events_counter,events_onset,events_id,events_b,trial_list):
@@ -1506,8 +1515,7 @@ def create_trial_activity_list_shuffle(activity_events_shuffle,events_id, N_SHUF
     trial_activity_shuffle = namedtuple('trial_activity_shuffle', ['neural','pca','cca_time','cca_allo','cca_ego','lda'])
     return trial_activity_shuffle(trial_activity_vectors,trial_activity_pca, trial_activity_cca_time,trial_activity_cca_allo,trial_activity_cca_ego,trial_activity_lda)
 
-
-def compute_distance_list(trial_activity, trial_activity_shuffle, data_transformation, N_SHUFFLINGS,trial_list):
+def compute_distance_list(trial_activity, trial_activity_shuffle, data_transformation, N_SHUFFLINGS,trial_list,trial_flag = False):
     
     neural_components = []
     pca_components = []
@@ -1539,19 +1547,23 @@ def compute_distance_list(trial_activity, trial_activity_shuffle, data_transform
     lda_min = 4
     for i in range(len(lda_components)):
         lda_components[i] = lda_min
-        
-    distance_neural, z_scored_neural = compute_representational_distance(trial_activity.neural,trial_activity_shuffle.neural,neural_components, N_SHUFFLINGS)
-    distance_pca, z_scored_pca = compute_representational_distance(trial_activity.pca,trial_activity_shuffle.pca,pca_components, N_SHUFFLINGS)
-    distance_cca_time, z_scored_cca_time = compute_representational_distance(trial_activity.cca_time,trial_activity_shuffle.cca_time,cca_time_components, N_SHUFFLINGS)
-    distance_cca_allo, z_scored_cca_allo = compute_representational_distance(trial_activity.cca_allo,trial_activity_shuffle.cca_allo,cca_allo_components, N_SHUFFLINGS)
-    distance_cca_ego, z_scored_cca_ego = compute_representational_distance(trial_activity.cca_ego,trial_activity_shuffle.cca_ego,cca_ego_components, N_SHUFFLINGS)
-    distance_lda, z_scored_cca_lda = compute_representational_distance(trial_activity.lda,trial_activity_shuffle.lda,lda_components, N_SHUFFLINGS)
+     
+#     print(len(trial_activity_shuffle.neural))
+#     print(trial_activity_shuffle.neural[0].shape)
+    distance_neural, z_scored_neural = compute_representational_distance(trial_activity.neural,trial_activity_shuffle.neural,neural_components, N_SHUFFLINGS,trial_list)
+    distance_pca, z_scored_pca = compute_representational_distance(trial_activity.pca,trial_activity_shuffle.pca,pca_components, N_SHUFFLINGS,trial_list)
+    distance_cca_time, z_scored_cca_time = compute_representational_distance(trial_activity.cca_time,trial_activity_shuffle.cca_time,cca_time_components, N_SHUFFLINGS,trial_list)
+    distance_cca_allo, z_scored_cca_allo = compute_representational_distance(trial_activity.cca_allo,trial_activity_shuffle.cca_allo,cca_allo_components, N_SHUFFLINGS,trial_list)
+    distance_cca_ego, z_scored_cca_ego = compute_representational_distance(trial_activity.cca_ego,trial_activity_shuffle.cca_ego,cca_ego_components, N_SHUFFLINGS,trial_list)
+    distance_lda, z_scored_cca_lda = compute_representational_distance(trial_activity.lda,trial_activity_shuffle.lda,lda_components, N_SHUFFLINGS,trial_list)
 
     distance = namedtuple('distance', ['neural','pca','cca_time','cca_allo','cca_ego','lda'])
     return distance(z_scored_neural, z_scored_pca, z_scored_cca_time, z_scored_cca_allo, z_scored_cca_ego, z_scored_cca_lda)
 
 
-def compute_representational_distance_measures(activity_list,data_transformation,period,behaviour_list,id_target,N_SHUFFLINGS,trial_list):
+
+
+def compute_representational_distance_measures(activity_list,data_transformation,period,behaviour_list,id_target,N_SHUFFLINGS,trial_list,trial_flag = False):
     
     print('CREATE LIST THAT SAVES ALL THE EVENTS IN A DAY AND CONTAINS ONSET OF VISITS')
     events_etho, events_shuffle_etho,events_counter_etho,events_onset_etho = create_events_list(behaviour_list, N_SHUFFLINGS,trial_list)
@@ -1569,22 +1581,26 @@ def compute_representational_distance_measures(activity_list,data_transformation
     trial_activity_etho = create_trial_activity_list(activity_events_etho,events_id_etho,trial_list)
     trial_activity_shuffle_etho = create_trial_activity_list_shuffle(activity_events_etho_shuffling,events_id_etho, N_SHUFFLINGS,trial_list)
     print('CREATING DISTANCE tuple')
-    distance = compute_distance_list(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS,trial_list)
+    distance = 0
+    # print(len(trial_activity_shuffle_etho.neural))
+    # print(trial_activity_shuffle_etho.neural[0].shape)
+    distance = compute_distance_list(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS,trial_list,trial_flag)
 
-    return distance
+    return trial_activity_etho, trial_activity_shuffle_etho, distance
 
 
-
-def save_distance(mouse,session,distance,task,day_flag = True):
+def save_distance(mouse,session,distance,task,trial_list,day_flag = True):
+    
     
     for day in range(len(distance.neural)):
         final_distance = np.zeros((6, 200))
-        final_distance[0,:] = distance.neural[day]
-        final_distance[1,:] = distance.pca[day]
-        final_distance[2,:] = distance.cca_time[day]
-        final_distance[3,:] = distance.cca_allo[day]
-        final_distance[4,:] = distance.cca_ego[day]
-        final_distance[5,:] = distance.lda[day]
+        if trial_list[day]:
+            final_distance[0,:] = distance.neural[day]
+            final_distance[1,:] = distance.pca[day]
+            final_distance[2,:] = distance.cca_time[day]
+            final_distance[3,:] = distance.cca_allo[day]
+            final_distance[4,:] = distance.cca_ego[day]
+            final_distance[5,:] = distance.lda[day]
 
         print('Saving')
         if day_flag:
@@ -1599,7 +1615,7 @@ def save_distance(mouse,session,distance,task,day_flag = True):
 
     return
 
-def compute_representational_distance_all_to_all(trial_activity_vectors, trial_activity_vectors_shuffle, n_components, N_SHUFFLINGS, trial_list, events_id,trial_flag = False):
+def compute_representational_distance_all_to_all(trial_activity_vectors, trial_activity_vectors_shuffle, n_components, N_SHUFFLINGS, trial_list, events_id,metric = 'Euclidean',trial_flag = False):
 
     distance = []
     distance_zs = []
@@ -1629,14 +1645,22 @@ def compute_representational_distance_all_to_all(trial_activity_vectors, trial_a
                                 for j in range(trial_activity_vectors[day2].shape[0]):
                                     if events_id[day1][i] and events_id[day2][j]:
                                         x1 = trial_activity_vectors[day1][i,0:n_components[day1],time]
-                                        x2 =  trial_activity_vectors[day2][j,0:n_components[day2],time]
-                                        x = np.linalg.norm(x1 - x2)
-                                        distance_matrix[day1*day_conditions+i,day2*day_conditions+j,time] = x
-                                        for shuffle in range(N_SHUFFLINGS):
-                                            x1 = trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time]
-                                            x2 = trial_activity_vectors_shuffle[day2][shuffle][j,0:n_components[day2],time]
-                                            x = np.linalg.norm(x1-x2)
-                                            distance_matrix_shuffle[shuffle,day1*day_conditions+i,day2*day_conditions+j,time] = x
+                                        x2 = trial_activity_vectors[day2][j,0:n_components[day2],time]
+                                        x = 0
+                                        if x1.shape == x2.shape:
+                                            # if metric == 'Euclidean':
+                                            #     x = np.linalg.norm(x1 - x2)
+                                            # if metric == 'cosine':
+                                            x = np.dot(x1, x2)/(np.linalg.norm(x1)*np.linalg.norm(x2))
+                                            distance_matrix[day1*day_conditions+i,day2*day_conditions+j,time] = x
+                                            for shuffle in range(N_SHUFFLINGS):
+                                                # x1 = trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time]
+                                                # x2 = trial_activity_vectors_shuffle[day2][shuffle][j,0:n_components[day2],time]
+                                                # if metric == 'Euclidean':
+                                                #     x = np.linalg.linalg.norm(x1-x2)
+                                                # if metric == 'cosine':
+                                                x = np.dot(x1, x2)/(np.linalg.linalg.norm(x1)*np.linalg.linalg.norm(x2))
+                                                distance_matrix_shuffle[shuffle,day1*day_conditions+i,day2*day_conditions+j,time] = x
         
     mean_distance = np.nanmean(distance_matrix,axis = 2)
     mean_distance_shuffling =  np.nanmean(distance_matrix_shuffle,axis = 3)
@@ -1646,7 +1670,7 @@ def compute_representational_distance_all_to_all(trial_activity_vectors, trial_a
 
     return mean_distance,  mean_distance_zs
 
-def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, data_transformation, N_SHUFFLINGS,trial_list,events_id,trial_flag = False):
+def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, data_transformation, N_SHUFFLINGS,trial_list,events_id,metric = 'Euclidean',trial_flag = False):
     
     neural_components = []
     pca_components = []
@@ -1657,6 +1681,7 @@ def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, dat
     
     for day in range(len(trial_activity.neural)):
         if trial_list[day]:
+            print(day)
             neural_components.append(trial_activity.neural[day].shape[1])
             if trial_flag:
                 pca_components.append(np.where(data_transformation.variance_ratio[int(day/5)]>0.7)[0][0])
@@ -1679,12 +1704,12 @@ def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, dat
     for i in range(len(lda_components)):
         lda_components[i] = lda_min
             
-    distance_neural, z_scored_neural = compute_representational_distance_all_to_all(trial_activity.neural,trial_activity_shuffle.neural,neural_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
-    distance_pca, z_scored_pca = compute_representational_distance_all_to_all(trial_activity.pca,trial_activity_shuffle.pca,pca_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
-    distance_cca_time, z_scored_cca_time = compute_representational_distance_all_to_all(trial_activity.cca_time,trial_activity_shuffle.cca_time,cca_time_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
-    distance_cca_allo, z_scored_cca_allo = compute_representational_distance_all_to_all(trial_activity.cca_allo,trial_activity_shuffle.cca_allo,cca_allo_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
-    distance_cca_ego, z_scored_cca_ego = compute_representational_distance_all_to_all(trial_activity.cca_ego,trial_activity_shuffle.cca_ego,cca_ego_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
-    distance_lda, z_scored_lda = compute_representational_distance_all_to_all(trial_activity.lda,trial_activity_shuffle.lda,lda_components, N_SHUFFLINGS,trial_list,events_id,trial_flag)
+    distance_neural, z_scored_neural = compute_representational_distance_all_to_all(trial_activity.neural,trial_activity_shuffle.neural,neural_components, N_SHUFFLINGS,trial_list,events_id,metric,trial_flag)
+    distance_pca, z_scored_pca = compute_representational_distance_all_to_all(trial_activity.pca,trial_activity_shuffle.pca,pca_components, N_SHUFFLINGS,trial_list,events_id,metric,trial_flag)
+    distance_cca_time, z_scored_cca_time = compute_representational_distance_all_to_all(trial_activity.cca_time,trial_activity_shuffle.cca_time,cca_time_components, N_SHUFFLINGS,trial_list,events_id,metric,trial_flag)
+    distance_cca_allo, z_scored_cca_allo = compute_representational_distance_all_to_all(trial_activity.cca_allo,trial_activity_shuffle.cca_allo,cca_allo_components, N_SHUFFLINGS,trial_list,events_id,metric,trial_flag)
+    distance_cca_ego, z_scored_cca_ego = compute_representational_distance_all_to_all(trial_activity.cca_ego,trial_activity_shuffle.cca_ego,cca_ego_components, N_SHUFFLINGS,trial_list,events_id,metric,trial_flag)
+    distance_lda, z_scored_lda = compute_representational_distance_all_to_all(trial_activity.lda,trial_activity_shuffle.lda,lda_components, N_SHUFFLINGS,trial_list,events_id,metric,trial_flag)
 
     
     non_nan_z_scored_neural = np.nan_to_num( np.nansum([z_scored_neural,z_scored_neural.T],axis = 0),neginf=0)
@@ -1697,7 +1722,7 @@ def compute_distance_list_all_to_all(trial_activity, trial_activity_shuffle, dat
     distance = namedtuple('distance', ['neural','pca','cca_time','cca_allo','cca_ego','lda'])
     return distance(non_nan_z_scored_neural, non_nan_z_scored_pca, non_nan_z_scored_cca_time, non_nan_z_scored_cca_allo, non_nan_z_scored_cca_ego, non_nan_z_scored_lda)
 
-def compute_representational_distance_measures_all_to_all(activity_list,data_transformation,period,behaviour_list,id_target,N_SHUFFLINGS,trial_list, trial_flag = False):
+def compute_representational_distance_measures_all_to_all(activity_list,data_transformation,period,behaviour_list,id_target,N_SHUFFLINGS,trial_list, metric = 'Euclidean',trial_flag = False):
     
     print('CREATE LIST THAT SAVES ALL THE EVENTS IN A DAY AND CONTAINS ONSET OF VISITS')
     events_etho, events_shuffle_etho,events_counter_etho,events_onset_etho = create_events_list(behaviour_list, N_SHUFFLINGS,trial_list)
@@ -1719,7 +1744,7 @@ def compute_representational_distance_measures_all_to_all(activity_list,data_tra
     trial_activity_shuffle_etho = create_trial_activity_list_shuffle(activity_events_etho_shuffling,events_id_etho, N_SHUFFLINGS,trial_list)
     print('CREATING DISTANCE tuple')
     #distance  = 0
-    distance = compute_distance_list_all_to_all(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS,trial_activity_etho.trials, events_id_etho, trial_flag)
+    distance = compute_distance_list_all_to_all(trial_activity_etho,trial_activity_shuffle_etho, data_transformation, N_SHUFFLINGS,trial_activity_etho.trials, events_id_etho,metric, trial_flag)
     return trial_activity_etho, trial_activity_shuffle_etho , events_id_etho, distance
 
 
