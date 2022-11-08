@@ -27,6 +27,7 @@ from sklearn.model_selection import KFold
 import seaborn as sns
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from collections import namedtuple
+from scipy import spatial
 
 def speed_selection(tracking = None, speed_limit = 3):
     
@@ -38,6 +39,88 @@ def speed_selection(tracking = None, speed_limit = 3):
     index = np.where(speed > speed_limit)[0]
     return index
 
+from scipy.ndimage import gaussian_filter
+BINS = 70
+
+def occupancy_map(tracking = None, binnumber = BINS):
+    
+    x = np.array([int(tracking[0,i]) for i in range(tracking.shape[1])])
+    y = np.array([int(tracking[1,i]) for i in range(tracking.shape[1])])
+    xpos = x[np.logical_and(x>0,y>0)]
+    ypos = y[np.logical_and(x>0,y>0)]
+    
+    occupancy = np.zeros((binnumber,binnumber))
+    xdenom = int(np.max(xpos)/binnumber+1)
+    ydenom = int(np.max(ypos)/binnumber+1)
+    data_points = 0
+    for x,y in zip(xpos,ypos):
+        if x>0 and y>0:
+            x1 = int(x/xdenom)
+            y1 = int(y/ydenom)
+            occupancy [x1,y1]= occupancy[x1,y1] + 1
+            data_points+=1
+    occupancy = occupancy/data_points
+    return occupancy
+
+def binned_tracking(tracking = None, binnumber = 70):
+    
+    x = np.array([int(tracking[0,i]) for i in range(tracking.shape[1])])
+    y = np.array([int(tracking[1,i]) for i in range(tracking.shape[1])])
+    
+    xpos = x[np.logical_and(x>0,y>0)]
+    ypos = y[np.logical_and(x>0,y>0)]
+    
+    xdenom = int(np.max(xpos)/binnumber+1)
+    ydenom = int(np.max(ypos)/binnumber+1)
+    
+    xnew = [int(xpos[i]/xdenom) for i in range(len(xpos))]
+    ynew = [int(ypos[i]/xdenom) for i in range(len(xpos))]
+    
+    return xnew,ynew
+
+def neuron_activity_map(activity= None,tracking = None,binnumber = 70, neuronID = 0):
+     
+    x = np.array([int(tracking[0,i]) for i in range(tracking.shape[1])])
+    y = np.array([int(tracking[1,i]) for i in range(tracking.shape[1])])
+    xpos = x[np.logical_and(x>0,y>0)]
+    ypos = y[np.logical_and(x>0,y>0)]
+    
+    act_map = np.zeros((binnumber,binnumber))
+    xdenom = int(np.max(xpos)/binnumber+1)
+    ydenom = int(np.max(ypos)/binnumber+1)
+    counter = 0
+    for x,y in zip(xpos,ypos):
+        if x>0 and y>0:
+            x1 = int(x/xdenom)
+            y1 = int(y/ydenom)
+            act_map[x1,y1]+=np.mean(activity[neuronID,counter])
+            counter+=1
+        
+    act_map = act_map/counter
+    return act_map
+
+def mean_activity_map(activity= None,tracking = None,binnumber = BINS):
+    
+    x = np.array([int(tracking[0,i]) for i in range(tracking.shape[1])])
+    y = np.array([int(tracking[1,i]) for i in range(tracking.shape[1])])
+    xpos = x[np.logical_and(x>0,y>0)]
+    ypos = y[np.logical_and(x>0,y>0)]
+    act_map = np.zeros((binnumber,binnumber))
+    xdenom = int(np.max(xpos)/binnumber+1)
+    ydenom = int(np.max(ypos)/binnumber+1)
+    counter = 0
+    for x,y in zip(xpos,ypos):
+        if x>0 and y>0:
+            x1 = int(x/xdenom)
+            y1 = int(y/ydenom)
+            act_map[x1,y1]+=np.mean(activity[:,counter])
+            counter+=1
+        
+    act_map = act_map/counter
+    return act_map
+
+def poisson_pdf(n,l):
+    return pow(l,n)*exp(-l)/math.factorial(n)
 
 def mouse_properties(mouse = None, session_now = None):
     fixed = 'None'
@@ -175,7 +258,7 @@ def mouse_properties(mouse = None, session_now = None):
     return task,colapse_behaviour,object_fixed,fixed,labels,colornames
 
 
-def load_data(mouse = None, session = None, decoding_v = None, motion_correction_v = None, alignment_v = None, equalization_v = None, source_extraction_v = None, component_evaluation_v = None, re_sf = None,file_directory = None, timeline_file_dir = None, behaviour_dir = None, behaviour_dir_parameters=None, tracking_dir = None, objects_dir = None):
+def load_data(mouse = None, session = None, decoding_v = None, motion_correction_v = None, alignment_v = None, equalization_v = None, source_extraction_v = None, component_evaluation_v = None, re_sf = None,file_directory = None, timeline_file_dir = None, behaviour_dir = None, behaviour_dir_parameters=None, tracking_dir = None, objects_dir = None,binary = False):
     
     activity_list = []
     timeline_list = []
@@ -270,9 +353,25 @@ def load_data(mouse = None, session = None, decoding_v = None, motion_correction
             neural_activity1 = activity[1:,:]
             ## z-score neural activity
             neural_activity = neural_activity1[:,:int(int(behaviour.shape[0]/re_sf)*re_sf)]
+            zscored = True
+            if zscored:
+                for cell in range(neural_activity.shape[0]):
+                    mean_activity = np.mean(neural_activity[cell,:])
+                    std_activity = np.mean(neural_activity[cell,:])
+                    neural_activity[cell,:] = (neural_activity[cell,:]-mean_activity)/std_activity
+
+            new_activity = np.zeros_like(neural_activity)
+            if binary == True:
+                mean_activity = np.nanmean(neural_activity,axis = 1)
+                std_activity = np.nanstd(neural_activity,axis = 1)
+                
+                for cell in range(new_activity.shape[0]):
+                    new_activity[cell,np.where(neural_activity[cell,:] > mean_activity[cell] + std_activity[cell])[0]] = 1
+                neural_activity = new_activity
             ##downsample neural activity
             resample_neural_activity_mean, resample_neural_activity_std = stats.resample_matrix(neural_activity=neural_activity,
                                                                                                     re_sf=re_sf)
+                    
             
             
             behaviour_list.append(resample_beh1)
@@ -314,7 +413,7 @@ def load_data(mouse = None, session = None, decoding_v = None, motion_correction
 
 
 
-def load_data_trial(mouse = None, session = None, decoding_v = None, motion_correction_v = None, alignment_v = None, equalization_v = None, source_extraction_v = None, component_evaluation_v = None, re_sf = None,file_directory = None, timeline_file_dir = None, behaviour_dir = None, behaviour_dir_parameters=None, tracking_dir = None, objects_dir = None):
+def load_data_trial(mouse = None, session = None, decoding_v = None, motion_correction_v = None, alignment_v = None, equalization_v = None, source_extraction_v = None, component_evaluation_v = None, re_sf = None,file_directory = None, timeline_file_dir = None, behaviour_dir = None, behaviour_dir_parameters=None, tracking_dir = None, objects_dir = None, binary = False):
 
 
     activity_list_trial = []
@@ -417,6 +516,21 @@ def load_data_trial(mouse = None, session = None, decoding_v = None, motion_corr
             neural_activity1 = activity[1:,:]
             ## z-score neural activity
             neural_activity = neural_activity1[:,:int(int(behaviour.shape[0]/re_sf)*re_sf)]
+            zscored = True
+            if zscored:
+                for cell in range(neural_activity.shape[0]):
+                    mean_activity = np.mean(neural_activity[cell,:])
+                    std_activity = np.mean(neural_activity[cell,:])
+                    neural_activity[cell,:] = (neural_activity[cell,:]-mean_activity)/std_activity
+
+            new_activity = np.zeros_like(neural_activity)
+            if binary == True:
+                mean_activity = np.nanmean(neural_activity,axis = 1)
+                std_activity = np.nanstd(neural_activity,axis = 1)
+
+                for cell in range(new_activity.shape[0]):
+                    new_activity[cell,np.where(neural_activity[cell,:] > mean_activity[cell] + std_activity[cell])[0]] = 1
+                neural_activity = new_activity
             ##downsample neural activity
             resample_neural_activity_mean, resample_neural_activity_std = stats.resample_matrix(neural_activity=neural_activity,
                                                                                                     re_sf=re_sf)
@@ -461,11 +575,14 @@ def load_behaviour_trial(mouse = None, session = None, decoding_v = None, motion
 
 
     behaviour_list = []
+    corners_list = []
+    speed_list = []
+
     trial_list = np.zeros((20,))
     total_time = 0
     day = 0
 
-    print('LOADING TRIALS ACTIVITY AND CREATING LIST OF ACTIVITY, TRACKING AND BEHAVIOUR')
+    print('LOADING...')
     for trial in [1,6,11,16]:
 
         beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_day_' + f'{day+1}' + '_likelihood_0.75_ethogram.npy'
@@ -482,7 +599,11 @@ def load_behaviour_trial(mouse = None, session = None, decoding_v = None, motion
            
             ## LOAD BEHAVIOUR
             behaviour = np.load(behaviour_dir + beh_file_name_1)
-                        
+            ## LOAD CORNERS
+            corners = np.load(behaviour_dir + beh_file_name_2)
+            ## LOAD INSTANTANEOUS SPEED
+            speed = np.load(behaviour_dir + speed_file_name)
+
             ## LOAD TIMELINE
             timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
             timeline_info = pickle.load(timeline_file)
@@ -491,12 +612,13 @@ def load_behaviour_trial(mouse = None, session = None, decoding_v = None, motion
                 timeline_1[i] = timeline_info[i][1]
             timeline_1[len(timeline_info)] = behaviour.shape[0]
 
-            #activity_list.append(resample_neural_activity_mean)
             for i in range(5):
                 time1 = int(timeline_1[2*i])
                 time2 = int(timeline_1[2*i+1])
                 behaviour_list.append(behaviour[time1:time2])
-                
+                corners_list.append(corners[time1:time2])
+                speed_list.append(speed[time1:time2])
+            
                 trial_list[day*5+i] = day*5+i+1
             day = day + 1
         else:
@@ -505,10 +627,10 @@ def load_behaviour_trial(mouse = None, session = None, decoding_v = None, motion
             day = day+1
             continue
             
-    return timeline_1, behaviour_list,trial_list
+    return timeline_1, behaviour_list,trial_list,corners_list, speed_list
 
 
-def load_data_trial_rest(mouse = None, session = None, decoding_v = None, motion_correction_v = None, alignment_v = None, equalization_v = None, source_extraction_v = None, component_evaluation_v = None, re_sf = None,file_directory = None, timeline_file_dir = None, behaviour_dir = None, behaviour_dir_parameters=None, tracking_dir = None, objects_dir = None):
+def load_data_trial_rest(mouse = None, session = None, decoding_v = None, motion_correction_v = None, alignment_v = None, equalization_v = None, source_extraction_v = None, component_evaluation_v = None, re_sf = None,file_directory = None, timeline_file_dir = None, behaviour_dir = None, behaviour_dir_parameters=None, tracking_dir = None, objects_dir = None, binary = False):
 
 
     behaviour_list_unsup = []
@@ -607,7 +729,21 @@ def load_data_trial_rest(mouse = None, session = None, decoding_v = None, motion
             neural_activity1 = activity[1:,:]
             ## z-score neural activity
             neural_activity = neural_activity1[:,:int(int(behaviour.shape[0]/re_sf)*re_sf)]
-            ##downsample neural activity
+            zscored = True
+            if zscored:
+                for cell in range(neural_activity.shape[0]):
+                    mean_activity = np.mean(neural_activity[cell,:])
+                    std_activity = np.mean(neural_activity[cell,:])
+                    neural_activity[cell,:] = (neural_activity[cell,:]-mean_activity)/std_activity
+
+            new_activity = np.zeros_like(neural_activity)
+            if binary == True:
+                mean_activity = np.nanmean(neural_activity,axis = 1)
+                std_activity = np.nanstd(neural_activity,axis = 1)
+                for cell in range(new_activity.shape[0]):
+                    new_activity[cell,np.where(neural_activity[cell,:] > mean_activity[cell] + std_activity[cell])[0]] = 1
+                neural_activity = new_activity
+            ##downsample neural activity            
             resample_neural_activity_mean, resample_neural_activity_std = stats.resample_matrix(neural_activity=neural_activity,
                                                                                                     re_sf=re_sf)
             
@@ -648,6 +784,164 @@ def load_data_trial_rest(mouse = None, session = None, decoding_v = None, motion
             continue
             
     return activity_list,activity_list_rest,timeline_list,behaviour_list,corners_list,parameters_time,parameters_list,parameters_list2,speed_list,trial_list,tracking_list
+
+
+
+def load_data_session(mouse = None, session = None, re_sf = None,file_directory = None, timeline_file_dir = None, behaviour_dir = None, behaviour_dir_parameters=None, objects_dir = None,binary = False,time_lenght = 42):
+
+    print('LOADING TRIALS ACTIVITY AND CREATING LIST OF ACTIVITY, TRACKING AND BEHAVIOUR')
+
+    beh_file_name_1 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_likelihood_0.75_ethogram.npy'
+    beh_file_name_2 = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' +'_likelihood_0.75_object_corners.npy'
+    speed_file_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}' +'_likelihood_0.75_speed.npy'
+    
+    beh_file_name_3= 'mouse_' + f'{mouse}' + '_session_' + f'{session}' + '_likelihood_0.75_ethogram_parameters.npy'
+    time_file_session_1 =  'mouse_'+ f'{mouse}'+'_session_'+ f'{session}' +'_trial_'+ f'{1}'+'_v1.4.1.0_'+f'{time_lenght}'+'.pkl'
+    calcium_file_name = 'mouse_' + f'{mouse}' + '_session_' + f'{session}'+ '.npy'
+
+    
+    if os.path.isfile(behaviour_dir + beh_file_name_1) and os.path.isfile(behaviour_dir + beh_file_name_2) and os.path.isfile(behaviour_dir + speed_file_name) and os.path.isfile(behaviour_dir_parameters + beh_file_name_3) and os.path.isfile(timeline_file_dir + time_file_session_1) and os.path.isfile(file_directory + calcium_file_name):
+            
+        ## LOAD BEHAVIOUR
+        behaviour = np.load(behaviour_dir + beh_file_name_1)
+        reshape_behaviour = np.reshape(behaviour[:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+        resample_beh1 = np.reshape(scipy.stats.mode(reshape_behaviour,axis=1)[0],reshape_behaviour.shape[0])
+        ## LOAD CORNERS EXPLORATION
+        behaviour = np.load(behaviour_dir + beh_file_name_2)
+        reshape_behaviour = np.reshape(behaviour[:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+        corners = np.reshape(scipy.stats.mode(reshape_behaviour,axis=1)[0],reshape_behaviour.shape[0])
+        ## LOAD INSTANTANEOUS SPEED
+        speed = np.load(behaviour_dir + speed_file_name)
+        reshape_speed = np.reshape(speed[:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+        resample_speed = np.reshape(scipy.stats.mode(reshape_speed,axis=1)[0],reshape_speed.shape[0])
+
+        parameters = np.load(behaviour_dir_parameters + beh_file_name_3)
+        params0 = []
+        params = []
+        for param in range(0,2): ## take only ALLOCENTRIC REPRESENTATION
+            r1_params = np.reshape(parameters[param,:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+            r2_params = np.reshape(scipy.stats.mode(r1_params,axis=1)[0],reshape_behaviour.shape[0])
+            r_params = parameters[param,:resample_speed.shape[0]]
+            r_params[:r2_params.shape[0]] = r2_params
+            params.append(r_params)
+        resample_params0 = np.array(params)
+
+        params = []
+        for param in range(2,7): ## take only ALLOCENTRIC REPRESENTATION
+            r1_params = np.reshape(parameters[param,:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+            r2_params = np.reshape(scipy.stats.mode(r1_params,axis=1)[0],reshape_behaviour.shape[0])
+            r_params = parameters[param,:resample_speed.shape[0]]
+            r_params[:r2_params.shape[0]] = r2_params
+            params.append(r_params)
+        resample_params = np.array(params)
+
+        params2 = []
+        for param in range(7,11): ## take only ALLOCENTRIC REPRESENTATION
+            r1_params = np.reshape(parameters[param,:int(int(behaviour.shape[0]/re_sf)*re_sf)],(int(behaviour.shape[0]/re_sf),re_sf))
+            r2_params = np.reshape(scipy.stats.mode(r1_params,axis=1)[0],reshape_behaviour.shape[0])
+            r_params = parameters[param,:resample_speed.shape[0]]
+            r_params[:r2_params.shape[0]] = r2_params
+            params.append(r_params)
+        resample_params2 = np.array(params)
+            
+        ## LOAD TIMELINE
+        timeline_file= open(timeline_file_dir + time_file_session_1,'rb')
+        timeline_info = pickle.load(timeline_file)
+        timeline_1 = np.zeros(len(timeline_info) + 1)
+        for i in range(len(timeline_info)):
+            timeline_1[i] = timeline_info[i][1]
+        timeline_1[len(timeline_info)] = behaviour.shape[0]
+        timeline = timeline_1/re_sf
+        #time_lenght = 10
+        resample_timeline = timeline_1/re_sf
+            
+            
+        activity = np.load(file_directory + calcium_file_name)
+        neural_activity1 = activity[1:,:]
+        ## z-score neural activity
+        neural_activity = neural_activity1[:,:int(int(behaviour.shape[0]/re_sf)*re_sf)]
+        zscored = True
+        if zscored:
+            for cell in range(neural_activity.shape[0]):
+                mean_activity = np.mean(neural_activity[cell,:])
+                std_activity = np.mean(neural_activity[cell,:])
+                neural_activity[cell,:] = (neural_activity[cell,:]-mean_activity)/std_activity
+
+        new_activity = np.zeros_like(neural_activity)
+        if binary == True:
+            mean_activity = np.nanmean(neural_activity,axis = 1)
+            std_activity = np.nanstd(neural_activity,axis = 1)
+                
+            for cell in range(new_activity.shape[0]):
+                new_activity[cell,np.where(neural_activity[cell,:] > mean_activity[cell] + std_activity[cell])[0]] = 1
+            neural_activity = new_activity
+        ##downsample neural activity
+        resample_neural_activity_mean, resample_neural_activity_std = stats.resample_matrix(neural_activity=neural_activity,
+                                                                                                    re_sf=re_sf)
+            
+            
+        print('neural shape =  ' +  str(resample_neural_activity_mean.shape) + ' beh shape' + str(resample_beh1.shape))       
+    else:
+        return 
+    
+    return resample_neural_activity_mean,resample_timeline,resample_beh1,corners,resample_params0,resample_params, resample_params2,resample_speed
+
+
+def transform_neural_data_lda(activity_list, behaviour_list,parameters_time,parameters_list,parameters_list2,timeline,trial_list, trial_flag = False):
+    
+    day = 0
+    clf = LDA()
+    activity_list_lda = []
+    
+    if trial_flag:  
+        activity_list_lda_trial = []
+        trial_list_new_trial= np.zeros((20,))
+        
+    #embedding = MDS(n_components=3)
+    trial_list_new = np.zeros_like(trial_list)
+    for day in range(len(trial_list)):
+        if trial_list[day]:
+            if activity_list[day].shape[1] == behaviour_list[day].shape[0]:
+                trial_list_new[day] = trial_list[day]
+                ### run pca on the entire dataset
+                X = activity_list[day].T
+                y = behaviour_list[day]
+                X_transformed = clf.fit(X, y).transform(X)
+                #X_lda_transformed = embedding.fit_transform(X_transformed.T)
+                activity_list_lda.append(X_transformed.T)
+
+                if trial_flag:
+                    for i in range(5):
+                        time1 = int(timeline[day][2*i])
+                        time2 = int(timeline[day][2*i+1])
+                        time3 = int(timeline[day][2*(i+1)])
+                        trial_list_new_trial[day*5+i] = day*5+i+1
+                        activity_list_lda_trial.append(X_transformed[time1:time2,:].T)  
+                
+            else:
+                trial_list_new[day] = 0
+                activity_list_lda.append([])
+                
+                if trial_flag:
+                    for i in range(5):
+                        trial_list_new_trial[day*5+i] = 0
+                        activity_list_lda_trial.append([]) 
+        else:
+            if trial_flag:
+                for i in range(5):
+                    trial_list_new_trial[day*5+i] = 0
+                    activity_list_lda_trial.append([]) 
+                    
+            trial_list_new[day] = 0
+            activity_list_lda.append([])
+
+            continue
+    
+    data_transformation = namedtuple('data_transformation', ['lda','trials'])
+    if trial_flag:
+        return data_transformation(activity_list_lda_trial,trial_list_new_trial)
+    else:
+        return data_transformation(activity_list_lda,trial_list_new)
 
 
 def transform_neural_data(activity_list, behaviour_list,parameters_time,parameters_list,parameters_list2,timeline,trial_list, trial_flag = False):
@@ -773,6 +1067,51 @@ def transform_neural_data(activity_list, behaviour_list,parameters_time,paramete
     else:
         return data_transformation(activity_list_pca,variance_ratio_list,activity_list_cca0,activity_list_cca,activity_list_cca2,activity_list_lda,trial_list_new)
 
+    
+def transform_neural_data_session_wise(activity_list, behaviour_list,parameters_time,parameters_list,parameters_list2,timeline):
+    
+    pca = PCA()
+    cca_components = 5
+    cca = CCA(n_components=cca_components)
+    cca_components2 = 4
+    cca2 = CCA(n_components=cca_components2)
+    cca_components0 = 2
+    cca0 = CCA(n_components=cca_components0)
+    clf = LDA()
+    
+    activity_list = np.nan_to_num(activity_list,nan = 0)
+    if activity_list.shape[1] == behaviour_list.shape[0]:
+        ### run pca on the entire dataset
+        pca.fit(activity_list.T)
+        transformed_activity = pca.fit(activity_list.T).transform(activity_list.T)
+        #X_pc_transformed = embedding.fit_transform(transformed_activity.T)
+        activity_list_pca = transformed_activity.T
+        variance_list = pca.explained_variance_/(1+np.sqrt(activity_list.shape[0]/activity_list.shape[1]))**2
+        normalized_variance = pca.explained_variance_/(1+np.sqrt(activity_list.shape[0]/activity_list.shape[1]))**2
+        evariance = np.cumsum(normalized_variance/sum(normalized_variance))
+        variance_ratio_list = evariance
+
+        X = activity_list.T
+        y = behaviour_list
+        X_transformed = clf.fit(X, y).transform(X)
+        #X_lda_transformed = embedding.fit_transform(X_transformed.T)
+        activity_list_lda = X_transformed.T
+
+        cca_transformed0 = cca0.fit(activity_list.T, parameters_time.T).transform(activity_list.T)
+        #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+        activity_list_cca0 = cca_transformed0.T
+
+        cca_transformed1 = cca.fit(activity_list.T, parameters_list.T).transform(activity_list.T)
+        #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+        activity_list_cca = cca_transformed1.T
+
+        cca_transformed2 = cca2.fit(activity_list.T, parameters_list2.T).transform(activity_list.T)
+        #X_cc_transformed = embedding.fit_transform(cca_transformed.T)    
+        activity_list_cca2 = cca_transformed2.T
+    
+    data_transformation = namedtuple('data_transformation', ['pca','variance_ratio','cca_time','cca_allo','cca_ego','lda'])
+    return data_transformation(activity_list_pca,variance_ratio_list,activity_list_cca0,activity_list_cca,activity_list_cca2,activity_list_lda)
+    
     
 def transform_neural_data_rest(activity_list, activity_list_rest,behaviour_list,parameters_time,parameters_list,parameters_list2,trial_list):
     
@@ -997,6 +1336,66 @@ def create_task_behaviour_trial(behaviour_list,colapse_behaviour,object_fixed,ti
     return
 
 
+
+   
+def create_task_behaviour_session_wise(behaviour_list,colapse_behaviour,object_fixed,timeline_list):
+    
+    # define targets of behaviour according to protocol (random, overlapping and stable)
+    id_target = [0,1,2,3,4] # 0: unlabeled, 1:resting, 2:Navigation, 3: Obj1, 4:Obj2, 5:Run1, 6:Run2
+    
+    print('REDIFINING BEHAVIOUR FOR DIFFERENT SESSIONS')
+    if colapse_behaviour == 0 : # RANDOM
+        for day in range(4):
+            for trial in range(5):
+                behaviour_trial = behaviour_list[int(timeline_list[day*5+2*trial]):int(timeline_list[day*5+2*trial+1])]
+                objects = np.unique(behaviour_trial)
+                if len(objects)>4:
+                    selected_object = np.random.randint(len(objects)-4,len(objects)-2,1)
+                    index0 = np.where(behaviour_trial==objects[selected_object])[0]
+                    index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-4], behaviour_trial!=objects[selected_object]))[0]
+                    index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-3], behaviour_trial!=objects[selected_object]))[0]
+                    behaviour_trial[index0] = 3
+                    behaviour_trial[index1] = 4
+                    behaviour_trial[index2] = 4            
+
+                    index0 = np.where(behaviour_trial==objects[selected_object]+4)[0]
+                    index1 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-2], behaviour_trial!=objects[selected_object]+4))[0]
+                    index2 = np.where(np.logical_and(behaviour_trial==objects[len(objects)-1], behaviour_trial!=objects[selected_object]+4))[0]
+                    behaviour_trial[index0] = 3
+                    behaviour_trial[index1] = 4
+                    behaviour_trial[index2] = 4 
+
+                    behaviour_list[int(timeline_list[day*5+2*trial]):int(timeline_list[day*5+2*trial+1])]= behaviour_trial
+
+
+    if colapse_behaviour == 1 : #OVERLAPPING
+        behaviour_list[np.where(behaviour_list == object_fixed)[0]] = 100
+        behaviour_list[np.where(np.logical_and(behaviour_list>=3, behaviour_list<=6))[0]] = 4
+        behaviour_list[np.where(behaviour_list == 100)[0]] = 3        
+        behaviour_list[np.where(behaviour_list == object_fixed +4)[0]] = 200      
+        behaviour_list[np.where(np.logical_and(behaviour_list>=7, behaviour_list<=10))[0]] = 4
+        behaviour_list[np.where(behaviour_list == 200)[0]] = 3
+
+
+    if colapse_behaviour == 2: #STABLE
+        objects = np.unique(behaviour_list)
+        if len(objects)>4:
+            selected_object = np.random.randint(len(objects)-4,len(objects)-2,1)
+            index0 = np.where(behaviour_list==objects[selected_object])[0]
+            index1 = np.where(np.logical_and(behaviour_list==objects[len(objects)-4], behaviour_list!=objects[selected_object]))
+            index2 = np.where(np.logical_and(behaviour_list==objects[len(objects)-3], behaviour_list!=objects[selected_object]))
+            behaviour_list[index0] = 3
+            behaviour_list[index1] = 4
+            behaviour_list[index2] = 4      
+
+            index0 = np.where(behaviour_list==objects[selected_object]+4)[0]
+            index1 = np.where(np.logical_and(behaviour_list==objects[len(objects)-2], behaviour_list!=objects[selected_object]+4))
+            index2 = np.where(np.logical_and(behaviour_list==objects[len(objects)-1], behaviour_list!=objects[selected_object]+4))
+            behaviour_list[index0] = 3
+            behaviour_list[index1] = 4
+            behaviour_list[index2] = 4  
+
+    return
 
 SPEED_LIMIT = 5
 def create_corners_occupation(behaviour_list, corners_list, speed_list,trial_list):
@@ -1605,12 +2004,12 @@ def save_distance(mouse,session,distance,task,trial_list,day_flag = True):
         print('Saving')
         if day_flag:
             output_path =  os.environ['PROJECT_DIR'] +'neural_analysis/data/mean_representational_distance/'
-            file_name = output_path + task +'_distance_day_mouse_'+f'{mouse}'+'_session_'+f'{session}'+ '_day_'+f'{day}'
+            file_name = output_path + task +'_distance_day_mouse_'+f'{mouse}'+'_session_'+f'{session}'+ '_day_'+f'{day}'+'_binary'
             np.save(file_name, final_distance)
 
         else:
             output_path =  os.environ['PROJECT_DIR'] +'neural_analysis/data/mean_representational_distance/'
-            file_name = output_path+ task +'_distance_trial_mouse_'+f'{mouse}'+'_session_'+f'{session}'+ '_trial_'+f'{day}'
+            file_name = output_path+ task +'_distance_trial_mouse_'+f'{mouse}'+'_session_'+f'{session}'+ '_trial_'+f'{day}'+'_binary'
             np.save(file_name, final_distance)           
 
     return
@@ -1648,18 +2047,19 @@ def compute_representational_distance_all_to_all(trial_activity_vectors, trial_a
                                         x2 = trial_activity_vectors[day2][j,0:n_components[day2],time]
                                         x = 0
                                         if x1.shape == x2.shape:
-                                            # if metric == 'Euclidean':
-                                            #     x = np.linalg.norm(x1 - x2)
-                                            # if metric == 'cosine':
-                                            x = np.dot(x1, x2)/(np.linalg.norm(x1)*np.linalg.norm(x2))
+                                            x = np.linalg.norm(x1 - x2)
+                                            if metric == 'cosine':
+                                                x = np.dot(x1, x2)/(np.linalg.linalg.norm(x1)*np.linalg.linalg.norm(x2))
+                                                x = 1 - spatial.distance.cosine(x1, x2)
+
                                             distance_matrix[day1*day_conditions+i,day2*day_conditions+j,time] = x
                                             for shuffle in range(N_SHUFFLINGS):
-                                                # x1 = trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time]
-                                                # x2 = trial_activity_vectors_shuffle[day2][shuffle][j,0:n_components[day2],time]
-                                                # if metric == 'Euclidean':
-                                                #     x = np.linalg.linalg.norm(x1-x2)
-                                                # if metric == 'cosine':
-                                                x = np.dot(x1, x2)/(np.linalg.linalg.norm(x1)*np.linalg.linalg.norm(x2))
+                                                x1 = trial_activity_vectors_shuffle[day1][shuffle][i,0:n_components[day1],time]
+                                                x2 = trial_activity_vectors_shuffle[day2][shuffle][j,0:n_components[day2],time]
+                                                x = np.linalg.linalg.norm(x1-x2)
+                                                if metric == 'cosine':
+                                                    x = np.dot(x1, x2)/(np.linalg.linalg.norm(x1)*np.linalg.linalg.norm(x2))
+                                                    x = 1 - spatial.distance.cosine(x1, x2)
                                                 distance_matrix_shuffle[shuffle,day1*day_conditions+i,day2*day_conditions+j,time] = x
         
     mean_distance = np.nanmean(distance_matrix,axis = 2)
@@ -1779,3 +2179,5 @@ def mean_distance_occupancy_transformations(distance, index_corners_trial, occup
     
     distance = namedtuple('distance', ['neural','pca','cca_time','cca_allo','cca_ego','lda'])
     return distance(d_neural, d_pca, d_cca_time, d_cca_allo, d_cca_ego, d_lda)
+
+
